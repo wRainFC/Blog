@@ -1,0 +1,69 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import { formatDate } from "../lib/content";
+
+interface Heading { depth: number; slug: string; text: string }
+interface Props {
+  title: string;
+  summary: string;
+  pubDate: Date;
+  updated?: Date;
+  tags: string[];
+  type: "note" | "essay";
+  course?: string;
+  semester?: string;
+  chapter?: string;
+  headings?: Heading[];
+  readingTime?: string;
+}
+
+const {
+  title, summary, pubDate, updated, tags, type, course, semester, chapter,
+  headings = [], readingTime = "约 4 分钟阅读",
+} = Astro.props;
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+<BaseLayout title={`${title}｜砚边`} description={summary}>
+  <article class="article-shell" data-pagefind-body>
+    <header class="article-header">
+      <p class="article-breadcrumb">
+        <a href={type === "note" ? "/notes" : "/essays"}>{type === "note" ? "课程笔记" : "随笔思考"}</a>
+        <span>/</span>
+        <span>{course || "片刻所思"}</span>
+      </p>
+      <h1>{title}</h1>
+      <p class="article-summary">{summary}</p>
+      <div class="article-meta">
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <span>{readingTime}</span>
+        {updated && <span>更新于 {formatDate(updated)}</span>}
+      </div>
+      {type === "note" && (
+        <div class="course-stamp">
+          <span>{course}</span><i></i><span>{semester}</span><i></i><span>{chapter}</span>
+        </div>
+      )}
+    </header>
+
+    <div class="article-grid">
+      <div class="article-body prose">
+        <slot />
+        <div class="article-tags">
+          {tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>)}
+        </div>
+      </div>
+
+      {toc.length > 0 && (
+        <aside class="article-toc" data-pagefind-ignore>
+          <p>本页目录</p>
+          <nav aria-label="文章目录">
+            {toc.map((heading) => (
+              <a class:list={[`depth-${heading.depth}`]} href={`#${heading.slug}`}>{heading.text}</a>
+            ))}
+          </nav>
+        </aside>
+      )}
+    </div>
+  </article>
+</BaseLayout>

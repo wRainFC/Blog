@@ -1,0 +1,30 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  date: Date;
+  kind: "笔记" | "随笔";
+  eyebrow?: string;
+  featured?: boolean;
+}
+
+const { href, title, summary, date, kind, eyebrow, featured = false } = Astro.props;
+const formatted = new Intl.DateTimeFormat("zh-CN", {
+  month: "2-digit",
+  day: "2-digit",
+}).format(date);
+---
+
+<article class:list={["article-card", { featured }]}>
+  <a href={href}>
+    <div class="card-topline">
+      <span class="kind-mark">{kind}</span>
+      {eyebrow && <span>{eyebrow}</span>}
+      <time datetime={date.toISOString()}>{formatted}</time>
+    </div>
+    <h3>{title}</h3>
+    <p>{summary}</p>
+    <span class="read-more">继续阅读 <i aria-hidden="true">→</i></span>
+  </a>
+</article>

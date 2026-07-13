@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="关于｜砚边" description="关于砚边，以及这座个人知识花园为何存在。">
+  <section class="about-hero" data-pagefind-body>
+    <div class="about-title">
+      <p class="section-index">ABOUT THIS GARDEN</p>
+      <h1>学习是一种<br /><em>缓慢的自我塑造。</em></h1>
+    </div>
+    <div class="about-intro">
+      <p>你好，我是一名仍在学习如何学习的大学生。</p>
+      <p>“砚边”用于保存课程中的关键概念，也收留那些暂时没有结论的思考。我希望这里既像一册可以检索的笔记，也像一张不断展开的个人地图。</p>
+    </div>
+  </section>
+
+  <section class="about-grid" data-pagefind-body>
+    <article>
+      <span>01</span><h2>我在记录什么</h2>
+      <p>数学与计算机课程的整理、读书留下的线索，以及日常中值得多想片刻的问题。</p>
+    </article>
+    <article>
+      <span>02</span><h2>我如何写笔记</h2>
+      <p>先找概念之间的关系，再补定义、推导与例子。每篇文章都尽量回答“为什么”和“如何使用”。</p>
+    </article>
+    <article>
+      <span>03</span><h2>关于本站</h2>
+      <p>使用 Astro 构建，文章由 Markdown/MDX 编写。水墨只是表面，清晰、克制和长期可读才是核心。</p>
+    </article>
+  </section>
+
+  <section class="about-contact">
+    <p>如果一篇笔记恰好帮到了你，欢迎从这里继续探索。</p>
+    <div><a href="/notes">浏览课程笔记</a><a href="/rss.xml">订阅 RSS</a></div>
+  </section>
+</BaseLayout>

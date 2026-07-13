@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from "astro:content";
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { readingTime } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes", ({ data }) => !data.draft);
+  return notes.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<ArticleLayout
+  title={entry.data.title}
+  summary={entry.data.summary}
+  pubDate={entry.data.pubDate}
+  updated={entry.data.updated}
+  tags={entry.data.tags}
+  type="note"
+  course={entry.data.course}
+  semester={entry.data.semester}
+  chapter={entry.data.chapter}
+  headings={headings}
+  readingTime={readingTime(entry.body)}
+>
+  <Content />
+</ArticleLayout>

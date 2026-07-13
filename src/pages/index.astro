@@ -1,0 +1,107 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import InkHero from "../components/InkHero.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import { byNewest } from "../lib/content";
+
+const notes = byNewest((await getCollection("notes", ({ data }) => !data.draft)));
+const essays = byNewest((await getCollection("essays", ({ data }) => !data.draft)));
+const featuredEssay = essays.find((essay) => essay.data.featured) || essays[0];
+const latest = byNewest([...notes, ...essays]).slice(0, 4);
+
+const courseMap = new Map<string, { name: string; slug: string; semester: string; count: number }>();
+for (const note of notes) {
+  const key = note.data.courseSlug;
+  const current = courseMap.get(key);
+  courseMap.set(key, {
+    name: note.data.course,
+    slug: key,
+    semester: note.data.semester,
+    count: (current?.count || 0) + 1,
+  });
+}
+const courses = [...courseMap.values()];
+---
+
+<BaseLayout>
+  <InkHero />
+
+  <section class="home-section featured-section" aria-labelledby="featured-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-index">01 / 精选思考</p>
+        <h2 id="featured-title">最近，我在想</h2>
+      </div>
+      <a href="/essays">所有随笔 <span>→</span></a>
+    </div>
+
+    {featuredEssay && (
+      <a class="featured-essay" href={`/essays/${featuredEssay.id}`}>
+        <div class="featured-number" aria-hidden="true">思</div>
+        <div class="featured-copy">
+          <p>置顶随笔 · {featuredEssay.data.pubDate.getFullYear()}</p>
+          <h3>{featuredEssay.data.title}</h3>
+          <p>{featuredEssay.data.summary}</p>
+          <span>阅读全文 <i>↗</i></span>
+        </div>
+        <blockquote>“知识不是被收藏的答案，<br />而是被重新组织过的经验。”</blockquote>
+      </a>
+    )}
+  </section>
+
+  <section class="home-section course-section" aria-labelledby="courses-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-index">02 / 课程札记</p>
+        <h2 id="courses-title">正在学习</h2>
+      </div>
+      <a href="/notes">进入知识库 <span>→</span></a>
+    </div>
+
+    <div class="course-grid">
+      {courses.map((course, index) => (
+        <a class="course-card" href={`/courses/${course.slug}`}>
+          <span class="course-no">0{index + 1}</span>
+          <div>
+            <p>{course.semester}</p>
+            <h3>{course.name}</h3>
+          </div>
+          <div class="course-meta">
+            <span>{course.count} 篇笔记</span>
+            <i aria-hidden="true">↗</i>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="home-section latest-section" aria-labelledby="latest-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-index">03 / 近日更新</p>
+        <h2 id="latest-title">新近落笔</h2>
+      </div>
+    </div>
+    <div class="article-list">
+      {latest.map((entry) => {
+        const isNote = entry.collection === "notes";
+        return (
+          <ArticleCard
+            href={`/${isNote ? "notes" : "essays"}/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            date={entry.data.pubDate}
+            kind={isNote ? "笔记" : "随笔"}
+            eyebrow={isNote ? entry.data.course : entry.data.tags[0]}
+          />
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="home-quote" aria-label="写作寄语">
+    <p>读书如行远路，落笔似见群山。</p>
+    <span>— 在确定与未定之间，留下此刻的理解</span>
+  </section>
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { byNewest } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes", ({ data }) => !data.draft);
+  const essays = await getCollection("essays", ({ data }) => !data.draft);
+  const tags = [...new Set([...notes, ...essays].flatMap((entry) => entry.data.tags))];
+  return tags.map((tag) => ({ params: { tag }, props: { tag } }));
+}
+
+const { tag } = Astro.props;
+const notes = await getCollection("notes", ({ data }) => !data.draft && data.tags.includes(tag));
+const essays = await getCollection("essays", ({ data }) => !data.draft && data.tags.includes(tag));
+const entries = byNewest([...notes, ...essays]);
+---
+
+<BaseLayout title={`#${tag}｜砚边`} description={`与“${tag}”相关的笔记和随笔。`}>
+  <section class="page-hero compact-hero">
+    <p class="section-index">TAG ARCHIVE</p>
+    <h1>#{tag}</h1>
+    <p>从同一个词出发，看看它连接了哪些知识与想法。</p>
+  </section>
+  <section class="single-archive" data-pagefind-body>
+    <div class="archive-summary"><span>{entries.length} 篇内容</span></div>
+    <div class="article-list">
+      {entries.map((entry) => {
+        const isNote = entry.collection === "notes";
+        return (
+          <ArticleCard
+            href={`/${isNote ? "notes" : "essays"}/${entry.id}`}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            date={entry.data.pubDate}
+            kind={isNote ? "笔记" : "随笔"}
+            eyebrow={isNote ? entry.data.course : entry.data.tags[0]}
+          />
+        );
+      })}
+    </div>
+  </section>
+</BaseLayout>

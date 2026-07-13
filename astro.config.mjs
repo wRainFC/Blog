@@ -1,0 +1,26 @@
+import { defineConfig } from "astro/config";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import expressiveCode from "astro-expressive-code";
+import { unified } from "@astrojs/markdown-remark";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+
+export default defineConfig({
+  site: "https://yanbian.pages.dev",
+  output: "static",
+  integrations: [
+    expressiveCode({
+      themes: ["github-dark-default"],
+      frames: { showCopyToClipboardButton: true },
+    }),
+    mdx(),
+    sitemap(),
+  ],
+  markdown: {
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [[rehypeKatex, { throwOnError: true, output: "htmlAndMathml" }]],
+    }),
+  },
+});

@@ -1,0 +1,31 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { byNewest } from "../../lib/content";
+
+const essays = byNewest(await getCollection("essays", ({ data }) => !data.draft));
+---
+
+<BaseLayout title="随笔思考｜砚边" description="关于学习、成长和日常观察的个人随笔。">
+  <section class="page-hero essay-hero">
+    <p class="section-index">ESSAYS & THOUGHTS</p>
+    <h1>在字里，<em>停一会儿。</em></h1>
+    <p>一些尚未成为答案的观察，一些值得慢慢想的事情。</p>
+  </section>
+  <section class="essay-archive" data-pagefind-body>
+    {essays.map((essay, index) => (
+      <div class="essay-row">
+        <span class="essay-index">{String(index + 1).padStart(2, "0")}</span>
+        <ArticleCard
+          href={`/essays/${essay.id}`}
+          title={essay.data.title}
+          summary={essay.data.summary}
+          date={essay.data.pubDate}
+          kind="随笔"
+          eyebrow={essay.data.tags[0]}
+        />
+      </div>
+    ))}
+  </section>
+</BaseLayout>

@@ -1,0 +1,39 @@
+---
+const pathname = Astro.url.pathname;
+const links = [
+  { href: "/notes", label: "课程笔记" },
+  { href: "/essays", label: "随笔思考" },
+  { href: "/about", label: "关于" },
+];
+---
+
+<header class="site-header" data-pagefind-ignore>
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="砚边首页">
+      <span class="brand-seal" aria-hidden="true">砚</span>
+      <span class="brand-name">砚边</span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="主导航">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          aria-current={pathname.startsWith(link.href) ? "page" : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+      <a class="search-link" href="/search" aria-label="搜索文章">
+        <span aria-hidden="true">⌕</span> 搜索
+      </a>
+    </nav>
+
+    <details class="mobile-menu">
+      <summary aria-label="打开导航"><span></span><span></span></summary>
+      <nav aria-label="移动端导航">
+        {links.map((link) => <a href={link.href}>{link.label}</a>)}
+        <a href="/search">搜索</a>
+      </nav>
+    </details>
+  </div>
+</header>

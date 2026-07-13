@@ -1,0 +1,46 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { byNewest } from "../../lib/content";
+
+const notes = byNewest(await getCollection("notes", ({ data }) => !data.draft));
+const courses = [...new Set(notes.map((note) => note.data.course))];
+const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
+---
+
+<BaseLayout title="课程笔记｜砚边" description="按课程、学期和主题整理的大学学习笔记。">
+  <section class="page-hero compact-hero">
+    <p class="section-index">COURSE NOTES</p>
+    <h1>课程笔记</h1>
+    <p>把课堂上的线索，整理成日后仍能读懂的知识脉络。</p>
+  </section>
+
+  <section class="archive-shell" data-pagefind-body>
+    <aside class="filter-panel" data-pagefind-ignore>
+      <div>
+        <p>课程</p>
+        {courses.map((course) => <span>{course}</span>)}
+      </div>
+      <div>
+        <p>主题</p>
+        <div class="tag-cloud">{tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>)}</div>
+      </div>
+    </aside>
+    <div class="archive-content">
+      <div class="archive-summary"><span>共 {notes.length} 篇</span><i></i><span>{courses.length} 门课程</span></div>
+      <div class="article-list">
+        {notes.map((note) => (
+          <ArticleCard
+            href={`/notes/${note.id}`}
+            title={note.data.title}
+            summary={note.data.summary}
+            date={note.data.pubDate}
+            kind="笔记"
+            eyebrow={`${note.data.course} · ${note.data.chapter}`}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
