@@ -28,5 +28,8 @@
     "@astrojs/check": "latest",
     "pagefind": "latest",
     "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
   }
 }
