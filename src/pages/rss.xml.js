@@ -15,7 +15,7 @@ export async function GET(context) {
     }));
 
   return rss({
-    title: "砚边",
+    title: "楚地之雨 · wRainFC",
     description: "一名大学生的课程笔记与随笔思考。",
     site: context.site,
     items,

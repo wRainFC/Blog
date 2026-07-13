@@ -1,113 +1,234 @@
-<section class="ink-hero" data-ink-hero>
-  <div class="hero-grain" aria-hidden="true"></div>
-  <div class="hero-content">
-    <p class="hero-kicker" data-hero-item>一名大学生的学习札记</p>
-    <h1 data-hero-item>把学过的，<br /><em>写成自己的。</em></h1>
-    <p class="hero-intro" data-hero-item>
-      在课程、书页与日常之间，整理知识的脉络，<br class="desktop-only" />也记录那些缓慢生长的想法。
-    </p>
-    <div class="hero-actions" data-hero-item>
-      <a class="primary-button" href="/notes">进入笔记</a>
-      <a class="text-button" href="/essays">阅读随笔 <span>↗</span></a>
+---
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+  courseCount: number;
+  articleCount: number;
+}
+
+const { courseCount, articleCount } = Astro.props;
+const farDrops = Array.from({ length: 18 });
+const nearDrops = Array.from({ length: 7 });
+const rippleSlots = Array.from({ length: 6 });
+const countLabel = `${String(courseCount).padStart(2, "0")} COURSES / ${String(articleCount).padStart(2, "0")} WRITINGS`;
+---
+
+<section class="ink-hero" data-ink-hero aria-labelledby="home-title">
+  <div class="hero-paper" aria-hidden="true"></div>
+
+  <div class="ink-landscape" aria-hidden="true">
+    <div class="ink-sun"></div>
+    <div class="ink-mountain ink-mountain-far"></div>
+    <div class="ink-mountain ink-mountain-mid"></div>
+    <div class="ink-mountain ink-mountain-near"></div>
+    <div class="ink-water"></div>
+    <div class="ink-mist ink-mist-one"></div>
+    <div class="ink-mist ink-mist-two"></div>
+    <div class="ripple-field">
+      {rippleSlots.map(() => <i class="rain-ripple" data-rain-ripple></i>)}
     </div>
   </div>
 
-  <div class="hero-art" aria-hidden="true" data-ink-surface>
-    <div class="mist mist-one" data-mountain></div>
-    <div class="mountain mountain-far" data-mountain></div>
-    <div class="mountain mountain-mid" data-mountain></div>
-    <div class="mountain mountain-near" data-mountain></div>
-    <div class="water-line" data-mountain></div>
-    <div class="sun-seal" data-mountain>砚</div>
-    <div class="ink-orbit ink-orbit-one"></div>
-    <div class="ink-orbit ink-orbit-two"></div>
+  <div class="rain-field" aria-hidden="true">
+    <div class="rain-layer rain-layer-far">
+      {farDrops.map(() => <i class="rain-drop" data-rain-drop data-rain-layer="far"></i>)}
+    </div>
+    <div class="rain-layer rain-layer-near">
+      {nearDrops.map(() => <i class="rain-drop" data-rain-drop data-rain-layer="near"></i>)}
+    </div>
+    <div class="rain-copy-veil"></div>
   </div>
 
-  <p class="hero-note" data-hero-item><span></span> 移动指针，落一笔墨</p>
+  <div class="hero-shell">
+    <div class="hero-copy">
+      <div class="hero-eyebrow">
+        <span class="mini-seal" aria-hidden="true">楚</span>
+        <p>STUDENT · NOTES · ESSAYS</p>
+      </div>
+      <h1 id="home-title">楚地之雨</h1>
+      <div class="hero-wordmark"><Wordmark size="hero" /></div>
+      <p class="hero-intro">
+        生于楚地，写在雨中。<br />
+        把学过的写成自己的，也记录那些缓慢生长的想法。
+      </p>
+      <nav class="hero-portals" aria-label="主页快速入口">
+        <a href="/notes"><span>01</span>课程笔记</a>
+        <a href="/essays"><span>02</span>随笔思考</a>
+        <a href="/rss.xml"><span>03</span>订阅更新</a>
+      </nav>
+    </div>
+  </div>
+
+  <p class="hero-count">{countLabel}</p>
+  <p class="hero-origin"><span>FROM CHU</span><i></i><span>来自楚地</span></p>
+  <p class="hero-scroll-cue"><i></i><span>向下阅览</span></p>
+
+  <button
+    class="rain-control"
+    type="button"
+    aria-pressed="false"
+    aria-label="暂停雨势动画"
+    data-rain-control
+  >
+    <i aria-hidden="true"></i><span data-rain-control-label>暂停雨势</span>
+  </button>
 </section>
 
 <script>
-  import { animate, stagger } from "motion";
-
   const hero = document.querySelector<HTMLElement>("[data-ink-hero]");
-  const surface = hero?.querySelector<HTMLElement>("[data-ink-surface]");
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (hero && surface && !reduced) {
-    let hasPlayed = false;
-    try {
-      hasPlayed = sessionStorage.getItem("yanbian-intro-played") === "yes";
-      sessionStorage.setItem("yanbian-intro-played", "yes");
-    } catch {
-      hasPlayed = false;
-    }
+  if (hero) {
+    const drops = Array.from(hero.querySelectorAll<HTMLElement>("[data-rain-drop]"));
+    const ripples = Array.from(hero.querySelectorAll<HTMLElement>("[data-rain-ripple]"));
+    const control = hero.querySelector<HTMLButtonElement>("[data-rain-control]");
+    const controlLabel = hero.querySelector<HTMLElement>("[data-rain-control-label]");
+    const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const animations = new Set<Animation>();
+    const rippleAnimations = new Map<HTMLElement, Animation>();
 
-    if (hasPlayed) {
-      animate(hero, { opacity: [0, 1] }, { duration: 0.35 });
-    } else {
-      animate("[data-mountain]", {
-        opacity: [0, 1],
-        transform: ["translateY(42px) scale(1.04)", "translateY(0) scale(1)"],
-      }, { delay: stagger(0.13), duration: 1.35, ease: [0.22, 1, 0.36, 1] });
+    let reduced = reduceQuery.matches;
+    let manuallyPaused = false;
+    let inView = true;
+    let pageVisible = !document.hidden;
+    let started = false;
+    let rippleCursor = 0;
 
-      animate("[data-hero-item]", {
-        opacity: [0, 1],
-        transform: ["translateY(18px)", "translateY(0)"],
-      }, { delay: stagger(0.1, { startDelay: 0.36 }), duration: 0.75, ease: "easeOut" });
-    }
+    const randomBetween = (minimum: number, maximum: number) =>
+      minimum + Math.random() * (maximum - minimum);
 
-    let active = true;
-    let lastX = 0;
-    let lastY = 0;
-    let lastTime = 0;
-    let inkCount = 0;
+    const shouldPlay = () => !reduced && !manuallyPaused && inView && pageVisible;
 
-    const spawnInk = (clientX: number, clientY: number, force = false) => {
-      if (!active || inkCount >= 12) return;
-      const now = performance.now();
-      const distance = Math.hypot(clientX - lastX, clientY - lastY);
-      if (!force && (now - lastTime < 80 || distance < 46)) return;
-
-      const rect = surface.getBoundingClientRect();
-      if (
-        clientX < rect.left || clientX > rect.right ||
-        clientY < rect.top || clientY > rect.bottom
-      ) return;
-
-      lastX = clientX;
-      lastY = clientY;
-      lastTime = now;
-      inkCount += 1;
-
-      const blot = document.createElement("span");
-      blot.className = "ink-blot";
-      const size = 42 + Math.random() * 72;
-      blot.style.width = `${size}px`;
-      blot.style.height = `${size * (0.72 + Math.random() * 0.3)}px`;
-      blot.style.left = `${clientX - rect.left}px`;
-      blot.style.top = `${clientY - rect.top}px`;
-      blot.style.setProperty("--blot-rotate", `${Math.random() * 180}deg`);
-      surface.appendChild(blot);
-
-      animate(blot, {
-        opacity: [0, 0.18, 0],
-        transform: ["translate(-50%, -50%) scale(.45) rotate(var(--blot-rotate))", "translate(-50%, -50%) scale(1.35) rotate(var(--blot-rotate))"],
-      }, { duration: 1.05, ease: "easeOut" }).then(() => {
-        blot.remove();
-        inkCount -= 1;
-      });
+    const updateControl = () => {
+      if (!control || !controlLabel) return;
+      control.hidden = reduced;
+      control.setAttribute("aria-pressed", String(manuallyPaused));
+      control.setAttribute("aria-label", manuallyPaused ? "继续雨势动画" : "暂停雨势动画");
+      controlLabel.textContent = manuallyPaused ? "继续雨势" : "暂停雨势";
     };
 
-    surface.addEventListener("pointermove", (event) => {
-      if (event.pointerType !== "touch") spawnInk(event.clientX, event.clientY);
-    });
-    surface.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "touch") spawnInk(event.clientX, event.clientY, true);
-    }, { passive: true });
+    const syncPlayback = () => {
+      const playing = shouldPlay();
+      animations.forEach((animation) => playing ? animation.play() : animation.pause());
+      hero.toggleAttribute("data-rain-paused", !playing);
+      updateControl();
+    };
 
-    const observer = new IntersectionObserver(([entry]) => {
-      active = entry.isIntersecting;
-    }, { threshold: 0.05 });
-    observer.observe(hero);
+    const animateRipple = (x: number) => {
+      if (!ripples.length || reduced) return;
+
+      const ripple = ripples[rippleCursor % ripples.length];
+      rippleCursor += 1;
+      const previous = rippleAnimations.get(ripple);
+      if (previous) {
+        previous.onfinish = null;
+        previous.cancel();
+        animations.delete(previous);
+      }
+
+      ripple.style.left = `${x}%`;
+      const animation = ripple.animate([
+        { opacity: 0, transform: "translate3d(-50%, 0, 0) scale(.18)" },
+        { opacity: .2, offset: .28 },
+        { opacity: .09, offset: .7 },
+        { opacity: 0, transform: "translate3d(-50%, 0, 0) scale(1.18)" },
+      ], {
+        duration: randomBetween(1100, 1550),
+        easing: "cubic-bezier(.2,.65,.3,1)",
+        fill: "none",
+      });
+
+      rippleAnimations.set(ripple, animation);
+      animations.add(animation);
+      animation.onfinish = () => {
+        animations.delete(animation);
+        if (rippleAnimations.get(ripple) === animation) rippleAnimations.delete(ripple);
+      };
+      if (!shouldPlay()) animation.pause();
+    };
+
+    const animateDrop = (drop: HTMLElement, index: number, initial = false) => {
+      if (reduced || !hero.isConnected) return;
+
+      const isNear = drop.dataset.rainLayer === "near";
+      const x = isNear ? randomBetween(44, 98) : randomBetween(2, 98);
+      const duration = isNear ? randomBetween(1350, 2150) : randomBetween(2450, 4100);
+      const delay = initial
+        ? randomBetween(0, isNear ? 4200 : 3000)
+        : randomBetween(isNear ? 900 : 250, isNear ? 5200 : 2400);
+      const length = isNear ? randomBetween(150, 260) : randomBetween(72, 155);
+      const drift = isNear ? randomBetween(-64, -34) : randomBetween(-42, -18);
+      const angle = randomBetween(7, 11);
+      const peakOpacity = isNear ? randomBetween(.24, .43) : randomBetween(.08, .19);
+
+      drop.style.left = `${x}%`;
+      drop.style.height = `${length}px`;
+      drop.style.width = `${isNear ? randomBetween(1.4, 2.7) : randomBetween(.55, 1.25)}px`;
+      drop.style.filter = `blur(${isNear ? randomBetween(.05, .48) : randomBetween(.15, .72)}px)`;
+
+      const animation = drop.animate([
+        { opacity: 0, transform: `translate3d(0, -34vh, 0) rotate(${angle}deg)` },
+        { opacity: peakOpacity, offset: .14 },
+        { opacity: peakOpacity, offset: .76 },
+        { opacity: 0, transform: `translate3d(${drift}px, 126vh, 0) rotate(${angle}deg)` },
+      ], {
+        duration,
+        delay: delay + index * 17,
+        easing: "linear",
+        fill: "none",
+      });
+
+      animations.add(animation);
+      animation.onfinish = () => {
+        animations.delete(animation);
+        if (isNear && !reduced) animateRipple(x);
+        animateDrop(drop, index);
+      };
+      if (!shouldPlay()) animation.pause();
+    };
+
+    const stopRain = () => {
+      animations.forEach((animation) => {
+        animation.onfinish = null;
+        animation.cancel();
+      });
+      animations.clear();
+      rippleAnimations.clear();
+      started = false;
+    };
+
+    const startRain = () => {
+      if (started || reduced) return;
+      started = true;
+      drops.forEach((drop, index) => animateDrop(drop, index, true));
+      syncPlayback();
+    };
+
+    control?.addEventListener("click", () => {
+      manuallyPaused = !manuallyPaused;
+      syncPlayback();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      pageVisible = !document.hidden;
+      syncPlayback();
+    });
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(([entry]) => {
+        inView = entry.isIntersecting;
+        syncPlayback();
+      }, { threshold: .04 });
+      observer.observe(hero);
+    }
+
+    reduceQuery.addEventListener("change", (event) => {
+      reduced = event.matches;
+      if (reduced) stopRain();
+      else startRain();
+      syncPlayback();
+    });
+
+    updateControl();
+    startRain();
   }
 </script>

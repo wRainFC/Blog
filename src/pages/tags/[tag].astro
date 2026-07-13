@@ -17,7 +17,7 @@ const essays = await getCollection("essays", ({ data }) => !data.draft && data.t
 const entries = byNewest([...notes, ...essays]);
 ---
 
-<BaseLayout title={`#${tag}｜砚边`} description={`与“${tag}”相关的笔记和随笔。`}>
+<BaseLayout title={`#${tag}｜楚地之雨`} description={`与“${tag}”相关的笔记和随笔。`}>
   <section class="page-hero compact-hero">
     <p class="section-index">TAG ARCHIVE</p>
     <h1>#{tag}</h1>

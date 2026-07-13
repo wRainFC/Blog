@@ -1,4 +1,11 @@
 ---
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+  variant?: "default" | "overlay";
+}
+
+const { variant = "default" } = Astro.props;
 const pathname = Astro.url.pathname;
 const links = [
   { href: "/notes", label: "课程笔记" },
@@ -7,11 +14,12 @@ const links = [
 ];
 ---
 
-<header class="site-header" data-pagefind-ignore>
+<header class:list={["site-header", { "is-overlay": variant === "overlay" }]} data-pagefind-ignore>
   <div class="header-inner">
-    <a class="brand" href="/" aria-label="砚边首页">
-      <span class="brand-seal" aria-hidden="true">砚</span>
-      <span class="brand-name">砚边</span>
+    <a class="brand" href="/" aria-label="楚地之雨首页">
+      <span class="brand-seal" aria-hidden="true">楚</span>
+      <span class="brand-name">楚地之雨</span>
+      <span class="brand-wordmark"><Wordmark /></span>
     </a>
 
     <nav class="desktop-nav" aria-label="主导航">

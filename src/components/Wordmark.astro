@@ -1,0 +1,71 @@
+---
+interface Props {
+  size?: "compact" | "hero" | "footer";
+  inverse?: boolean;
+}
+
+const { size = "compact", inverse = false } = Astro.props;
+---
+
+<span
+  class:list={["wrain-wordmark", `is-${size}`, { "is-inverse": inverse }]}
+  aria-label="wRainFC，From Chu"
+>
+  <span class="wordmark-visual" aria-hidden="true">
+    <span class="wordmark-name">wRain</span>
+    <span class="wordmark-expansion"><b>F</b><i>rom</i></span>
+    <span class="wordmark-expansion"><b>C</b><i>hu</i></span>
+  </span>
+</span>
+
+<style>
+  .wrain-wordmark,
+  .wordmark-visual,
+  .wordmark-expansion {
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  .wordmark-visual {
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: .9;
+    white-space: nowrap;
+  }
+
+  .wordmark-name {
+    margin-right: .12em;
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: -.055em;
+  }
+
+  .wordmark-expansion + .wordmark-expansion { margin-left: .09em; }
+
+  .wordmark-expansion b {
+    color: var(--vermilion);
+    font-size: 1em;
+    font-weight: 700;
+  }
+
+  .wordmark-expansion i {
+    margin-left: .04em;
+    color: var(--ink-faint);
+    font-family: var(--sans);
+    font-size: .29em;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: .04em;
+    transform: translateY(-.08em);
+  }
+
+  .is-compact { font-size: 19px; }
+  .is-hero { font-size: clamp(31px, 4.1vw, 43px); }
+  .is-hero .wordmark-name { font-weight: 500; }
+  .is-hero .wordmark-expansion i { opacity: .72; }
+  .is-footer { font-size: 24px; }
+
+  .is-inverse .wordmark-visual { color: var(--paper-light); }
+  .is-inverse .wordmark-expansion b { color: #c86b5f; }
+  .is-inverse .wordmark-expansion i { color: rgba(248,246,240,.4); }
+</style>
