@@ -13,8 +13,8 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/mdx": "latest",
     "@astrojs/markdown-remark": "latest",
+    "@astrojs/mdx": "latest",
     "@astrojs/rss": "latest",
     "@astrojs/sitemap": "latest",
     "astro": "latest",
@@ -27,9 +27,7 @@
   "devDependencies": {
     "@astrojs/check": "latest",
     "pagefind": "latest",
+    "sharp": "0.34.5",
     "typescript": "5.9.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp"]
   }
 }

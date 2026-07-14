@@ -1,234 +1,565 @@
 ---
+import { Picture } from "astro:assets";
+import inkscape from "../assets/home-inkscape-v2.png";
 import Wordmark from "./Wordmark.astro";
-
-interface Props {
-  courseCount: number;
-  articleCount: number;
-}
-
-const { courseCount, articleCount } = Astro.props;
-const farDrops = Array.from({ length: 18 });
-const nearDrops = Array.from({ length: 7 });
-const rippleSlots = Array.from({ length: 6 });
-const countLabel = `${String(courseCount).padStart(2, "0")} COURSES / ${String(articleCount).padStart(2, "0")} WRITINGS`;
 ---
 
 <section class="ink-hero" data-ink-hero aria-labelledby="home-title">
-  <div class="hero-paper" aria-hidden="true"></div>
+  <div class="hero-stage" data-hero-stage>
+    <div class="hero-paper" aria-hidden="true"></div>
 
-  <div class="ink-landscape" aria-hidden="true">
-    <div class="ink-sun"></div>
-    <div class="ink-mountain ink-mountain-far"></div>
-    <div class="ink-mountain ink-mountain-mid"></div>
-    <div class="ink-mountain ink-mountain-near"></div>
-    <div class="ink-water"></div>
-    <div class="ink-mist ink-mist-one"></div>
-    <div class="ink-mist ink-mist-two"></div>
-    <div class="ripple-field">
-      {rippleSlots.map(() => <i class="rain-ripple" data-rain-ripple></i>)}
-    </div>
-  </div>
-
-  <div class="rain-field" aria-hidden="true">
-    <div class="rain-layer rain-layer-far">
-      {farDrops.map(() => <i class="rain-drop" data-rain-drop data-rain-layer="far"></i>)}
-    </div>
-    <div class="rain-layer rain-layer-near">
-      {nearDrops.map(() => <i class="rain-drop" data-rain-drop data-rain-layer="near"></i>)}
-    </div>
-    <div class="rain-copy-veil"></div>
-  </div>
-
-  <div class="hero-shell">
-    <div class="hero-copy">
-      <div class="hero-eyebrow">
-        <span class="mini-seal" aria-hidden="true">楚</span>
-        <p>STUDENT · NOTES · ESSAYS</p>
+    <div class="hero-scene" aria-hidden="true">
+      <div class="hero-landscape-picture">
+        <Picture
+          src={inkscape}
+          alt=""
+          widths={[960, 1440, 1920, 2560]}
+          sizes="100vw"
+          formats={["avif", "webp"]}
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
       </div>
-      <h1 id="home-title">楚地之雨</h1>
-      <div class="hero-wordmark"><Wordmark size="hero" /></div>
-      <p class="hero-intro">
-        生于楚地，写在雨中。<br />
-        把学过的写成自己的，也记录那些缓慢生长的想法。
-      </p>
-      <nav class="hero-portals" aria-label="主页快速入口">
-        <a href="/notes"><span>01</span>课程笔记</a>
-        <a href="/essays"><span>02</span>随笔思考</a>
-        <a href="/rss.xml"><span>03</span>订阅更新</a>
-      </nav>
+      <div class="hero-foreground-ink"></div>
+      <div class="hero-waterline" data-hero-waterline></div>
     </div>
+
+    <div class="hero-mist" aria-hidden="true">
+      <i class="hero-mist-band hero-mist-far"></i>
+      <i class="hero-mist-band hero-mist-mid"></i>
+      <i class="hero-mist-band hero-mist-near"></i>
+    </div>
+
+    <div class="rain-field" aria-hidden="true">
+      <canvas class="rain-canvas" data-rain-canvas></canvas>
+      <div class="rain-copy-veil"></div>
+    </div>
+
+    <div class="hero-shell">
+      <div class="hero-copy">
+        <div class="hero-wordmark hero-enter-item"><Wordmark size="hero" /></div>
+        <h1 class="hero-enter-item" id="home-title">楚地之雨</h1>
+        <p class="hero-intro hero-enter-item">
+          生于楚地，写在雨中。把学过的写成自己的，也记录那些缓慢生长的想法。
+        </p>
+        <nav class="hero-portals hero-enter-item" aria-label="主页快速入口">
+          <a href="/notes">课程笔记 <span aria-hidden="true">↗</span></a>
+          <a href="/essays">随笔思考 <span aria-hidden="true">↗</span></a>
+          <a href="/about">关于 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </div>
+
+    <p class="hero-scroll-cue" aria-hidden="true">
+      <span>SCROLL</span><i></i><em>入卷</em>
+    </p>
+
+    <button
+      class="rain-control"
+      type="button"
+      aria-pressed="false"
+      aria-label="暂停雨势动画"
+      data-rain-control
+    >
+      <i aria-hidden="true"></i><span data-rain-control-label>暂停雨势</span>
+    </button>
+
+    <div class="hero-exit-veil" aria-hidden="true"></div>
   </div>
-
-  <p class="hero-count">{countLabel}</p>
-  <p class="hero-origin"><span>FROM CHU</span><i></i><span>来自楚地</span></p>
-  <p class="hero-scroll-cue"><i></i><span>向下阅览</span></p>
-
-  <button
-    class="rain-control"
-    type="button"
-    aria-pressed="false"
-    aria-label="暂停雨势动画"
-    data-rain-control
-  >
-    <i aria-hidden="true"></i><span data-rain-control-label>暂停雨势</span>
-  </button>
 </section>
 
 <script>
+  type RainLayer = "far" | "mid" | "near";
+
+  interface Drop {
+    layer: RainLayer;
+    x: number;
+    y: number;
+    impactX: number;
+    impactY: number;
+    baseDirectionX: number;
+    baseDirectionY: number;
+    directionX: number;
+    directionY: number;
+    length: number;
+    width: number;
+    speed: number;
+    opacity: number;
+    delay: number;
+  }
+
+  interface Ripple {
+    active: boolean;
+    layer: "mid" | "near";
+    x: number;
+    y: number;
+    age: number;
+    duration: number;
+    radius: number;
+    rings: number;
+  }
+
   const hero = document.querySelector<HTMLElement>("[data-ink-hero]");
 
-  if (hero) {
-    const drops = Array.from(hero.querySelectorAll<HTMLElement>("[data-rain-drop]"));
-    const ripples = Array.from(hero.querySelectorAll<HTMLElement>("[data-rain-ripple]"));
+  if (hero && !hero.hasAttribute("data-hero-ready")) {
+    const stage = hero.querySelector<HTMLElement>("[data-hero-stage]");
+    const canvas = hero.querySelector<HTMLCanvasElement>("[data-rain-canvas]");
+    const waterline = hero.querySelector<HTMLElement>("[data-hero-waterline]");
     const control = hero.querySelector<HTMLButtonElement>("[data-rain-control]");
     const controlLabel = hero.querySelector<HTMLElement>("[data-rain-control-label]");
-    const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const animations = new Set<Animation>();
-    const rippleAnimations = new Map<HTMLElement, Animation>();
+    const header = document.querySelector<HTMLElement>(".site-header.is-overlay");
+    const context = canvas?.getContext("2d", { alpha: true });
 
-    let reduced = reduceQuery.matches;
-    let manuallyPaused = false;
-    let inView = true;
-    let pageVisible = !document.hidden;
-    let started = false;
-    let rippleCursor = 0;
+    if (stage && canvas && context) {
+      hero.setAttribute("data-hero-ready", "true");
+      hero.setAttribute("data-rain-renderer", "canvas");
 
-    const randomBetween = (minimum: number, maximum: number) =>
-      minimum + Math.random() * (maximum - minimum);
+      const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const mobileQuery = window.matchMedia("(max-width: 760px)");
+      const drops: Drop[] = [];
+      const ripples: Ripple[] = Array.from({ length: 10 }, () => ({
+        active: false,
+        layer: "mid",
+        x: 0,
+        y: 0,
+        age: 0,
+        duration: 0,
+        radius: 0,
+        rings: 1,
+      }));
 
-    const shouldPlay = () => !reduced && !manuallyPaused && inView && pageVisible;
+      let width = 1;
+      let height = 1;
+      let waterlineY = 1;
+      let reduced = reduceQuery.matches;
+      let manuallyPaused = false;
+      let inView = true;
+      let pageVisible = !document.hidden;
+      let frameId = 0;
+      let running = false;
+      let lastTime = 0;
+      let enteredAt = performance.now();
+      let rainStarted = false;
+      let rainStartedAt = 0;
+      let intersectionObserver: IntersectionObserver | undefined;
+      let resizeObserver: ResizeObserver | undefined;
 
-    const updateControl = () => {
-      if (!control || !controlLabel) return;
-      control.hidden = reduced;
-      control.setAttribute("aria-pressed", String(manuallyPaused));
-      control.setAttribute("aria-label", manuallyPaused ? "继续雨势动画" : "暂停雨势动画");
-      controlLabel.textContent = manuallyPaused ? "继续雨势" : "暂停雨势";
-    };
+      const clamp = (value: number, minimum = 0, maximum = 1) =>
+        Math.min(maximum, Math.max(minimum, value));
 
-    const syncPlayback = () => {
-      const playing = shouldPlay();
-      animations.forEach((animation) => playing ? animation.play() : animation.pause());
-      hero.toggleAttribute("data-rain-paused", !playing);
-      updateControl();
-    };
+      const smoothstep = (start: number, end: number, value: number) => {
+        const progress = clamp((value - start) / (end - start));
+        return progress * progress * (3 - 2 * progress);
+      };
 
-    const animateRipple = (x: number) => {
-      if (!ripples.length || reduced) return;
+      const randomBetween = (minimum: number, maximum: number) =>
+        minimum + Math.random() * (maximum - minimum);
 
-      const ripple = ripples[rippleCursor % ripples.length];
-      rippleCursor += 1;
-      const previous = rippleAnimations.get(ripple);
-      if (previous) {
-        previous.onfinish = null;
-        previous.cancel();
-        animations.delete(previous);
+      const layerCount = (layer: RainLayer) => {
+        if (mobileQuery.matches) return layer === "far" ? 15 : layer === "mid" ? 5 : 2;
+        return layer === "far" ? 36 : layer === "mid" ? 14 : 5;
+      };
+
+      const chooseImpactX = (layer: RainLayer) => {
+        if (layer === "far") return randomBetween(width * .04, width * .99);
+        if (layer === "near") return randomBetween(width * .06, width * .62);
+        return Math.random() < .72
+          ? randomBetween(width * .04, width * .7)
+          : randomBetween(width * .72, width * .96);
+      };
+
+      const resetDrop = (drop: Drop, initial = false) => {
+        const angle = (6.5 + randomBetween(-1.1, 1.1)) * Math.PI / 180;
+        drop.baseDirectionX = -Math.sin(angle);
+        drop.baseDirectionY = Math.cos(angle);
+        drop.directionX = drop.baseDirectionX;
+        drop.directionY = drop.baseDirectionY;
+        drop.impactX = chooseImpactX(drop.layer);
+        drop.impactY = drop.layer === "far"
+          ? height * randomBetween(.76, .94)
+          : waterlineY + randomBetween(-2, 2);
+
+        if (drop.layer === "far") {
+          drop.length = randomBetween(18, 36);
+          drop.width = randomBetween(.55, .9);
+          drop.speed = randomBetween(540, 720);
+          drop.opacity = randomBetween(.1, .18);
+        } else if (drop.layer === "mid") {
+          drop.length = randomBetween(36, 64);
+          drop.width = randomBetween(.85, 1.25);
+          drop.speed = randomBetween(720, 980);
+          drop.opacity = randomBetween(.18, .3);
+        } else {
+          drop.length = randomBetween(64, 104);
+          drop.width = randomBetween(1.2, 1.75);
+          drop.speed = randomBetween(980, 1280);
+          drop.opacity = randomBetween(.3, .48);
+        }
+
+        drop.y = -drop.length - randomBetween(8, Math.max(30, height * .18));
+        drop.x = drop.impactX - drop.directionX * ((drop.impactY - drop.y) / drop.directionY);
+        drop.delay = initial
+          ? randomBetween(0, 1.25)
+          : drop.layer === "far"
+            ? randomBetween(.12, .9)
+            : drop.layer === "mid"
+              ? randomBetween(.18, 1.1)
+              : randomBetween(.55, 1.6);
+      };
+
+      const prewarmDrop = (drop: Drop) => {
+        const travel = drop.impactY + drop.length;
+        drop.y = -drop.length + travel * randomBetween(.08, .88);
+        drop.x = drop.impactX - drop.directionX * ((drop.impactY - drop.y) / drop.directionY);
+        drop.delay = 0;
+      };
+
+      const buildDrops = () => {
+        drops.length = 0;
+        (["far", "mid", "near"] as RainLayer[]).forEach((layer) => {
+          for (let index = 0; index < layerCount(layer); index += 1) {
+            const drop: Drop = {
+              layer,
+              x: 0,
+              y: 0,
+              impactX: 0,
+              impactY: 0,
+              baseDirectionX: 0,
+              baseDirectionY: 1,
+              directionX: 0,
+              directionY: 1,
+              length: 0,
+              width: 0,
+              speed: 0,
+              opacity: 0,
+              delay: 0,
+            };
+            resetDrop(drop, true);
+            const prewarmCount = mobileQuery.matches
+              ? layer === "far" ? 6 : layer === "mid" ? 2 : 1
+              : layer === "far" ? 15 : layer === "mid" ? 6 : 2;
+            if (index < prewarmCount) prewarmDrop(drop);
+            drops.push(drop);
+          }
+        });
+        ripples.forEach((ripple) => { ripple.active = false; });
+        hero.dataset.rainDrops = String(drops.length);
+      };
+
+      const spawnRipple = (drop: Drop) => {
+        if (drop.layer === "far") return;
+        const ripple = ripples.find((candidate) => !candidate.active)
+          || ripples.reduce((oldest, candidate) => candidate.age > oldest.age ? candidate : oldest);
+
+        ripple.active = true;
+        ripple.layer = drop.layer;
+        ripple.x = drop.impactX;
+        ripple.y = drop.impactY;
+        ripple.age = 0;
+        ripple.duration = drop.layer === "near" ? randomBetween(950, 1300) : randomBetween(720, 1020);
+        ripple.radius = drop.layer === "near" ? randomBetween(46, 62) : randomBetween(28, 42);
+        ripple.rings = drop.layer === "near" ? 2 : 1;
+      };
+
+      const drawDrop = (drop: Drop) => {
+        if (drop.delay > 0 || drop.y < -drop.length || drop.y > drop.impactY) return;
+        const opacity = drop.opacity;
+        const tailX = drop.x - drop.directionX * drop.length;
+        const tailY = drop.y - drop.directionY * drop.length;
+
+        context.lineCap = "round";
+
+        const softTrail = context.createLinearGradient(tailX, tailY, drop.x, drop.y);
+        softTrail.addColorStop(0, "rgba(34, 36, 33, 0)");
+        softTrail.addColorStop(.48, `rgba(34, 36, 33, ${opacity * .06})`);
+        softTrail.addColorStop(1, `rgba(34, 36, 33, ${opacity * .18})`);
+        context.lineWidth = drop.width * 2.15;
+        context.strokeStyle = softTrail;
+        context.beginPath();
+        context.moveTo(tailX, tailY);
+        context.lineTo(drop.x, drop.y);
+        context.stroke();
+
+        const inkTrail = context.createLinearGradient(tailX, tailY, drop.x, drop.y);
+        inkTrail.addColorStop(0, "rgba(27, 29, 27, 0)");
+        inkTrail.addColorStop(.32, `rgba(27, 29, 27, ${opacity * .22})`);
+        inkTrail.addColorStop(.72, `rgba(27, 29, 27, ${opacity * .72})`);
+        inkTrail.addColorStop(1, `rgba(27, 29, 27, ${opacity})`);
+        context.lineWidth = drop.width;
+        context.strokeStyle = inkTrail;
+        context.beginPath();
+        context.moveTo(tailX, tailY);
+        context.lineTo(drop.x, drop.y);
+        context.stroke();
+
+        if (drop.layer !== "far") {
+          const highlightOffset = drop.layer === "near" ? .78 : .56;
+          const offsetX = drop.directionY * highlightOffset;
+          const offsetY = -drop.directionX * highlightOffset;
+          const highlight = context.createLinearGradient(tailX, tailY, drop.x, drop.y);
+          highlight.addColorStop(0, "rgba(252, 251, 247, 0)");
+          highlight.addColorStop(.56, `rgba(252, 251, 247, ${opacity * .08})`);
+          highlight.addColorStop(1, `rgba(252, 251, 247, ${opacity * .34})`);
+          context.lineWidth = Math.max(.38, drop.width * .3);
+          context.strokeStyle = highlight;
+          context.beginPath();
+          context.moveTo(tailX + offsetX, tailY + offsetY);
+          context.lineTo(drop.x + offsetX, drop.y + offsetY);
+          context.stroke();
+        }
+      };
+
+      const drawRipple = (ripple: Ripple) => {
+        if (!ripple.active) return;
+        const progress = clamp(ripple.age / ripple.duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const radius = 2 + (ripple.radius - 2) * eased;
+        const opacity = (ripple.layer === "near" ? .28 : .18) * (1 - progress);
+        const verticalScale = ripple.layer === "near" ? .19 : .15;
+
+        context.lineWidth = ripple.layer === "near" ? .95 : .75;
+        context.strokeStyle = `rgba(34, 36, 33, ${opacity})`;
+        context.beginPath();
+        context.ellipse(ripple.x, ripple.y, radius, radius * verticalScale, 0, 0, Math.PI * 2);
+        context.stroke();
+
+        if (ripple.rings === 2 && progress > .18) {
+          const secondProgress = (progress - .18) / .82;
+          const secondRadius = 2 + ripple.radius * .68 * (1 - Math.pow(1 - secondProgress, 3));
+          context.strokeStyle = `rgba(34, 36, 33, ${opacity * .52})`;
+          context.beginPath();
+          context.ellipse(ripple.x, ripple.y, secondRadius, secondRadius * verticalScale, 0, 0, Math.PI * 2);
+          context.stroke();
+        }
+      };
+
+      const updateRain = (delta: number, time: number) => {
+        const wind = Math.sin(time * .00017) * 14 + Math.sin(time * .000047) * 9;
+        drops.forEach((drop) => {
+          if (drop.delay > 0) {
+            drop.delay = Math.max(0, drop.delay - delta);
+            return;
+          }
+          const windWeight = drop.layer === "near" ? 1 : drop.layer === "mid" ? .65 : .35;
+          const velocityX = drop.baseDirectionX * drop.speed + wind * windWeight;
+          const velocityY = drop.baseDirectionY * drop.speed;
+          const velocityLength = Math.hypot(velocityX, velocityY);
+          drop.directionX = velocityX / velocityLength;
+          drop.directionY = velocityY / velocityLength;
+
+          const stepX = velocityX * delta;
+          const stepY = velocityY * delta;
+          if (drop.y + stepY >= drop.impactY) {
+            const impactRatio = clamp((drop.impactY - drop.y) / Math.max(stepY, .001));
+            drop.x += stepX * impactRatio;
+            drop.y = drop.impactY;
+            drop.impactX = drop.x;
+            spawnRipple(drop);
+            resetDrop(drop);
+          } else {
+            drop.x += stepX;
+            drop.y += stepY;
+          }
+        });
+
+        ripples.forEach((ripple) => {
+          if (!ripple.active) return;
+          ripple.age += delta * 1000;
+          if (ripple.age >= ripple.duration) ripple.active = false;
+        });
+      };
+
+      const drawRain = (entryOpacity = 1) => {
+        context.clearRect(0, 0, width, height);
+        if (!rainStarted || entryOpacity <= 0) return;
+        context.save();
+        context.globalAlpha = entryOpacity;
+        drops.forEach(drawDrop);
+        ripples.forEach(drawRipple);
+        context.restore();
+      };
+
+      const getScrollProgress = () => {
+        const rect = hero.getBoundingClientRect();
+        const travel = Math.max(1, hero.offsetHeight - window.innerHeight);
+        return clamp(-rect.top / travel);
+      };
+
+      const applyScrollProgress = () => {
+        const progress = getScrollProgress();
+        const staticScene = reduced || mobileQuery.matches;
+        const visualProgress = staticScene ? 0 : progress;
+        const cameraProgress = smoothstep(.18, .96, visualProgress);
+        const copyProgress = smoothstep(.3, .7, visualProgress);
+        const exitProgress = smoothstep(.7, 1, visualProgress);
+        const headerProgress = smoothstep(.64, .94, progress);
+
+        hero.style.setProperty("--scene-scale", String(1 + cameraProgress * .075));
+        hero.style.setProperty("--scene-x", `${cameraProgress * -2.4}vw`);
+        hero.style.setProperty("--scene-y", `${cameraProgress * -1.2}vh`);
+        hero.style.setProperty("--copy-y", `${copyProgress * -58}px`);
+        hero.style.setProperty("--copy-opacity", String(1 - copyProgress));
+        hero.style.setProperty("--rain-opacity", String(1 - smoothstep(.72, .98, visualProgress)));
+        hero.style.setProperty("--mist-rise", `${exitProgress * -78}px`);
+        hero.style.setProperty("--exit-opacity", String(exitProgress));
+        hero.style.setProperty("--cue-opacity", String(1 - smoothstep(.14, .4, visualProgress)));
+        hero.style.setProperty("--control-opacity", String(1 - smoothstep(.5, .78, visualProgress)));
+
+        if (header) {
+          header.style.setProperty("--home-header-progress", String(headerProgress));
+          header.style.setProperty("--home-header-alpha", String(headerProgress * .9));
+          header.style.setProperty("--home-header-line", String(headerProgress * .13));
+          header.style.setProperty("--home-header-blur", `${headerProgress * 16}px`);
+          header.style.visibility = headerProgress > .015 ? "visible" : "hidden";
+          header.style.pointerEvents = headerProgress > .08 ? "auto" : "none";
+        }
+      };
+
+      const updateControl = () => {
+        if (!control || !controlLabel) return;
+        control.hidden = reduced;
+        control.setAttribute("aria-pressed", String(manuallyPaused));
+        control.setAttribute("aria-label", manuallyPaused ? "继续雨势动画" : "暂停雨势动画");
+        controlLabel.textContent = manuallyPaused ? "继续雨势" : "暂停雨势";
+        hero.toggleAttribute("data-rain-paused", manuallyPaused);
+      };
+
+      const shouldRun = () => !reduced && inView && pageVisible;
+
+      const frame = (time: number) => {
+        if (!running || !shouldRun()) return;
+        if (!lastTime) lastTime = time;
+        const delta = Math.min((time - lastTime) / 1000, .032);
+        lastTime = time;
+
+        applyScrollProgress();
+        hero.style.setProperty("--mist-ambient", `${Math.sin(time * .00023) * 10}px`);
+
+        if (!rainStarted && time - enteredAt > 620) {
+          rainStarted = true;
+          rainStartedAt = time;
+        }
+        if (rainStarted && !manuallyPaused) updateRain(delta, time);
+        const entryOpacity = rainStarted ? clamp((time - rainStartedAt) / 260) : 0;
+        drawRain(entryOpacity);
+        frameId = window.requestAnimationFrame(frame);
+      };
+
+      const stopFrame = (clear = false) => {
+        if (frameId) window.cancelAnimationFrame(frameId);
+        frameId = 0;
+        running = false;
+        lastTime = 0;
+        if (clear) context.clearRect(0, 0, width, height);
+      };
+
+      const startFrame = () => {
+        if (running || !shouldRun()) return;
+        running = true;
+        lastTime = 0;
+        frameId = window.requestAnimationFrame(frame);
+      };
+
+      const syncPlayback = () => {
+        applyScrollProgress();
+        if (shouldRun()) startFrame();
+        else stopFrame(reduced);
+        updateControl();
+      };
+
+      const resizeCanvas = () => {
+        const stageRect = stage.getBoundingClientRect();
+        width = Math.max(1, Math.round(stageRect.width));
+        height = Math.max(1, Math.round(stageRect.height));
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.35 : 1.8);
+        canvas.width = Math.round(width * pixelRatio);
+        canvas.height = Math.round(height * pixelRatio);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        waterlineY = waterline
+          ? waterline.getBoundingClientRect().top - stageRect.top
+          : height * .89;
+        buildDrops();
+        drawRain();
+        applyScrollProgress();
+      };
+
+      const onVisibilityChange = () => {
+        pageVisible = !document.hidden;
+        syncPlayback();
+      };
+
+      const onScroll = () => {
+        applyScrollProgress();
+        if (shouldRun()) startFrame();
+      };
+
+      const onReducedMotionChange = (event: MediaQueryListEvent) => {
+        reduced = event.matches;
+        resizeCanvas();
+        syncPlayback();
+      };
+
+      const onMobileChange = () => {
+        resizeCanvas();
+        syncPlayback();
+      };
+
+      const cleanup = () => {
+        stopFrame(true);
+        intersectionObserver?.disconnect();
+        resizeObserver?.disconnect();
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+        document.removeEventListener("astro:before-swap", cleanup);
+        window.removeEventListener("pagehide", cleanup);
+        window.removeEventListener("scroll", onScroll);
+        reduceQuery.removeEventListener("change", onReducedMotionChange);
+        mobileQuery.removeEventListener("change", onMobileChange);
+        header?.style.removeProperty("--home-header-alpha");
+        header?.style.removeProperty("--home-header-line");
+        header?.style.removeProperty("--home-header-blur");
+        header?.style.removeProperty("--home-header-progress");
+        header?.style.removeProperty("pointer-events");
+        header?.style.removeProperty("visibility");
+      };
+
+      control?.addEventListener("click", () => {
+        manuallyPaused = !manuallyPaused;
+        updateControl();
+      });
+
+      document.addEventListener("visibilitychange", onVisibilityChange);
+      document.addEventListener("astro:before-swap", cleanup, { once: true });
+      window.addEventListener("pagehide", cleanup, { once: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
+      reduceQuery.addEventListener("change", onReducedMotionChange);
+      mobileQuery.addEventListener("change", onMobileChange);
+
+      if ("IntersectionObserver" in window) {
+        intersectionObserver = new IntersectionObserver(([entry]) => {
+          inView = entry.isIntersecting;
+          syncPlayback();
+        }, { threshold: .01 });
+        intersectionObserver.observe(hero);
       }
 
-      ripple.style.left = `${x}%`;
-      const animation = ripple.animate([
-        { opacity: 0, transform: "translate3d(-50%, 0, 0) scale(.18)" },
-        { opacity: .2, offset: .28 },
-        { opacity: .09, offset: .7 },
-        { opacity: 0, transform: "translate3d(-50%, 0, 0) scale(1.18)" },
-      ], {
-        duration: randomBetween(1100, 1550),
-        easing: "cubic-bezier(.2,.65,.3,1)",
-        fill: "none",
-      });
+      if ("ResizeObserver" in window) {
+        resizeObserver = new ResizeObserver(() => resizeCanvas());
+        resizeObserver.observe(stage);
+      }
 
-      rippleAnimations.set(ripple, animation);
-      animations.add(animation);
-      animation.onfinish = () => {
-        animations.delete(animation);
-        if (rippleAnimations.get(ripple) === animation) rippleAnimations.delete(ripple);
-      };
-      if (!shouldPlay()) animation.pause();
-    };
-
-    const animateDrop = (drop: HTMLElement, index: number, initial = false) => {
-      if (reduced || !hero.isConnected) return;
-
-      const isNear = drop.dataset.rainLayer === "near";
-      const x = isNear ? randomBetween(44, 98) : randomBetween(2, 98);
-      const duration = isNear ? randomBetween(1350, 2150) : randomBetween(2450, 4100);
-      const delay = initial
-        ? randomBetween(0, isNear ? 4200 : 3000)
-        : randomBetween(isNear ? 900 : 250, isNear ? 5200 : 2400);
-      const length = isNear ? randomBetween(150, 260) : randomBetween(72, 155);
-      const drift = isNear ? randomBetween(-64, -34) : randomBetween(-42, -18);
-      const angle = randomBetween(7, 11);
-      const peakOpacity = isNear ? randomBetween(.24, .43) : randomBetween(.08, .19);
-
-      drop.style.left = `${x}%`;
-      drop.style.height = `${length}px`;
-      drop.style.width = `${isNear ? randomBetween(1.4, 2.7) : randomBetween(.55, 1.25)}px`;
-      drop.style.filter = `blur(${isNear ? randomBetween(.05, .48) : randomBetween(.15, .72)}px)`;
-
-      const animation = drop.animate([
-        { opacity: 0, transform: `translate3d(0, -34vh, 0) rotate(${angle}deg)` },
-        { opacity: peakOpacity, offset: .14 },
-        { opacity: peakOpacity, offset: .76 },
-        { opacity: 0, transform: `translate3d(${drift}px, 126vh, 0) rotate(${angle}deg)` },
-      ], {
-        duration,
-        delay: delay + index * 17,
-        easing: "linear",
-        fill: "none",
-      });
-
-      animations.add(animation);
-      animation.onfinish = () => {
-        animations.delete(animation);
-        if (isNear && !reduced) animateRipple(x);
-        animateDrop(drop, index);
-      };
-      if (!shouldPlay()) animation.pause();
-    };
-
-    const stopRain = () => {
-      animations.forEach((animation) => {
-        animation.onfinish = null;
-        animation.cancel();
-      });
-      animations.clear();
-      rippleAnimations.clear();
-      started = false;
-    };
-
-    const startRain = () => {
-      if (started || reduced) return;
-      started = true;
-      drops.forEach((drop, index) => animateDrop(drop, index, true));
-      syncPlayback();
-    };
-
-    control?.addEventListener("click", () => {
-      manuallyPaused = !manuallyPaused;
-      syncPlayback();
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      pageVisible = !document.hidden;
-      syncPlayback();
-    });
-
-    if ("IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(([entry]) => {
-        inView = entry.isIntersecting;
+      resizeCanvas();
+      applyScrollProgress();
+      updateControl();
+      window.requestAnimationFrame(() => {
+        enteredAt = performance.now();
+        hero.setAttribute("data-entered", "true");
         syncPlayback();
-      }, { threshold: .04 });
-      observer.observe(hero);
+      });
+    } else if (control) {
+      control.hidden = true;
     }
-
-    reduceQuery.addEventListener("change", (event) => {
-      reduced = event.matches;
-      if (reduced) stopRain();
-      else startRain();
-      syncPlayback();
-    });
-
-    updateControl();
-    startRain();
   }
 </script>
