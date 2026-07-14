@@ -5,6 +5,7 @@ import expressiveCode from "astro-expressive-code";
 import { unified } from "@astrojs/markdown-remark";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeCallouts from "rehype-callouts";
 
 export default defineConfig({
   site: "https://yanbian.pages.dev",
@@ -20,7 +21,10 @@ export default defineConfig({
   markdown: {
     processor: unified({
       remarkPlugins: [remarkMath],
-      rehypePlugins: [[rehypeKatex, { throwOnError: true, output: "htmlAndMathml" }]],
+      rehypePlugins: [
+        [rehypeKatex, { throwOnError: true, output: "htmlAndMathml" }],
+        rehypeCallouts,
+      ],
     }),
   },
 });
