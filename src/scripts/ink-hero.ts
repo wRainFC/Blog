@@ -39,6 +39,9 @@ interface Meteor {
   speed: number;
   opacity: number;
   delay: number;
+  fadeStart: number;
+  fadeEnd: number;
+  fadeProgress: number;
   shimmer: number;
   spriteIndex: number;
 }
@@ -270,6 +273,9 @@ export function setupInkHero() {
     meteor.speed = randomBetween(mobileQuery.matches ? 360 : 470, mobileQuery.matches ? 510 : 690);
     meteor.opacity = randomBetween(.46, .86);
     meteor.delay = initial ? randomBetween(.25, 2.8) : randomBetween(1.8, 5.4);
+    meteor.fadeStart = height * randomBetween(.5, .62);
+    meteor.fadeEnd = meteor.fadeStart + height * randomBetween(.1, .16);
+    meteor.fadeProgress = 0;
     meteor.shimmer = randomBetween(0, Math.PI * 2);
     meteor.spriteIndex = Math.floor(randomBetween(0, meteorSprites.length));
   };
@@ -288,6 +294,9 @@ export function setupInkHero() {
         speed: 0,
         opacity: 0,
         delay: 0,
+        fadeStart: 0,
+        fadeEnd: 0,
+        fadeProgress: 0,
         shimmer: 0,
         spriteIndex: 0,
       };
@@ -372,15 +381,18 @@ export function setupInkHero() {
   const drawMeteor = (meteor: Meteor, time: number) => {
     if (meteor.delay > 0) return;
     const shimmer = .9 + Math.sin(time * .008 + meteor.shimmer) * .1;
+    const vanish = 1 - smoothstep(.04, .96, meteor.fadeProgress);
     const sprite = meteorSprites[meteor.spriteIndex] || meteorSprites[0];
     if (!sprite) return;
 
     context.save();
-    context.globalAlpha *= meteor.opacity * shimmer;
+    context.globalAlpha *= meteor.opacity * shimmer * vanish;
     context.translate(meteor.x, meteor.y);
     context.rotate(Math.atan2(meteor.directionY, meteor.directionX));
-    const spriteHeight = 28 + meteor.width * 7;
-    context.drawImage(sprite, -meteor.length, -spriteHeight / 2, meteor.length, spriteHeight);
+    const lengthScale = .62 + vanish * .38;
+    const spriteLength = meteor.length * lengthScale;
+    const spriteHeight = (28 + meteor.width * 7) * (.76 + vanish * .24);
+    context.drawImage(sprite, -spriteLength, -spriteHeight / 2, spriteLength, spriteHeight);
     context.restore();
   };
 
@@ -428,7 +440,12 @@ export function setupInkHero() {
       }
       meteor.x += meteor.directionX * meteor.speed * delta;
       meteor.y += meteor.directionY * meteor.speed * delta;
-      if (meteor.x < -meteor.length || meteor.y > height * .72) resetMeteor(meteor);
+      if (meteor.y >= meteor.fadeStart) {
+        meteor.fadeProgress = clamp(
+          (meteor.y - meteor.fadeStart) / Math.max(meteor.fadeEnd - meteor.fadeStart, 1),
+        );
+      }
+      if (meteor.x < -meteor.length || meteor.fadeProgress >= 1) resetMeteor(meteor);
     });
   };
 
@@ -530,7 +547,7 @@ export function setupInkHero() {
     document.documentElement.dataset.theme = theme;
     hero.dataset.themeTransition = theme;
     const themeColor = document.querySelector<HTMLMetaElement>("meta[data-theme-color]");
-    themeColor?.setAttribute("content", theme === "dark" ? "#080b0e" : "#faf9f5");
+    themeColor?.setAttribute("content", theme === "dark" ? "#09111b" : "#faf9f5");
     if (persist) {
       try { localStorage.setItem(storageKey, theme); } catch {}
     }
@@ -730,7 +747,7 @@ export function setupInkHero() {
   applyScrollProgress();
   updateControls();
   const initialThemeColor = document.querySelector<HTMLMetaElement>("meta[data-theme-color]");
-  initialThemeColor?.setAttribute("content", currentTheme === "dark" ? "#080b0e" : "#faf9f5");
+  initialThemeColor?.setAttribute("content", currentTheme === "dark" ? "#09111b" : "#faf9f5");
   window.requestAnimationFrame(() => {
     enteredAt = performance.now();
     hero.setAttribute("data-entered", "true");
