@@ -33,7 +33,22 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#faf9f5" />
+    <meta name="theme-color" content="#faf9f5" data-theme-color />
+    <script is:inline>
+      (() => {
+        const key = "wrain-theme";
+        let saved = null;
+        try { saved = localStorage.getItem(key); } catch {}
+        const theme = saved === "light" || saved === "dark"
+          ? saved
+          : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[data-theme-color]')?.setAttribute(
+          "content",
+          theme === "dark" ? "#09111b" : "#faf9f5",
+        );
+      })();
+    </script>
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title={siteConfig.rssTitle} href="/rss.xml" />
@@ -49,10 +64,16 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
     <meta name="twitter:image" content={imageUrl} />
     <title>{title}</title>
   </head>
-  <body class:list={{ "has-overlay-header": headerVariant === "overlay" }}>
+  <body class:list={{ "has-overlay-header": headerVariant === "overlay", "document-theme": headerVariant !== "overlay" }}>
     <a class="skip-link" href="#main-content">跳到正文</a>
     <Header variant={headerVariant} />
     <main id="main-content"><slot /></main>
     <Footer />
   </body>
 </html>
+
+<script>
+  import { setupThemeControls } from "../scripts/theme";
+
+  setupThemeControls();
+</script>

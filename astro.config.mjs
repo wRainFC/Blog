@@ -12,7 +12,11 @@ export default defineConfig({
   output: "static",
   integrations: [
     expressiveCode({
-      themes: ["github-dark-default"],
+      themes: ["github-light-default", "github-dark-default"],
+      useDarkModeMediaQuery: false,
+      themeCssSelector: (theme) => theme.name === "github-dark-default"
+        ? "[data-theme=\"dark\"]"
+        : "[data-theme=\"light\"]",
       frames: { showCopyToClipboardButton: true },
     }),
     mdx(),

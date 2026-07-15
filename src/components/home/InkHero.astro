@@ -1,39 +1,137 @@
 ---
-import { Picture } from "astro:assets";
-import inkscape from "../../assets/home/home-inkscape-v2.png";
 import Wordmark from "../shell/Wordmark.astro";
 ---
 
 <section class="ink-hero" data-ink-hero aria-labelledby="home-title">
   <div class="hero-stage" data-hero-stage>
-    <div class="hero-paper" aria-hidden="true"></div>
-
     <div class="hero-scene" aria-hidden="true">
-      <div class="hero-landscape-picture">
-        <Picture
-          src={inkscape}
-          alt=""
-          widths={[960, 1440, 1920, 2560]}
-          sizes="100vw"
-          formats={["avif", "webp"]}
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        />
-      </div>
-      <div class="hero-foreground-ink"></div>
+      <svg
+        class="hero-scene-svg"
+        viewBox="0 0 1600 900"
+        preserveAspectRatio="xMidYMid slice"
+        role="presentation"
+        focusable="false"
+      >
+        <defs>
+          <linearGradient id="day-sky" x1="0" y1="0" x2="0.86" y2="1">
+            <stop offset="0" stop-color="#fffefb" />
+            <stop offset="0.55" stop-color="#f8f7f2" />
+            <stop offset="1" stop-color="#eae8e1" />
+          </linearGradient>
+          <linearGradient id="day-water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ebeae4" stop-opacity="0.76" />
+            <stop offset="1" stop-color="#f8f7f2" />
+          </linearGradient>
+          <radialGradient id="day-copy-veil" cx="0.28" cy="0.47" r="0.5">
+            <stop offset="0" stop-color="#faf9f5" stop-opacity="0.9" />
+            <stop offset="0.5" stop-color="#faf9f5" stop-opacity="0.5" />
+            <stop offset="1" stop-color="#faf9f5" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="night-sky" x1="0.05" y1="0" x2="0.92" y2="1">
+            <stop offset="0" stop-color="#060d18" />
+            <stop offset="0.55" stop-color="#0d1a2b" />
+            <stop offset="1" stop-color="#132b3e" />
+          </linearGradient>
+          <linearGradient id="night-water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0b1724" />
+            <stop offset="1" stop-color="#07101a" />
+          </linearGradient>
+          <radialGradient id="moon-halo">
+            <stop offset="0" stop-color="#edf1ef" stop-opacity="0.3" />
+            <stop offset="0.36" stop-color="#dce8eb" stop-opacity="0.1" />
+            <stop offset="1" stop-color="#cbdde2" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="night-copy-veil" cx="0.27" cy="0.48" r="0.48">
+            <stop offset="0" stop-color="#07111c" stop-opacity="0.78" />
+            <stop offset="0.52" stop-color="#07111c" stop-opacity="0.34" />
+            <stop offset="1" stop-color="#07111c" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="exit-day" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#faf9f5" stop-opacity="0.08" />
+            <stop offset="0.58" stop-color="#faf9f5" stop-opacity="0.86" />
+            <stop offset="1" stop-color="#faf9f5" />
+          </linearGradient>
+          <linearGradient id="exit-night" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#08111d" stop-opacity="0.04" />
+            <stop offset="0.54" stop-color="#10233a" stop-opacity="0.86" />
+            <stop offset="1" stop-color="#09111b" />
+          </linearGradient>
+          <g id="mountain-geometry">
+            <path
+              class="mountain-range mountain-range-far"
+              d="M0 612C86 572 139 545 211 551c64 5 105 39 169 20 83-25 130-130 229-128 63 1 100 52 153 47 85-8 117-179 221-192 91-11 142 116 213 126 73 10 111-75 187-66 63 7 95 75 137 104 30 20 54 23 80 22v234H0Z"
+            />
+            <path
+              class="mountain-detail mountain-detail-far"
+              d="M422 560c64-44 112-117 181-117 60 0 95 47 146 47m64-30c57-31 94-148 171-162 78-13 133 95 201 124m53 4c54-34 84-75 141-68 59 7 88 65 128 96"
+            />
+            <path
+              class="mountain-range mountain-range-mid"
+              d="M0 692c111-9 180-65 274-64 79 1 119 42 183 37 85-7 128-103 214-100 83 3 114 99 188 92 99-9 126-206 251-216 106-9 158 127 248 145 80 16 143-34 242-47v228H0Z"
+            />
+            <path
+              class="mountain-detail mountain-detail-mid"
+              d="M485 655c66-21 105-91 180-90 79 1 112 94 184 92m78-51c66-51 96-155 181-165 96-11 151 119 238 143"
+            />
+            <path
+              class="mountain-range mountain-range-near"
+              d="M0 771c151-15 236-82 353-72 88 7 127 69 211 67 106-3 150-134 261-138 116-4 156 118 260 113 90-4 135-102 225-106 100-5 163 86 290 86v179H0Z"
+            />
+            <path
+              class="mountain-detail mountain-detail-near"
+              d="M83 755c91-28 171-62 267-56 93 6 132 67 214 67m53-40c69-41 116-96 205-98 114-3 157 115 258 113m74-34c48-36 90-69 151-72 93-4 157 76 262 84"
+            />
+          </g>
+        </defs>
+
+        <g class="hero-day-scene">
+          <rect width="1600" height="900" fill="url(#day-sky)" />
+          <g class="hero-mountains hero-mountains-day">
+            <use href="#mountain-geometry" />
+          </g>
+          <rect y="714" width="1600" height="186" fill="url(#day-water)" />
+          <path class="hero-shoreline" d="M0 716c260-5 438 6 670 0 238-6 453 4 930-3" />
+          <g class="hero-svg-mist hero-svg-mist-day">
+            <path d="M-80 654c204-66 358-30 523-4 202 32 347-55 544-35 180 18 340 70 693 2v100H-80Z" />
+            <path d="M-90 736c268-52 433 18 664-5 257-25 379-59 584-25 184 31 322 34 522-5v106H-90Z" />
+          </g>
+          <rect width="1600" height="900" fill="url(#day-copy-veil)" />
+        </g>
+
+        <g class="hero-night-scene">
+          <rect width="1600" height="900" fill="url(#night-sky)" />
+          <circle cx="1265" cy="166" r="176" fill="url(#moon-halo)" />
+          <circle class="hero-moon" cx="1265" cy="166" r="37" />
+          <g class="hero-stars">
+            <circle cx="835" cy="116" r="1.2" /><circle cx="925" cy="184" r="0.8" />
+            <circle cx="1032" cy="89" r="1" /><circle cx="1117" cy="246" r="0.75" />
+            <circle cx="1376" cy="105" r="0.9" /><circle cx="1460" cy="214" r="1.15" />
+            <circle cx="1532" cy="74" r="0.7" /><circle cx="713" cy="221" r="0.65" />
+            <circle cx="1311" cy="304" r="0.72" /><circle cx="988" cy="302" r="0.6" />
+            <circle cx="1182" cy="61" r="0.55" /><circle cx="1511" cy="333" r="0.82" />
+          </g>
+          <g class="hero-mountains hero-mountains-night">
+            <use href="#mountain-geometry" />
+          </g>
+          <rect y="714" width="1600" height="186" fill="url(#night-water)" />
+          <path class="hero-shoreline hero-shoreline-night" d="M0 716c260-5 438 6 670 0 238-6 453 4 930-3" />
+          <g class="hero-svg-mist hero-svg-mist-night">
+            <path d="M-80 654c204-66 358-30 523-4 202 32 347-55 544-35 180 18 340 70 693 2v100H-80Z" />
+            <path d="M-90 736c268-52 433 18 664-5 257-25 379-59 584-25 184 31 322 34 522-5v106H-90Z" />
+          </g>
+          <rect width="1600" height="900" fill="url(#night-copy-veil)" />
+        </g>
+
+        <g class="hero-exit-veil" aria-hidden="true">
+          <rect class="hero-exit-day" width="1600" height="900" fill="url(#exit-day)" />
+          <rect class="hero-exit-night" width="1600" height="900" fill="url(#exit-night)" />
+        </g>
+      </svg>
       <div class="hero-waterline" data-hero-waterline></div>
     </div>
 
-    <div class="hero-mist" aria-hidden="true">
-      <i class="hero-mist-band hero-mist-far"></i>
-      <i class="hero-mist-band hero-mist-mid"></i>
-      <i class="hero-mist-band hero-mist-near"></i>
-    </div>
-
-    <div class="rain-field" aria-hidden="true">
-      <canvas class="rain-canvas" data-rain-canvas></canvas>
-      <div class="rain-copy-veil"></div>
+    <div class="weather-field" aria-hidden="true">
+      <canvas class="weather-canvas" data-weather-canvas></canvas>
     </div>
 
     <div class="hero-shell">
@@ -51,27 +149,48 @@ import Wordmark from "../shell/Wordmark.astro";
       </div>
     </div>
 
-    <button
-      class="hero-mark"
-      type="button"
-      data-rain-control
-      aria-pressed="false"
-      aria-label="暂停雨势"
-      title="暂停雨势"
-    >
-      <svg class="hero-mark-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-        <path class="hero-mark-cloud" d="M10.5 25.5h25.2a6.2 6.2 0 0 0 .3-12.4 10 10 0 0 0-18.8-1.4 7.2 7.2 0 0 0-6.7 7.2 6.6 6.6 0 0 0 6.6 6.6Z" />
-        <g class="hero-mark-drops">
-          <path d="m17 31.5-2.2 5" />
-          <path d="m25 31.5-2.2 5" />
-          <path d="m33 31.5-2.2 5" />
-        </g>
-        <path class="hero-mark-pause" d="M38 32v6m4-6v6" />
-      </svg>
-      <span class="hero-mark-label" data-rain-control-label>暂停雨势</span>
-    </button>
+    <div class="hero-controls">
+      <button
+        class="hero-mark hero-theme-control"
+        type="button"
+        data-theme-control
+        aria-pressed="false"
+        aria-label="切换至夜色"
+        title="切换至夜色"
+      >
+        <svg class="hero-mark-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <g class="hero-theme-sun">
+            <circle cx="24" cy="24" r="6.2" />
+            <path d="M24 8v5m0 22v5M8 24h5m22 0h5M12.7 12.7l3.6 3.6m15.4 15.4 3.6 3.6m0-22.6-3.6 3.6M16.3 31.7l-3.6 3.6" />
+          </g>
+          <path class="hero-theme-moon" d="M31.8 34.4A13.8 13.8 0 0 1 18.4 11a14 14 0 1 0 13.4 23.4Z" />
+        </svg>
+        <span class="hero-mark-label" data-theme-control-label>切换至夜色</span>
+      </button>
 
-    <div class="hero-exit-veil" aria-hidden="true"></div>
+      <button
+        class="hero-mark hero-weather-control"
+        type="button"
+        data-weather-control
+        aria-pressed="false"
+        aria-label="暂停雨势"
+        title="暂停雨势"
+      >
+        <svg class="hero-mark-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <g class="hero-weather-rain">
+            <path class="hero-mark-cloud" d="M8.5 24.5h25.2a6.2 6.2 0 0 0 .3-12.4 10 10 0 0 0-18.8-1.4 7.2 7.2 0 0 0-6.7 7.2 6.6 6.6 0 0 0 6.6 6.6Z" />
+            <g class="hero-mark-drops"><path d="m15 30.5-2.2 5" /><path d="m23 30.5-2.2 5" /><path d="m31 30.5-2.2 5" /></g>
+          </g>
+          <g class="hero-weather-meteor">
+            <path d="M11 35 28.5 17.5" />
+            <path d="m20.5 14.5 8-2.5 2.5-8 2.5 8 8 2.5-8 2.5-2.5 8-2.5-8Z" />
+            <path d="m9 29 8-8m-5 14 5-5" />
+          </g>
+          <path class="hero-mark-pause" d="M38 32v6m4-6v6" />
+        </svg>
+        <span class="hero-mark-label" data-weather-control-label>暂停雨势</span>
+      </button>
+    </div>
   </div>
 </section>
 

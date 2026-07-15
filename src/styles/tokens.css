@@ -2,6 +2,8 @@
   --paper: #faf9f5;
   --paper-deep: #f1eee7;
   --paper-light: #fffefb;
+  --surface: #fffefb;
+  --on-accent: #fffefb;
   --ink: #1c1c19;
   --ink-soft: #595850;
   --ink-faint: #8a877d;
@@ -13,4 +15,20 @@
   --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --content: 1180px;
   --reading: 720px;
+}
+
+html[data-theme="dark"] body:is(.document-theme, .has-overlay-header) {
+  --paper: #09111b;
+  --paper-deep: #0d1825;
+  --paper-light: #162536;
+  --surface: #111d2b;
+  --on-accent: #f2f7ff;
+  --ink: #e9f0f8;
+  --ink-soft: #b6c3d2;
+  --ink-faint: #7d90a6;
+  --line: rgba(210, 226, 244, .16);
+  --line-soft: rgba(210, 226, 244, .08);
+  --vermilion: #8fb8df;
+  --vermilion-dark: #6e94bd;
+  color-scheme: dark;
 }

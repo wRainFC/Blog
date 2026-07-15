@@ -65,7 +65,7 @@ const { size = "compact", inverse = false } = Astro.props;
   .is-hero .wordmark-expansion i { opacity: .72; }
   .is-footer { font-size: 24px; }
 
-  .is-inverse .wordmark-visual { color: var(--paper-light); }
-  .is-inverse .wordmark-expansion b { color: #c86b5f; }
-  .is-inverse .wordmark-expansion i { color: rgba(248,246,240,.4); }
+  .is-inverse .wordmark-visual { color: var(--footer-wordmark, var(--on-accent)); }
+  .is-inverse .wordmark-expansion b { color: var(--vermilion); }
+  .is-inverse .wordmark-expansion i { color: var(--footer-fg-muted, rgba(242,247,255,.52)); }
 </style>

@@ -19,3 +19,53 @@
 .prose .expressive-code .header { border-radius: 5px 5px 0 0; }
 .article-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 65px; padding-top: 26px; border-top: 1px solid var(--line); font-family: var(--sans); }
 .article-tags a { padding: 5px 10px; color: var(--ink-soft); border: 1px solid var(--line); font-size: 11px; }
+
+html[data-theme="dark"] body.document-theme .prose blockquote {
+  color: var(--ink-soft);
+  background: rgba(47, 79, 112, .24);
+  border-left-color: var(--vermilion);
+}
+
+html[data-theme="dark"] body.document-theme .prose :not(pre) > code {
+  color: #a9cef0;
+  background: rgba(52, 89, 124, .28);
+}
+
+html[data-theme="dark"] body.document-theme .prose .expressive-code pre {
+  border-color: rgba(210, 226, 244, .14);
+}
+
+html[data-theme="dark"] body.document-theme .prose .katex,
+html[data-theme="dark"] body.document-theme .prose .katex-display { color: var(--ink); }
+
+html[data-theme="dark"] body.document-theme [data-callout="note"] {
+  --callout-note-color-dark: #8fb6d8;
+  --callout-note-background-dark: rgba(67, 105, 145, .2);
+}
+html[data-theme="dark"] body.document-theme [data-callout="tip"] {
+  --callout-tip-color-dark: #91b9aa;
+  --callout-tip-background-dark: rgba(65, 111, 104, .2);
+}
+html[data-theme="dark"] body.document-theme [data-callout="important"] {
+  --callout-important-color-dark: #b2a5d5;
+  --callout-important-background-dark: rgba(91, 76, 143, .2);
+}
+html[data-theme="dark"] body.document-theme [data-callout="warning"] {
+  --callout-warning-color-dark: #d6bd86;
+  --callout-warning-background-dark: rgba(128, 103, 56, .2);
+}
+html[data-theme="dark"] body.document-theme [data-callout="caution"] {
+  --callout-caution-color-dark: #d59aa5;
+  --callout-caution-background-dark: rgba(128, 65, 88, .2);
+}
+
+html[data-theme="dark"] body.document-theme .callout {
+  border-left-color: var(--rc-color-dark, var(--vermilion));
+  background-color: rgba(47, 79, 112, .24);
+}
+html[data-theme="dark"] body.document-theme .callout-title { color: var(--rc-color-dark, var(--vermilion)); }
+html[data-theme="dark"] body.document-theme [data-callout="note"] { background-color: rgba(67, 105, 145, .2); }
+html[data-theme="dark"] body.document-theme [data-callout="tip"] { background-color: rgba(65, 111, 104, .2); }
+html[data-theme="dark"] body.document-theme [data-callout="important"] { background-color: rgba(91, 76, 143, .2); }
+html[data-theme="dark"] body.document-theme [data-callout="warning"] { background-color: rgba(128, 103, 56, .2); }
+html[data-theme="dark"] body.document-theme [data-callout="caution"] { background-color: rgba(128, 65, 88, .2); }
