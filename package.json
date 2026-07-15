@@ -13,21 +13,20 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "latest",
-    "@astrojs/mdx": "latest",
-    "@astrojs/rss": "latest",
-    "@astrojs/sitemap": "latest",
-    "astro": "latest",
-    "astro-expressive-code": "latest",
-    "katex": "latest",
-    "motion": "latest",
-    "rehype-callouts": "^2.2.0",
-    "rehype-katex": "latest",
-    "remark-math": "latest"
+    "@astrojs/markdown-remark": "7.2.1",
+    "@astrojs/mdx": "7.0.2",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/sitemap": "3.7.3",
+    "astro": "7.0.7",
+    "astro-expressive-code": "0.44.0",
+    "katex": "0.17.0",
+    "rehype-callouts": "2.2.0",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0"
   },
   "devDependencies": {
-    "@astrojs/check": "latest",
-    "pagefind": "latest",
+    "@astrojs/check": "0.9.9",
+    "pagefind": "1.5.2",
     "sharp": "0.34.5",
     "typescript": "5.9.3"
   },

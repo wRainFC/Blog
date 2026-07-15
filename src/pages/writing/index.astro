@@ -1,10 +1,10 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import ArticleCard from "../../components/ArticleCard.astro";
-import { byNewest } from "../../lib/content";
+import ArticleCard from "../../components/article/ArticleCard.astro";
+import { getPublishedEssays } from "../../lib/content/queries";
+import { articleHref } from "../../lib/content/urls";
 
-const essays = byNewest(await getCollection("essays", ({ data }) => !data.draft));
+const essays = await getPublishedEssays();
 ---
 
 <BaseLayout title="随笔思考｜楚地之雨" description="关于学习、成长和日常观察的个人随笔。">
@@ -18,7 +18,7 @@ const essays = byNewest(await getCollection("essays", ({ data }) => !data.draft)
       <div class="essay-row">
         <span class="essay-index">{String(index + 1).padStart(2, "0")}</span>
         <ArticleCard
-          href={`/essays/${essay.id}`}
+          href={articleHref(essay)}
           title={essay.data.title}
           summary={essay.data.summary}
           date={essay.data.pubDate}

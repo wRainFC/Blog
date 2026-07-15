@@ -1,21 +1,21 @@
 import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
+import { getPublishedArticles } from "../lib/content/queries";
+import { articleHref } from "../lib/content/urls";
+import { siteConfig } from "../config/site";
 
 export async function GET(context) {
-  const notes = await getCollection("notes", ({ data }) => !data.draft);
-  const essays = await getCollection("essays", ({ data }) => !data.draft);
-  const items = [...notes, ...essays]
+  const items = (await getPublishedArticles())
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .map((entry) => ({
       title: entry.data.title,
       description: entry.data.summary,
       pubDate: entry.data.pubDate,
-      link: `/${entry.collection}/${entry.id}`,
+      link: articleHref(entry),
       categories: entry.data.tags,
     }));
 
   return rss({
-    title: "楚地之雨 · wRainFC",
+    title: `${siteConfig.name} · wRainFC`,
     description: "一名大学生的课程笔记与随笔思考。",
     site: context.site,
     items,

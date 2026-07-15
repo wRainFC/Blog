@@ -3,13 +3,10 @@ title: "从极限到连续：把‘无限接近’写清楚"
 summary: "从 ε–δ 定义出发，理解极限为何不是一种模糊的靠近，而是一条可以检验的逻辑承诺。"
 pubDate: 2026-06-18
 updated: 2026-06-23
-course: "数学分析"
-courseSlug: "mathematical-analysis"
-semester: "大一 · 秋"
+course: mathematical-analysis
 chapter: "第一章 · 极限与连续"
 tags: ["极限", "连续", "证明"]
 draft: false
-featured: true
 ---
 
 很多人第一次接触极限时，会把它记成“越来越接近”。这句话有直觉，却还不是数学。真正重要的是：**我们能否提前指定误差，并保证它一定能够做到？**

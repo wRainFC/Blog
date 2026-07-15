@@ -8,7 +8,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeCallouts from "rehype-callouts";
 
 export default defineConfig({
-  site: "https://yanbian.pages.dev",
+  site: process.env.PUBLIC_SITE_URL || "http://localhost:4321",
   output: "static",
   integrations: [
     expressiveCode({

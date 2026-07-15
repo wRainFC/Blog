@@ -1,0 +1,16 @@
+:root {
+  --paper: #faf9f5;
+  --paper-deep: #f1eee7;
+  --paper-light: #fffefb;
+  --ink: #1c1c19;
+  --ink-soft: #595850;
+  --ink-faint: #8a877d;
+  --line: rgba(33, 32, 28, 0.13);
+  --line-soft: rgba(33, 32, 28, 0.065);
+  --vermilion: #9d3d32;
+  --vermilion-dark: #7e2e27;
+  --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+  --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --content: 1180px;
+  --reading: 720px;
+}

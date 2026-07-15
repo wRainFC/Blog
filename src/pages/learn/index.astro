@@ -1,12 +1,15 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import ArticleCard from "../../components/ArticleCard.astro";
-import { byNewest } from "../../lib/content";
+import ArticleCard from "../../components/article/ArticleCard.astro";
+import { getCourseSummaries, getPublishedNotes } from "../../lib/content/queries";
+import { articleHref, courseHref, topicHref } from "../../lib/content/urls";
 
-const notes = byNewest(await getCollection("notes", ({ data }) => !data.draft));
-const courses = [...new Set(notes.map((note) => note.data.course))];
+const [notes, courses] = await Promise.all([
+  getPublishedNotes(),
+  getCourseSummaries(),
+]);
 const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
+const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
 ---
 
 <BaseLayout title="课程笔记｜楚地之雨" description="按课程、学期和主题整理的大学学习笔记。">
@@ -20,11 +23,11 @@ const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
     <aside class="filter-panel" data-pagefind-ignore>
       <div>
         <p>课程</p>
-        {courses.map((course) => <span>{course}</span>)}
+        {courses.map((course) => <a href={courseHref(course.id)}>{course.data.title}</a>)}
       </div>
       <div>
         <p>主题</p>
-        <div class="tag-cloud">{tags.map((tag) => <a href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>)}</div>
+        <div class="tag-cloud">{tags.map((tag) => <a href={topicHref(tag)}>#{tag}</a>)}</div>
       </div>
     </aside>
     <div class="archive-content">
@@ -32,12 +35,12 @@ const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
       <div class="article-list">
         {notes.map((note) => (
           <ArticleCard
-            href={`/notes/${note.id}`}
+            href={articleHref(note)}
             title={note.data.title}
             summary={note.data.summary}
             date={note.data.pubDate}
             kind="笔记"
-            eyebrow={`${note.data.course} · ${note.data.chapter}`}
+            eyebrow={`${courseNames.get(note.data.course.id)} · ${note.data.chapter}`}
           />
         ))}
       </div>

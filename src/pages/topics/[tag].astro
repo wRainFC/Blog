@@ -1,25 +1,28 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import ArticleCard from "../../components/ArticleCard.astro";
-import { byNewest } from "../../lib/content";
+import ArticleCard from "../../components/article/ArticleCard.astro";
+import { getPublishedArticles, getArticlesByTopic, getCourseById } from "../../lib/content/queries";
+import { articleHref } from "../../lib/content/urls";
 
 export async function getStaticPaths() {
-  const notes = await getCollection("notes", ({ data }) => !data.draft);
-  const essays = await getCollection("essays", ({ data }) => !data.draft);
-  const tags = [...new Set([...notes, ...essays].flatMap((entry) => entry.data.tags))];
+  const entries = await getPublishedArticles();
+  const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))];
   return tags.map((tag) => ({ params: { tag }, props: { tag } }));
 }
 
 const { tag } = Astro.props;
-const notes = await getCollection("notes", ({ data }) => !data.draft && data.tags.includes(tag));
-const essays = await getCollection("essays", ({ data }) => !data.draft && data.tags.includes(tag));
-const entries = byNewest([...notes, ...essays]);
+const entries = await getArticlesByTopic(tag);
+const noteCourses = await Promise.all(
+  entries
+    .filter((entry) => entry.collection === "notes")
+    .map(async (entry) => [entry.data.course.id, await getCourseById(entry.data.course.id)] as const),
+);
+const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.title]));
 ---
 
 <BaseLayout title={`#${tag}｜楚地之雨`} description={`与“${tag}”相关的笔记和随笔。`}>
   <section class="page-hero compact-hero">
-    <p class="section-index">TAG ARCHIVE</p>
+    <p class="section-index">TOPIC ARCHIVE</p>
     <h1>#{tag}</h1>
     <p>从同一个词出发，看看它连接了哪些知识与想法。</p>
   </section>
@@ -30,12 +33,12 @@ const entries = byNewest([...notes, ...essays]);
         const isNote = entry.collection === "notes";
         return (
           <ArticleCard
-            href={`/${isNote ? "notes" : "essays"}/${entry.id}`}
+            href={articleHref(entry)}
             title={entry.data.title}
             summary={entry.data.summary}
             date={entry.data.pubDate}
             kind={isNote ? "笔记" : "随笔"}
-            eyebrow={isNote ? entry.data.course : entry.data.tags[0]}
+            eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
           />
         );
       })}

@@ -1,0 +1,17 @@
+---
+import { formatDate } from "../../lib/content/format";
+
+interface Props {
+  pubDate: Date;
+  updated?: Date;
+  readingTime: string;
+}
+
+const { pubDate, updated, readingTime } = Astro.props;
+---
+
+<div class="article-meta">
+  <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+  <span>{readingTime}</span>
+  {updated && <span>更新于 {formatDate(updated)}</span>}
+</div>

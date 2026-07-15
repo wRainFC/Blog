@@ -1,5 +1,6 @@
 ---
 import Wordmark from "./Wordmark.astro";
+import { navigation } from "../../config/site";
 
 interface Props {
   variant?: "default" | "overlay";
@@ -7,11 +8,7 @@ interface Props {
 
 const { variant = "default" } = Astro.props;
 const pathname = Astro.url.pathname;
-const links = [
-  { href: "/notes", label: "课程笔记" },
-  { href: "/essays", label: "随笔思考" },
-  { href: "/about", label: "关于" },
-];
+const links = navigation;
 ---
 
 <header class:list={["site-header", { "is-overlay": variant === "overlay" }]} data-pagefind-ignore>

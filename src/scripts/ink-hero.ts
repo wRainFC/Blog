@@ -1,76 +1,4 @@
----
-import { Picture } from "astro:assets";
-import inkscape from "../assets/home-inkscape-v2.png";
-import Wordmark from "./Wordmark.astro";
----
-
-<section class="ink-hero" data-ink-hero aria-labelledby="home-title">
-  <div class="hero-stage" data-hero-stage>
-    <div class="hero-paper" aria-hidden="true"></div>
-
-    <div class="hero-scene" aria-hidden="true">
-      <div class="hero-landscape-picture">
-        <Picture
-          src={inkscape}
-          alt=""
-          widths={[960, 1440, 1920, 2560]}
-          sizes="100vw"
-          formats={["avif", "webp"]}
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        />
-      </div>
-      <div class="hero-foreground-ink"></div>
-      <div class="hero-waterline" data-hero-waterline></div>
-    </div>
-
-    <div class="hero-mist" aria-hidden="true">
-      <i class="hero-mist-band hero-mist-far"></i>
-      <i class="hero-mist-band hero-mist-mid"></i>
-      <i class="hero-mist-band hero-mist-near"></i>
-    </div>
-
-    <div class="rain-field" aria-hidden="true">
-      <canvas class="rain-canvas" data-rain-canvas></canvas>
-      <div class="rain-copy-veil"></div>
-    </div>
-
-    <div class="hero-shell">
-      <div class="hero-copy">
-        <div class="hero-wordmark hero-enter-item"><Wordmark size="hero" /></div>
-        <h1 class="hero-enter-item" id="home-title">楚地之雨</h1>
-        <p class="hero-intro hero-enter-item">
-          生于楚地，写在雨中。把学过的写成自己的，也记录那些缓慢生长的想法。
-        </p>
-        <nav class="hero-portals hero-enter-item" aria-label="主页快速入口">
-          <a href="/notes">课程笔记 <span aria-hidden="true">↗</span></a>
-          <a href="/essays">随笔思考 <span aria-hidden="true">↗</span></a>
-          <a href="/about">关于 <span aria-hidden="true">↗</span></a>
-        </nav>
-      </div>
-    </div>
-
-    <p class="hero-scroll-cue" aria-hidden="true">
-      <span>SCROLL</span><i></i><em>入卷</em>
-    </p>
-
-    <button
-      class="rain-control"
-      type="button"
-      aria-pressed="false"
-      aria-label="暂停雨势动画"
-      data-rain-control
-    >
-      <i aria-hidden="true"></i><span data-rain-control-label>暂停雨势</span>
-    </button>
-
-    <div class="hero-exit-veil" aria-hidden="true"></div>
-  </div>
-</section>
-
-<script>
-  type RainLayer = "far" | "mid" | "near";
+type RainLayer = "far" | "mid" | "near";
 
   interface Drop {
     layer: RainLayer;
@@ -100,7 +28,8 @@ import Wordmark from "./Wordmark.astro";
     rings: number;
   }
 
-  const hero = document.querySelector<HTMLElement>("[data-ink-hero]");
+export function setupInkHero() {
+const hero = document.querySelector<HTMLElement>("[data-ink-hero]");
 
   if (hero && !hero.hasAttribute("data-hero-ready")) {
     const stage = hero.querySelector<HTMLElement>("[data-hero-stage]");
@@ -133,7 +62,6 @@ import Wordmark from "./Wordmark.astro";
       let height = 1;
       let waterlineY = 1;
       let reduced = reduceQuery.matches;
-      let manuallyPaused = false;
       let inView = true;
       let pageVisible = !document.hidden;
       let frameId = 0;
@@ -142,6 +70,7 @@ import Wordmark from "./Wordmark.astro";
       let enteredAt = performance.now();
       let rainStarted = false;
       let rainStartedAt = 0;
+      let manuallyPaused = false;
       let intersectionObserver: IntersectionObserver | undefined;
       let resizeObserver: ResizeObserver | undefined;
 
@@ -403,8 +332,7 @@ import Wordmark from "./Wordmark.astro";
         hero.style.setProperty("--rain-opacity", String(1 - smoothstep(.72, .98, visualProgress)));
         hero.style.setProperty("--mist-rise", `${exitProgress * -78}px`);
         hero.style.setProperty("--exit-opacity", String(exitProgress));
-        hero.style.setProperty("--cue-opacity", String(1 - smoothstep(.14, .4, visualProgress)));
-        hero.style.setProperty("--control-opacity", String(1 - smoothstep(.5, .78, visualProgress)));
+        hero.style.setProperty("--mark-opacity", String(1 - smoothstep(.5, .78, visualProgress)));
 
         if (header) {
           header.style.setProperty("--home-header-progress", String(headerProgress));
@@ -416,16 +344,18 @@ import Wordmark from "./Wordmark.astro";
         }
       };
 
+      const shouldRun = () => !reduced && inView && pageVisible;
+
       const updateControl = () => {
-        if (!control || !controlLabel) return;
+        if (!control) return;
+        const label = manuallyPaused ? "恢复雨势" : "暂停雨势";
         control.hidden = reduced;
         control.setAttribute("aria-pressed", String(manuallyPaused));
-        control.setAttribute("aria-label", manuallyPaused ? "继续雨势动画" : "暂停雨势动画");
-        controlLabel.textContent = manuallyPaused ? "继续雨势" : "暂停雨势";
+        control.setAttribute("aria-label", label);
+        control.title = label;
+        if (controlLabel) controlLabel.textContent = label;
         hero.toggleAttribute("data-rain-paused", manuallyPaused);
       };
-
-      const shouldRun = () => !reduced && inView && pageVisible;
 
       const frame = (time: number) => {
         if (!running || !shouldRun()) return;
@@ -463,9 +393,9 @@ import Wordmark from "./Wordmark.astro";
 
       const syncPlayback = () => {
         applyScrollProgress();
+        updateControl();
         if (shouldRun()) startFrame();
         else stopFrame(reduced);
-        updateControl();
       };
 
       const resizeCanvas = () => {
@@ -507,6 +437,12 @@ import Wordmark from "./Wordmark.astro";
         syncPlayback();
       };
 
+      const onControlClick = () => {
+        manuallyPaused = !manuallyPaused;
+        updateControl();
+        if (!manuallyPaused && shouldRun()) startFrame();
+      };
+
       const cleanup = () => {
         stopFrame(true);
         intersectionObserver?.disconnect();
@@ -517,6 +453,7 @@ import Wordmark from "./Wordmark.astro";
         window.removeEventListener("scroll", onScroll);
         reduceQuery.removeEventListener("change", onReducedMotionChange);
         mobileQuery.removeEventListener("change", onMobileChange);
+        control?.removeEventListener("click", onControlClick);
         header?.style.removeProperty("--home-header-alpha");
         header?.style.removeProperty("--home-header-line");
         header?.style.removeProperty("--home-header-blur");
@@ -525,17 +462,13 @@ import Wordmark from "./Wordmark.astro";
         header?.style.removeProperty("visibility");
       };
 
-      control?.addEventListener("click", () => {
-        manuallyPaused = !manuallyPaused;
-        updateControl();
-      });
-
       document.addEventListener("visibilitychange", onVisibilityChange);
       document.addEventListener("astro:before-swap", cleanup, { once: true });
       window.addEventListener("pagehide", cleanup, { once: true });
       window.addEventListener("scroll", onScroll, { passive: true });
       reduceQuery.addEventListener("change", onReducedMotionChange);
       mobileQuery.addEventListener("change", onMobileChange);
+      control?.addEventListener("click", onControlClick);
 
       if ("IntersectionObserver" in window) {
         intersectionObserver = new IntersectionObserver(([entry]) => {
@@ -558,8 +491,6 @@ import Wordmark from "./Wordmark.astro";
         hero.setAttribute("data-entered", "true");
         syncPlayback();
       });
-    } else if (control) {
-      control.hidden = true;
     }
   }
-</script>
+}

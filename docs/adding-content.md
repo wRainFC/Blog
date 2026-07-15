@@ -1,0 +1,226 @@
+# 添加新内容
+
+本文说明如何为「砚边」添加课程、课程笔记和随笔。所有内容都会在构建时经过 Astro 内容 schema 校验。
+
+## 1. 添加一门课程
+
+课程信息放在：
+
+~~~text
+src/content/courses/{course-id}.yaml
+~~~
+
+course-id 是稳定的英文标识，也会成为课程 URL 的一部分。建议使用小写 kebab-case，例如 data-structures。
+
+示例：
+
+~~~yaml
+title: 数据结构
+semester: 大二 · 秋
+description: 用不变量、递归和可运行代码建立对数据结构的理解。
+order: 1
+~~~
+
+字段说明：
+
+- title：课程显示名称，必填。
+- semester：学期，必填。
+- description：课程简介，可选。
+- order：课程在首页和课程列表中的顺序，可选，默认是 0。
+
+文件名会成为课程 ID。例如：
+
+~~~text
+src/content/courses/linear-algebra.yaml
+~~~
+
+对应的课程 ID 是 linear-algebra。
+
+## 2. 添加课程笔记
+
+课程笔记放在对应课程目录下：
+
+~~~text
+src/content/notes/{course-id}/{article-id}.md
+src/content/notes/{course-id}/{article-id}.mdx
+~~~
+
+course-id 必须和课程 YAML 文件名一致，article-id 会成为文章 URL 的最后一段。
+
+例如：
+
+~~~text
+src/content/notes/data-structures/binary-search-tree.mdx
+~~~
+
+对应 URL：
+
+~~~text
+/learn/data-structures/binary-search-tree/
+~~~
+
+笔记的 frontmatter：
+
+~~~yaml
+---
+title: "二叉搜索树：从递归定义到可运行代码"
+summary: "用不变量理解插入与查找，并用 TypeScript 写出一个结构清晰的二叉搜索树。"
+pubDate: 2026-06-09
+updated: 2026-06-12
+course: data-structures
+chapter: "第五章 · 树"
+tags: ["树", "递归", "TypeScript"]
+draft: false
+---
+~~~
+
+笔记字段说明：
+
+- title：文章标题，必填。
+- summary：列表、SEO 和 RSS 使用的摘要，必填。
+- pubDate：发布日期，格式为 YYYY-MM-DD，必填。
+- updated：最后更新时间，可选。
+- course：课程 ID，必须能在 src/content/courses/ 中找到。
+- chapter：章节名称，必填。
+- tags：标签数组，可选，默认为空数组。
+- draft：是否草稿，可选，默认为 false。
+
+笔记不需要填写课程名称或学期；这些信息会从课程集合自动读取。
+
+## 3. 添加随笔
+
+随笔放在：
+
+~~~text
+src/content/essays/{article-id}.md
+src/content/essays/{article-id}.mdx
+~~~
+
+示例：
+
+~~~text
+src/content/essays/learning-slowly.md
+~~~
+
+对应 URL：
+
+~~~text
+/writing/learning-slowly/
+~~~
+
+随笔 frontmatter：
+
+~~~yaml
+---
+title: "允许自己学得慢一点"
+summary: "真正的理解常常发生在第二次、第三次回望时。"
+pubDate: 2026-06-29
+tags: ["学习", "成长", "节奏"]
+draft: false
+featured: true
+---
+~~~
+
+随笔字段与笔记基本相同，但不需要 course 和 chapter。只有随笔可以使用 featured: true，首页会优先展示精选随笔。
+
+## 4. 选择 .md 还是 .mdx
+
+- 使用 .md：普通 Markdown、公式、代码块和引用已经足够时。
+- 使用 .mdx：需要在文章中写 JSX/Astro 组件、交互内容或更复杂的 HTML 时。
+
+数学公式可以直接使用 LaTeX：
+
+~~~md
+$$
+\lim_{n\to\infty} a_n = A
+$$
+~~~
+
+代码块可以指定语言和标题：
+
+~~~~md
+~~~ts title="example.ts"
+const answer = 42;
+~~~
+~~~~
+
+## 5. 草稿与发布
+
+新文章可以先写成草稿：
+
+~~~yaml
+draft: true
+~~~
+
+草稿不会出现在：
+
+- 首页
+- 课程和随笔归档
+- 标签页
+- RSS
+- Pagefind 搜索索引
+
+准备发布时，将它改为：
+
+~~~yaml
+draft: false
+~~~
+
+## 6. 添加标签
+
+标签直接写在 frontmatter 中：
+
+~~~yaml
+tags: ["极限", "连续", "证明"]
+~~~
+
+构建后会自动生成对应的主题页：
+
+~~~text
+/topics/极限/
+~~~
+
+标签名称会直接影响 URL 和页面标题。已经公开使用的标签建议保持原样，不要随意改名。
+
+## 7. 本地检查
+
+添加或修改内容后，至少运行：
+
+~~~bash
+pnpm check
+pnpm build
+~~~
+
+pnpm check 会检查 frontmatter、课程引用和 Astro/TypeScript 类型；pnpm build 会生成静态页面、sitemap、RSS 和 Pagefind 搜索索引。
+
+如果构建失败，优先检查：
+
+1. course 是否与课程文件名完全一致。
+2. title、summary、pubDate、chapter 是否缺失。
+3. 日期是否使用 YYYY-MM-DD 格式。
+4. 文件扩展名是否为 .md 或 .mdx。
+5. 文件名和目录名是否包含空格或不稳定的显示名称。
+
+## 8. 推荐写作流程
+
+~~~text
+创建或确认课程
+    ↓
+创建文章文件和 frontmatter
+    ↓
+先设置 draft: true
+    ↓
+本地运行 pnpm check
+    ↓
+完成内容后改为 draft: false
+    ↓
+运行 pnpm build
+    ↓
+提交到 GitHub，由外部静态托管平台发布
+~~~
+
+站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制。外部托管平台应设置真实域名，例如：
+
+~~~text
+PUBLIC_SITE_URL=https://example.com
+~~~

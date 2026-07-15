@@ -2,13 +2,10 @@
 title: "线性变换：矩阵背后真正发生了什么"
 summary: "不从矩阵乘法开始，而从空间如何被拉伸、旋转和压缩开始理解线性代数。"
 pubDate: 2026-05-27
-course: "线性代数"
-courseSlug: "linear-algebra"
-semester: "大一 · 春"
+course: linear-algebra
 chapter: "第三章 · 线性映射"
 tags: ["矩阵", "线性变换", "几何直觉"]
 draft: false
-featured: false
 ---
 
 矩阵常常被介绍成一张数字表，但更好的理解方式是：矩阵描述了一个空间变换。它告诉我们基向量去了哪里，也因此决定了所有向量去了哪里。

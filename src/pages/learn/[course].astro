@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/article/ArticleCard.astro";
+import { getCollection } from "astro:content";
+import { getCourseById, getCourseNotes } from "../../lib/content/queries";
+import { articleHref } from "../../lib/content/urls";
+
+export async function getStaticPaths() {
+  const courses = await getCollection("courses");
+  return courses.map((course) => ({ params: { course: course.id } }));
+}
+
+const courseId = Astro.params.course!;
+const [course, notes] = await Promise.all([
+  getCourseById(courseId),
+  getCourseNotes(courseId),
+]);
+
+if (!course) throw new Error(`Course not found: ${courseId}`);
+---
+
+<BaseLayout title={`${course.data.title}｜楚地之雨`} description={course.data.description || `${course.data.title}课程笔记归档。`}>
+  <section class="page-hero compact-hero course-page-hero">
+    <p class="section-index">{course.data.semester}</p>
+    <h1>{course.data.title}</h1>
+    <p>{course.data.description || "沿着章节继续向前，也随时回到概念的起点。"}</p>
+  </section>
+  <section class="single-archive" data-pagefind-body>
+    <div class="archive-summary"><span>{notes.length} 篇笔记</span><i></i><a href="/learn">返回全部课程</a></div>
+    <div class="article-list">
+      {notes.map((note) => (
+        <ArticleCard
+          href={articleHref(note)}
+          title={note.data.title}
+          summary={note.data.summary}
+          date={note.data.pubDate}
+          kind="笔记"
+          eyebrow={note.data.chapter}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

@@ -1,15 +1,3 @@
-import type { CollectionEntry } from "astro:content";
-
-export type Note = CollectionEntry<"notes">;
-export type Essay = CollectionEntry<"essays">;
-export type Article = Note | Essay;
-
-export function byNewest<T extends Article>(items: T[]): T[] {
-  return [...items].sort(
-    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-  );
-}
-
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",

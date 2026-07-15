@@ -1,29 +1,22 @@
 ---
-import { getCollection } from "astro:content";
+import "../styles/home.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import InkHero from "../components/InkHero.astro";
-import ArticleCard from "../components/ArticleCard.astro";
-import { byNewest } from "../lib/content";
+import InkHero from "../components/home/InkHero.astro";
+import ArticleCard from "../components/article/ArticleCard.astro";
+import { getCourseSummaries, getPublishedEssays, getPublishedNotes, byNewest } from "../lib/content/queries";
+import { articleHref, courseHref } from "../lib/content/urls";
 
-const notes = byNewest((await getCollection("notes", ({ data }) => !data.draft)));
-const essays = byNewest((await getCollection("essays", ({ data }) => !data.draft)));
+const [notes, essays, courses] = await Promise.all([
+  getPublishedNotes(),
+  getPublishedEssays(),
+  getCourseSummaries(),
+]);
 const featuredEssay = essays.find((essay) => essay.data.featured) || essays[0];
 const latest = byNewest([...notes, ...essays])
   .filter((entry) => !(entry.collection === "essays" && entry.id === featuredEssay?.id))
   .slice(0, 3);
-
-const courseMap = new Map<string, { name: string; slug: string; semester: string; count: number }>();
-for (const note of notes) {
-  const key = note.data.courseSlug;
-  const current = courseMap.get(key);
-  courseMap.set(key, {
-    name: note.data.course,
-    slug: key,
-    semester: note.data.semester,
-    count: (current?.count || 0) + 1,
-  });
-}
-const courses = [...courseMap.values()];
+const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
+const featuredHref = featuredEssay ? articleHref(featuredEssay) : undefined;
 ---
 
 <BaseLayout headerVariant="overlay">
@@ -35,12 +28,12 @@ const courses = [...courseMap.values()];
         <p class="section-index">01 / SELECTED WRITING</p>
         <h2 id="featured-title">最近，落笔于此</h2>
       </div>
-      <a href="/essays">全部文章 <span>→</span></a>
+      <a href="/writing">全部文章 <span>→</span></a>
     </div>
 
     <div class="editorial-grid reveal-item">
       {featuredEssay && (
-        <a class="editorial-lead" href={`/essays/${featuredEssay.id}`}>
+        <a class="editorial-lead" href={featuredHref}>
           <div class="editorial-lead-meta">
             <span>FEATURED ESSAY</span>
             <time datetime={featuredEssay.data.pubDate.toISOString()}>
@@ -63,12 +56,12 @@ const courses = [...courseMap.values()];
             const isNote = entry.collection === "notes";
             return (
               <ArticleCard
-                href={`/${isNote ? "notes" : "essays"}/${entry.id}`}
+                href={articleHref(entry)}
                 title={entry.data.title}
                 summary={entry.data.summary}
                 date={entry.data.pubDate}
                 kind={isNote ? "笔记" : "随笔"}
-                eyebrow={isNote ? entry.data.course : entry.data.tags[0]}
+                eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
               />
             );
           })}
@@ -83,19 +76,19 @@ const courses = [...courseMap.values()];
         <p class="section-index">02 / LEARNING NOTES</p>
         <h2 id="courses-title">正在学习</h2>
       </div>
-      <a href="/notes">进入知识库 <span>→</span></a>
+      <a href="/learn">进入知识库 <span>→</span></a>
     </div>
 
     <div class="course-grid">
       {courses.map((course, index) => (
         <a
           class="course-row reveal-item"
-          href={`/courses/${course.slug}`}
+          href={courseHref(course.id)}
           style={`--reveal-order: ${index}`}
         >
           <span class="course-no">{String(index + 1).padStart(2, "0")}</span>
-          <p class="course-term">{course.semester}</p>
-          <h3>{course.name}</h3>
+          <p class="course-term">{course.data.semester}</p>
+          <h3>{course.data.title}</h3>
           <p class="course-count">{course.count} 篇笔记</p>
           <i aria-hidden="true">↗</i>
         </a>

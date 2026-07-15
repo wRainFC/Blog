@@ -1,11 +1,12 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import ArticleLayout from "../../layouts/ArticleLayout.astro";
-import { readingTime } from "../../lib/content";
+import { getPublishedEssays } from "../../lib/content/queries";
+import { readingTime } from "../../lib/content/format";
 
 export async function getStaticPaths() {
-  const essays = await getCollection("essays", ({ data }) => !data.draft);
-  return essays.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+  const essays = await getPublishedEssays();
+  return essays.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
