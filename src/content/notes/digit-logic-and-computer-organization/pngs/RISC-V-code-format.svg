@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            font-size: 14px;
+        }
+        /* 顶部数字行的样式 */
+        .bit-header td {
+            border: none;
+            padding-bottom: 2px;
+            font-size: 12px;
+        }
+        /* 左侧类型列的样式 */
+        .type-col {
+            font-weight: bold;
+            width: 30px;
+            border: none;
+            border-right: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="bit-header">
+        <td style="border: none; width: 30px;"></td> <td style="text-align: left;" colspan="2">31</td>
+        <td style="text-align: right;">27</td>
+        <td>26</td>
+        <td>25</td>
+        <td style="text-align: left;">24</td>
+        <td style="text-align: right;">20</td>
+        <td style="text-align: left;">19</td>
+        <td style="text-align: right;">15</td>
+        <td>14</td>
+        <td>12</td>
+        <td style="text-align: left;">11</td>
+        <td style="text-align: right;">7</td>
+        <td>6</td>
+        <td style="text-align: right;">0</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">R</td>
+        <td colspan="5">funct7</td>
+        <td colspan="2">rs2</td>
+        <td colspan="2">rs1</td>
+        <td colspan="2">funct3</td>
+        <td colspan="2">rd</td>
+        <td colspan="2">opcode</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">I</td>
+        <td colspan="7">imm[11:0]</td>
+        <td colspan="2">rs1</td>
+        <td colspan="2">funct3</td>
+        <td colspan="2">rd</td>
+        <td colspan="2">opcode</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">S</td>
+        <td colspan="5">imm[11:5]</td>
+        <td colspan="2">rs2</td>
+        <td colspan="2">rs1</td>
+        <td colspan="2">funct3</td>
+        <td colspan="2">imm[4:0]</td>
+        <td colspan="2">opcode</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">B</td>
+        <td colspan="5">imm[12|10:5]</td>
+        <td colspan="2">rs2</td>
+        <td colspan="2">rs1</td>
+        <td colspan="2">funct3</td>
+        <td colspan="2">imm[4:1|11]</td>
+        <td colspan="2">opcode</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">U</td>
+        <td colspan="11">imm[31:12]</td>
+        <td colspan="2">rd</td>
+        <td colspan="2">opcode</td>
+    </tr>
+    
+    <tr>
+        <td class="type-col">J</td>
+        <td colspan="11">imm[20|10:1|11|19:12]</td>
+        <td colspan="2">rd</td>
+        <td colspan="2">opcode</td>
+    </tr>
+</table>
+
+</body>
+</html>

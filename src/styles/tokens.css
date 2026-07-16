@@ -15,6 +15,8 @@
   --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --content: 1180px;
   --reading: 720px;
+  --header-height: 84px;
+  --content-sticky-offset: 118px;
 }
 
 html[data-theme="dark"] body:is(.document-theme, .has-overlay-header) {

@@ -1,6 +1,6 @@
 .prose { font-family: var(--serif); font-size: 17px; line-height: 2; }
-.prose h2 { margin: 2.4em 0 .75em; font-size: 29px; font-weight: 600; letter-spacing: -.02em; scroll-margin-top: 25px; }
-.prose h3 { margin: 2em 0 .7em; font-size: 22px; scroll-margin-top: 25px; }
+.prose h2 { margin: 2.4em 0 .75em; font-size: 29px; font-weight: 600; letter-spacing: -.02em; scroll-margin-top: var(--content-sticky-offset); }
+.prose h3 { margin: 2em 0 .7em; font-size: 22px; scroll-margin-top: var(--content-sticky-offset); }
 .prose p { margin: 0 0 1.45em; }
 .prose a { color: var(--vermilion); border-bottom: 1px solid rgba(157,61,50,.32); }
 .prose strong { font-weight: 700; }

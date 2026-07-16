@@ -1,0 +1,81 @@
+\documentclass[border=8pt]{standalone}
+
+\usepackage{bytefield}
+
+\newcommand{\rvrow}[2]{%
+  \makebox[2em][r]{\bfseries #1\quad}#2\\[-\fboxrule]
+}
+
+\newcommand{\rvlastrow}[2]{%
+  \makebox[2em][r]{\bfseries #1\quad}#2
+}
+
+% 第一行：完整边框
+\newcommand{\tbox}[2]{\bitbox[lrtb]{#1}{#2}}
+
+% 后续行：不画 top，避免上下相邻格子出现双线
+\newcommand{\mboxx}[2]{\bitbox[lrb]{#1}{#2}}
+
+\begin{document}
+
+\begin{bytefield}[
+    bitwidth=1.25em,
+    bitheight=3.5ex,
+    endianness=big,
+    bitformatting={\rmfamily\normalsize},
+    boxformatting={\centering\rmfamily\large}
+  ]{32}
+
+  \makebox[2em]{}
+  \bitheader{31,27,26,25,24,20,19,15,14,12,11,7,6,0}\\[-0.6ex]
+
+  \rvrow{R}{
+    \tbox{7}{funct7} &
+    \tbox{5}{rs2} &
+    \tbox{5}{rs1} &
+    \tbox{3}{funct3} &
+    \tbox{5}{rd} &
+    \tbox{7}{opcode}
+  }
+
+  \rvrow{I}{
+    \mboxx{12}{imm[11:0]} &
+    \mboxx{5}{rs1} &
+    \mboxx{3}{funct3} &
+    \mboxx{5}{rd} &
+    \mboxx{7}{opcode}
+  }
+
+  \rvrow{S}{
+    \mboxx{7}{imm[11:5]} &
+    \mboxx{5}{rs2} &
+    \mboxx{5}{rs1} &
+    \mboxx{3}{funct3} &
+    \mboxx{5}{imm[4:0]} &
+    \mboxx{7}{opcode}
+  }
+
+  \rvrow{B}{
+    \mboxx{7}{imm[12$\mid$10:5]} &
+    \mboxx{5}{rs2} &
+    \mboxx{5}{rs1} &
+    \mboxx{3}{funct3} &
+    \mboxx{5}{imm[4:1$\mid$11]} &
+    \mboxx{7}{opcode}
+  }
+
+  \rvrow{U}{
+    \mboxx{20}{imm[31:12]} &
+    \mboxx{5}{rd} &
+    \mboxx{7}{opcode}
+  }
+
+  \rvlastrow{J}{
+    \mboxx{20}{imm[20$\mid$10:1$\mid$11$\mid$19:12]} &
+    \mboxx{5}{rd} &
+    \mboxx{7}{opcode}
+  }
+
+\end{bytefield}
+
+\end{document}
