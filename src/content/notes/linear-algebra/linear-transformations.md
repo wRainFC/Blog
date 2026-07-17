@@ -4,7 +4,10 @@ summary: "不从矩阵乘法开始，而从空间如何被拉伸、旋转和压�
 pubDate: 2026-05-27
 course: linear-algebra
 chapter: "第三章 · 线性映射"
-tags: ["矩阵", "线性变换", "几何直觉"]
+tags:
+  - 矩阵
+  - 线性变换
+  - 几何直觉
 draft: false
 ---
 
