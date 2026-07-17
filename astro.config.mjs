@@ -7,6 +7,10 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeCallouts from "rehype-callouts";
 
+const studioIntegrations = process.env.CONTENT_STUDIO === "1"
+  ? [(await import("./tools/content-studio/integration.ts")).contentStudio()]
+  : [];
+
 export default defineConfig({
   site: process.env.PUBLIC_SITE_URL || "http://localhost:4321",
   output: "static",
@@ -21,6 +25,7 @@ export default defineConfig({
     }),
     mdx(),
     sitemap(),
+    ...studioIntegrations,
   ],
   markdown: {
     processor: unified({

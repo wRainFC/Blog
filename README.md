@@ -19,6 +19,7 @@
 - `pnpm check`：检查 Astro、TypeScript 和内容结构
 - `pnpm build`：生成静态站点与 Pagefind 搜索索引
 - `pnpm preview`：预览生产构建
+- `pnpm studio`：启动本地内容工作台（Windows 也可以双击根目录的 `content-studio.cmd`）
 
 ## 外部托管
 

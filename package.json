@@ -8,9 +8,11 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "studio": "node tools/content-studio/start.mjs",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test:studio": "vitest run tools/content-studio"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.2.1",
@@ -28,7 +30,9 @@
     "@astrojs/check": "0.9.9",
     "pagefind": "1.5.2",
     "sharp": "0.34.5",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.1.10",
+    "yaml": "^2.9.0"
   },
   "allowScripts": {
     "esbuild@0.28.1": true,
