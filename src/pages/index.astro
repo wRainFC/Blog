@@ -11,80 +11,47 @@ const [notes, essays, courses] = await Promise.all([
   getPublishedEssays(),
   getCourseSummaries(),
 ]);
-const featuredEssay = essays.find((essay) => essay.data.featured) || essays[0];
-const latest = byNewest([...notes, ...essays])
-  .filter((entry) => !(entry.collection === "essays" && entry.id === featuredEssay?.id))
-  .slice(0, 3);
+const recent = byNewest([...notes, ...essays]).slice(0, 4);
 const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
-const featuredHref = featuredEssay ? articleHref(featuredEssay) : undefined;
 ---
 
 <BaseLayout headerVariant="overlay">
   <InkHero />
 
-  <section class="home-section home-editorial home-content-bridge" data-home-reveal aria-labelledby="featured-title">
-    <div class="recent-shell">
-      <header class="recent-header reveal-item">
-        <div class="recent-heading">
-          <span class="recent-index" aria-hidden="true">01</span>
-          <div>
-            <p class="recent-kicker">SELECTED WRITING</p>
-            <h2 id="featured-title">最近写下</h2>
-          </div>
-        </div>
-        <a class="recent-archive-link" href="/writing">全部文章 <span aria-hidden="true">↗</span></a>
-      </header>
-
-      <div class="recent-layout">
-        {featuredEssay && (
-          <a class="recent-feature reveal-item" href={featuredHref}>
-            <div class="recent-feature-meta">
-              <span>FEATURED ESSAY</span>
-              <time datetime={featuredEssay.data.pubDate.toISOString()}>
-                {featuredEssay.data.pubDate.getFullYear()}
-              </time>
-            </div>
-            <div class="recent-feature-copy">
-              <h3>{featuredEssay.data.title}</h3>
-              <p>{featuredEssay.data.summary}</p>
-            </div>
-            <span class="recent-feature-link">阅读全文 <i aria-hidden="true">↗</i></span>
-          </a>
-        )}
-
-        <div class="recent-latest reveal-item" aria-label="近日更新">
-          <div class="recent-latest-heading">
-            <p>LATEST UPDATES</p>
-            <span>近期更新</span>
-          </div>
-          <div class="recent-table">
-            {latest.map((entry) => {
-              const isNote = entry.collection === "notes";
-              return (
-                <ArticleCard
-                  href={articleHref(entry)}
-                  title={entry.data.title}
-                  summary={entry.data.summary}
-                  date={entry.data.pubDate}
-                  kind={isNote ? "笔记" : "随笔"}
-                  eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
-                />
-              );
-            })}
-          </div>
-        </div>
+  <section class="home-section home-content-bridge" data-home-reveal aria-labelledby="recent-title">
+    <header class="section-heading reveal-item">
+      <div>
+        <p class="section-index">01 / RECENT</p>
+        <h2 id="recent-title">最近更新</h2>
       </div>
+      <a href="/writing">全部文章 <span aria-hidden="true">→</span></a>
+    </header>
+
+    <div class="home-recent-list article-list reveal-item">
+      {recent.map((entry) => {
+        const isNote = entry.collection === "notes";
+        return (
+          <ArticleCard
+            href={articleHref(entry)}
+            title={entry.data.title}
+            summary={entry.data.summary}
+            date={entry.data.pubDate}
+            kind={isNote ? "笔记" : "随笔"}
+            eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
+          />
+        );
+      })}
     </div>
   </section>
 
   <section class="home-section home-courses" data-home-reveal aria-labelledby="courses-title">
-    <div class="section-heading reveal-item">
+    <header class="section-heading reveal-item">
       <div>
         <p class="section-index">02 / LEARNING NOTES</p>
         <h2 id="courses-title">正在学习</h2>
       </div>
       <a href="/learn">进入知识库 <span>→</span></a>
-    </div>
+    </header>
 
     <div class="course-grid">
       {courses.map((course, index) => (
@@ -93,20 +60,16 @@ const featuredHref = featuredEssay ? articleHref(featuredEssay) : undefined;
           href={courseHref(course.id)}
           style={`--reveal-order: ${index}`}
         >
-          <span class="course-no">{String(index + 1).padStart(2, "0")}</span>
-          <p class="course-term">{course.data.semester}</p>
+          <span class="course-meta">
+            <span class="kind-mark">课程</span>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <span>{course.data.semester} · {course.count} 篇笔记</span>
+          </span>
           <h3>{course.data.title}</h3>
-          <p class="course-count">{course.count} 篇笔记</p>
-          <i aria-hidden="true">↗</i>
         </a>
       ))}
     </div>
   </section>
-
-  <aside class="home-coda reveal-item" data-home-reveal aria-label="写作寄语">
-    <p>雨是悲欢离合，雨是一生过错</p>
-    <span>— 我请求: 雨</span>
-  </aside>
 </BaseLayout>
 
 <script>
