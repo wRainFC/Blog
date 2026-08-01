@@ -1,37 +1,12 @@
----
-import Wordmark from "./Wordmark.astro";
----
-
 <footer class="site-footer" data-pagefind-ignore>
-  <div class="footer-landscape" aria-hidden="true">
-    <i></i><i></i><i></i>
-  </div>
   <div class="footer-inner">
-    <div class="footer-topline">
-      <span>WRITING FROM CHU</span>
-      <i aria-hidden="true">✦</i>
-      <span>雨与星光之间</span>
-    </div>
-
-    <div class="footer-main">
-      <div class="footer-identity">
-        <p class="footer-brand">楚地之雨</p>
-        <p class="footer-description">记下所学，也记下成为自己的过程。</p>
-        <div class="footer-wordmark"><Wordmark size="footer" inverse /></div>
-      </div>
-      <nav class="footer-nav" aria-label="页脚导航">
-        <p class="footer-nav-label">EXPLORE</p>
-        <div class="footer-links">
-          <a href="/rss.xml"><span>01</span>RSS<i aria-hidden="true">↗</i></a>
-          <a href="/search"><span>02</span>搜索<i aria-hidden="true">↗</i></a>
-          <a href="/about"><span>03</span>关于本站<i aria-hidden="true">↗</i></a>
-        </div>
-      </nav>
-    </div>
-
-    <div class="footer-bottom">
-      <p class="copyright">© {new Date().getFullYear()} · 静观，笃学，常记。</p>
-      <p class="footer-note">NOTES IN RAIN AND STARLIGHT</p>
-    </div>
+    <p class="copyright">© {new Date().getFullYear()} 楚地之雨 · 静观，笃学，常记。</p>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="/learn">Learn</a>
+      <a href="/writing">Writing</a>
+      <a href="/about">About</a>
+      <a href="/search">Search</a>
+      <a href="/rss.xml">RSS</a>
+    </nav>
   </div>
 </footer>

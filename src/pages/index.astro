@@ -23,48 +23,55 @@ const featuredHref = featuredEssay ? articleHref(featuredEssay) : undefined;
   <InkHero />
 
   <section class="home-section home-editorial home-content-bridge" data-home-reveal aria-labelledby="featured-title">
-    <div class="section-heading reveal-item">
-      <div>
-        <p class="section-index">01 / SELECTED WRITING</p>
-        <h2 id="featured-title">最近</h2>
-      </div>
-      <a href="/writing">全部文章 <span>→</span></a>
-    </div>
-
-    <div class="editorial-grid reveal-item">
-      {featuredEssay && (
-        <a class="editorial-lead" href={featuredHref}>
-          <div class="editorial-lead-meta">
-            <span>FEATURED ESSAY</span>
-            <time datetime={featuredEssay.data.pubDate.toISOString()}>
-              {featuredEssay.data.pubDate.getFullYear()}
-            </time>
+    <div class="recent-shell">
+      <header class="recent-header reveal-item">
+        <div class="recent-heading">
+          <span class="recent-index" aria-hidden="true">01</span>
+          <div>
+            <p class="recent-kicker">SELECTED WRITING</p>
+            <h2 id="featured-title">最近写下</h2>
           </div>
-          <div class="editorial-lead-copy">
-            <p class="editorial-mark" aria-hidden="true">思</p>
-            <h3>{featuredEssay.data.title}</h3>
-            <p>{featuredEssay.data.summary}</p>
-          </div>
-          <span class="editorial-lead-link">阅读全文 <i aria-hidden="true">↗</i></span>
-        </a>
-      )}
+        </div>
+        <a class="recent-archive-link" href="/writing">全部文章 <span aria-hidden="true">↗</span></a>
+      </header>
 
-      <div class="editorial-latest" aria-label="近日更新">
-        <p class="editorial-latest-label">近日更新 · LATEST</p>
-        <div class="article-list">
-          {latest.map((entry) => {
-            const isNote = entry.collection === "notes";
-            return (
-              <ArticleCard
-                href={articleHref(entry)}
-                title={entry.data.title}
-                summary={entry.data.summary}
-                date={entry.data.pubDate}
-                kind={isNote ? "笔记" : "随笔"}
-                eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
-              />
-            );
-          })}
+      <div class="recent-layout">
+        {featuredEssay && (
+          <a class="recent-feature reveal-item" href={featuredHref}>
+            <div class="recent-feature-meta">
+              <span>FEATURED ESSAY</span>
+              <time datetime={featuredEssay.data.pubDate.toISOString()}>
+                {featuredEssay.data.pubDate.getFullYear()}
+              </time>
+            </div>
+            <div class="recent-feature-copy">
+              <h3>{featuredEssay.data.title}</h3>
+              <p>{featuredEssay.data.summary}</p>
+            </div>
+            <span class="recent-feature-link">阅读全文 <i aria-hidden="true">↗</i></span>
+          </a>
+        )}
+
+        <div class="recent-latest reveal-item" aria-label="近日更新">
+          <div class="recent-latest-heading">
+            <p>LATEST UPDATES</p>
+            <span>近期更新</span>
+          </div>
+          <div class="recent-table">
+            {latest.map((entry) => {
+              const isNote = entry.collection === "notes";
+              return (
+                <ArticleCard
+                  href={articleHref(entry)}
+                  title={entry.data.title}
+                  summary={entry.data.summary}
+                  date={entry.data.pubDate}
+                  kind={isNote ? "笔记" : "随笔"}
+                  eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

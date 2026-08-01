@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | HTML、SEO、主题初始化 | `src/layouts/BaseLayout.astro` | 设置 `<html data-theme>`、标题、描述、canonical、主题色，并挂载页眉、正文和页脚。 |
 | 顶部导航 | `src/components/shell/Header.astro` | 品牌、主导航、搜索入口、桌面 / 移动端主题切换按钮。 |
-| 页脚 | `src/components/shell/Footer.astro` | 品牌收束、RSS / 搜索 / 关于导航、版权信息和昼夜山形背景。 |
+| 页脚 | `src/components/shell/Footer.astro` | 深墨色单行落款与右侧英文导航。 |
 | 品牌字标 | `src/components/shell/Wordmark.astro` | 复用 `wRain From Chu` 字标，支持首页、页脚等尺寸和反色状态。 |
 | 全局基础样式 | `src/styles/global.css` | 页面背景、导航、卡片、归档布局、页脚、响应式规则和焦点状态。 |
 | 设计变量 | `src/styles/tokens.css` | 纸张、墨色、文字、边框、朱砂 / 月光蓝等主题变量。 |
