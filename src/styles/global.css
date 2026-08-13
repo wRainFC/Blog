@@ -192,6 +192,32 @@ html[data-theme="dark"] .theme-control-sun { opacity: 0; transform: scale(.76) r
 .read-more i { margin-left: 6px; font-style: normal; transition: transform .2s; }
 .article-card a:hover .read-more i { display: inline-block; transform: translateX(4px); }
 
+/* Progressive scroll reveals; content stays visible without JS. */
+html.reveal-motion [data-reveal] .reveal-item,
+html.reveal-motion [data-reveal].reveal-item {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(0, 46px, 0) scale(.985);
+  clip-path: inset(0 0 100% 0);
+  transition:
+    opacity var(--dur-base) var(--ease-out-expo),
+    filter var(--dur-slow) ease,
+    transform var(--dur-slow) var(--ease-out-quint),
+    clip-path var(--dur-slow) var(--ease-out-quint);
+}
+
+html.reveal-motion [data-reveal].is-visible .reveal-item,
+html.reveal-motion [data-reveal].is-visible.reveal-item {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+  clip-path: inset(0 0 0 0);
+}
+
+html.reveal-motion [data-reveal].is-visible .reveal-item {
+  transition-delay: calc(var(--reveal-order, 0) * 70ms);
+}
+
 .page-hero {
   width: min(calc(100% - 48px), var(--content));
   margin: 0 auto;
@@ -446,4 +472,6 @@ html[data-theme="dark"] body.document-theme {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  html.reveal-motion [data-reveal] .reveal-item,
+  html.reveal-motion [data-reveal].reveal-item { opacity: 1; filter: none; transform: none; clip-path: none; }
 }

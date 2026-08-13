@@ -17,6 +17,12 @@
   --reading: 720px;
   --header-height: 84px;
   --content-sticky-offset: 118px;
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+  --ease-out-quint: cubic-bezier(.22, 1, .36, 1);
+  --dur-fast: .25s;
+  --dur-base: .6s;
+  --dur-slow: .9s;
+  --dur-scene: 1.15s;
 }
 
 html[data-theme="dark"] body:is(.document-theme, .has-overlay-header) {

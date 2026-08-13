@@ -12,14 +12,15 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "check": "astro check",
-    "test:studio": "vitest run tools/content-studio"
+    "test:studio": "vitest run tools/content-studio",
+    "test:unit": "vitest run src/lib/content"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "7.2.1",
-    "@astrojs/mdx": "7.0.2",
+    "@astrojs/markdown-remark": "7.2.2",
+    "@astrojs/mdx": "7.0.5",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.3",
-    "astro": "7.0.7",
+    "astro": "7.2.1",
     "astro-expressive-code": "0.44.0",
     "katex": "0.17.0",
     "rehype-callouts": "2.2.0",
@@ -27,7 +28,7 @@
     "remark-math": "6.0.0"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.9",
+    "@astrojs/check": "0.9.10",
     "pagefind": "1.5.2",
     "sharp": "0.34.5",
     "typescript": "5.9.3",

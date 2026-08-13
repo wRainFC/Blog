@@ -7,16 +7,18 @@ interface Props {
   kind: "笔记" | "随笔";
   eyebrow?: string;
   featured?: boolean;
+  class?: string;
+  style?: string;
 }
 
-const { href, title, summary, date, kind, eyebrow, featured = false } = Astro.props;
+const { href, title, summary, date, kind, eyebrow, featured = false, class: className, style } = Astro.props;
 const formatted = new Intl.DateTimeFormat("zh-CN", {
   month: "2-digit",
   day: "2-digit",
 }).format(date);
 ---
 
-<article class:list={["article-card", { featured }]}>
+<article class:list={["article-card", { featured }, className]} style={style}>
   <a href={href}>
     <div class="card-topline">
       <span class="kind-mark">{kind}</span>

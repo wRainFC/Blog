@@ -13,9 +13,9 @@ const essays = await getPublishedEssays();
     <h1>我们经历过的每一个日常，<br />就是接连不断发生的奇迹。</h1>
     <p>随便写点什么</p>
   </section>
-  <section class="essay-archive" data-pagefind-body>
+  <section class="essay-archive" data-pagefind-body data-reveal>
     {essays.map((essay, index) => (
-      <div class="essay-row">
+      <div class="essay-row reveal-item" style={`--reveal-order: ${index}`}>
         <span class="essay-index">{String(index + 1).padStart(2, "0")}</span>
         <ArticleCard
           href={articleHref(essay)}
@@ -29,3 +29,9 @@ const essays = await getPublishedEssays();
     ))}
   </section>
 </BaseLayout>
+
+<script>
+  import { setupScrollReveal } from "../../scripts/reveal";
+
+  setupScrollReveal();
+</script>

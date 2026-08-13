@@ -1,11 +1,15 @@
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 const storageKey = "wrain-theme";
+const THEME_EVENT = "wrain:theme-change";
 
-const getTheme = (): Theme =>
+export const themeColor = (theme: Theme): string =>
+  theme === "dark" ? "#09111b" : "#faf9f5";
+
+export const readTheme = (): Theme =>
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 
-const hasSavedTheme = () => {
+export const hasSavedTheme = (): boolean => {
   try {
     const value = localStorage.getItem(storageKey);
     return value === "light" || value === "dark";
@@ -13,6 +17,15 @@ const hasSavedTheme = () => {
     return false;
   }
 };
+
+export function applyTheme(theme: Theme, persist = true): void {
+  document.documentElement.dataset.theme = theme;
+  document.querySelector<HTMLMetaElement>("meta[data-theme-color]")?.setAttribute("content", themeColor(theme));
+  if (persist) {
+    try { localStorage.setItem(storageKey, theme); } catch {}
+  }
+  window.dispatchEvent(new CustomEvent(THEME_EVENT, { detail: { theme } }));
+}
 
 const updateControls = (theme: Theme) => {
   const dark = theme === "dark";
@@ -26,32 +39,19 @@ const updateControls = (theme: Theme) => {
   });
 };
 
-const setTheme = (theme: Theme, persist = true) => {
-  document.documentElement.dataset.theme = theme;
-  document.querySelector<HTMLMetaElement>("meta[data-theme-color]")?.setAttribute(
-    "content",
-    theme === "dark" ? "#09111b" : "#faf9f5",
-  );
-  if (persist) {
-    try { localStorage.setItem(storageKey, theme); } catch {}
-  }
-  updateControls(theme);
-  window.dispatchEvent(new CustomEvent("wrain:theme-change", { detail: { theme } }));
-};
-
 export function setupThemeControls() {
   const controls = [...document.querySelectorAll<HTMLButtonElement>("[data-theme-control]")]
     .filter((control) => !control.closest("[data-ink-hero]"));
   const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
   const hasHero = Boolean(document.querySelector("[data-ink-hero]"));
 
-  updateControls(getTheme());
+  updateControls(readTheme());
   controls.forEach((control) => {
-    control.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
+    control.addEventListener("click", () => applyTheme(readTheme() === "dark" ? "light" : "dark"));
   });
 
   const onSystemThemeChange = (event: MediaQueryListEvent) => {
-    if (!hasSavedTheme()) setTheme(event.matches ? "dark" : "light", false);
+    if (!hasSavedTheme()) applyTheme(event.matches ? "dark" : "light", false);
   };
 
   const onExternalThemeChange = (event: Event) => {
@@ -59,13 +59,13 @@ export function setupThemeControls() {
     if (theme === "light" || theme === "dark") updateControls(theme);
   };
 
-  window.addEventListener("wrain:theme-change", onExternalThemeChange);
+  window.addEventListener(THEME_EVENT, onExternalThemeChange);
 
   if (!hasHero) themeQuery.addEventListener("change", onSystemThemeChange);
 
   const cleanup = () => {
     themeQuery.removeEventListener("change", onSystemThemeChange);
-    window.removeEventListener("wrain:theme-change", onExternalThemeChange);
+    window.removeEventListener(THEME_EVENT, onExternalThemeChange);
     controls.forEach((control) => {
       control.replaceWith(control.cloneNode(true));
     });

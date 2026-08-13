@@ -19,8 +19,8 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
     <p>课程笔记</p>
   </section>
 
-  <section class="archive-shell" data-pagefind-body>
-    <aside class="filter-panel" data-pagefind-ignore>
+  <section class="archive-shell" data-pagefind-body data-reveal>
+    <aside class="filter-panel reveal-item" data-pagefind-ignore>
       <div>
         <p>课程</p>
         {courses.map((course) => <a href={courseHref(course.id)}>{course.data.title}</a>)}
@@ -31,9 +31,9 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
       </div>
     </aside>
     <div class="archive-content">
-      <div class="archive-summary"><span>共 {notes.length} 篇</span><i></i><span>{courses.length} 门课程</span></div>
+      <div class="archive-summary reveal-item"><span>共 {notes.length} 篇</span><i></i><span>{courses.length} 门课程</span></div>
       <div class="article-list">
-        {notes.map((note) => (
+        {notes.map((note, index) => (
           <ArticleCard
             href={articleHref(note)}
             title={note.data.title}
@@ -41,9 +41,17 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
             date={note.data.pubDate}
             kind="笔记"
             eyebrow={`${courseNames.get(note.data.course.id)} · ${note.data.chapter}`}
+            class="reveal-item"
+            style={`--reveal-order: ${index}`}
           />
         ))}
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  import { setupScrollReveal } from "../../scripts/reveal";
+
+  setupScrollReveal();
+</script>

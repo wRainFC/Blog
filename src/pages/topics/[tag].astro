@@ -26,10 +26,10 @@ const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.
     <h1>#{tag}</h1>
     <p>从同一个词出发，看看它连接了哪些知识与想法。</p>
   </section>
-  <section class="single-archive" data-pagefind-body>
-    <div class="archive-summary"><span>{entries.length} 篇内容</span></div>
+  <section class="single-archive" data-pagefind-body data-reveal>
+    <div class="archive-summary reveal-item"><span>{entries.length} 篇内容</span></div>
     <div class="article-list">
-      {entries.map((entry) => {
+      {entries.map((entry, index) => {
         const isNote = entry.collection === "notes";
         return (
           <ArticleCard
@@ -39,9 +39,17 @@ const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.
             date={entry.data.pubDate}
             kind={isNote ? "笔记" : "随笔"}
             eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
+            class="reveal-item"
+            style={`--reveal-order: ${index}`}
           />
         );
       })}
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  import { setupScrollReveal } from "../../scripts/reveal";
+
+  setupScrollReveal();
+</script>

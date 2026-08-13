@@ -1,5 +1,8 @@
 ---
 import Wordmark from "../shell/Wordmark.astro";
+
+const heroTitle = "楚地之雨";
+const heroTitleChars = Array.from(heroTitle);
 ---
 
 <section class="ink-hero" data-ink-hero aria-labelledby="home-title">
@@ -56,7 +59,7 @@ import Wordmark from "../shell/Wordmark.astro";
             <stop offset="0.54" stop-color="#10233a" stop-opacity="0.86" />
             <stop offset="1" stop-color="#09111b" />
           </linearGradient>
-          <g id="mountain-geometry">
+          <g id="mountain-far">
             <path
               class="mountain-range mountain-range-far"
               d="M0 612C86 572 139 545 211 551c64 5 105 39 169 20 83-25 130-130 229-128 63 1 100 52 153 47 85-8 117-179 221-192 91-11 142 116 213 126 73 10 111-75 187-66 63 7 95 75 137 104 30 20 54 23 80 22v234H0Z"
@@ -65,6 +68,8 @@ import Wordmark from "../shell/Wordmark.astro";
               class="mountain-detail mountain-detail-far"
               d="M422 560c64-44 112-117 181-117 60 0 95 47 146 47m64-30c57-31 94-148 171-162 78-13 133 95 201 124m53 4c54-34 84-75 141-68 59 7 88 65 128 96"
             />
+          </g>
+          <g id="mountain-mid">
             <path
               class="mountain-range mountain-range-mid"
               d="M0 692c111-9 180-65 274-64 79 1 119 42 183 37 85-7 128-103 214-100 83 3 114 99 188 92 99-9 126-206 251-216 106-9 158 127 248 145 80 16 143-34 242-47v228H0Z"
@@ -73,6 +78,8 @@ import Wordmark from "../shell/Wordmark.astro";
               class="mountain-detail mountain-detail-mid"
               d="M485 655c66-21 105-91 180-90 79 1 112 94 184 92m78-51c66-51 96-155 181-165 96-11 151 119 238 143"
             />
+          </g>
+          <g id="mountain-near">
             <path
               class="mountain-range mountain-range-near"
               d="M0 771c151-15 236-82 353-72 88 7 127 69 211 67 106-3 150-134 261-138 116-4 156 118 260 113 90-4 135-102 225-106 100-5 163 86 290 86v179H0Z"
@@ -87,9 +94,11 @@ import Wordmark from "../shell/Wordmark.astro";
         <g class="hero-day-scene">
           <rect width="1600" height="900" fill="url(#day-sky)" />
           <g class="hero-mountains hero-mountains-day">
-            <use href="#mountain-geometry" />
+            <g class="mountains-far-wrap"><use class="mountains-far" href="#mountain-far" /></g>
+            <g class="mountains-mid-wrap"><use class="mountains-mid" href="#mountain-mid" /></g>
+            <g class="mountains-near-wrap"><use class="mountains-near" href="#mountain-near" /></g>
           </g>
-          <rect y="714" width="1600" height="186" fill="url(#day-water)" />
+          <rect class="hero-water" y="714" width="1600" height="186" fill="url(#day-water)" />
           <path class="hero-shoreline" d="M0 716c260-5 438 6 670 0 238-6 453 4 930-3" />
           <g class="hero-svg-mist hero-svg-mist-day">
             <path d="M-80 654c204-66 358-30 523-4 202 32 347-55 544-35 180 18 340 70 693 2v100H-80Z" />
@@ -111,9 +120,11 @@ import Wordmark from "../shell/Wordmark.astro";
             <circle cx="1182" cy="61" r="0.55" /><circle cx="1511" cy="333" r="0.82" />
           </g>
           <g class="hero-mountains hero-mountains-night">
-            <use href="#mountain-geometry" />
+            <g class="mountains-far-wrap"><use class="mountains-far" href="#mountain-far" /></g>
+            <g class="mountains-mid-wrap"><use class="mountains-mid" href="#mountain-mid" /></g>
+            <g class="mountains-near-wrap"><use class="mountains-near" href="#mountain-near" /></g>
           </g>
-          <rect y="714" width="1600" height="186" fill="url(#night-water)" />
+          <rect class="hero-water" y="714" width="1600" height="186" fill="url(#night-water)" />
           <path class="hero-shoreline hero-shoreline-night" d="M0 716c260-5 438 6 670 0 238-6 453 4 930-3" />
           <g class="hero-svg-mist hero-svg-mist-night">
             <path d="M-80 654c204-66 358-30 523-4 202 32 347-55 544-35 180 18 340 70 693 2v100H-80Z" />
@@ -137,7 +148,13 @@ import Wordmark from "../shell/Wordmark.astro";
     <div class="hero-shell">
       <div class="hero-copy">
         <div class="hero-wordmark hero-enter-item"><Wordmark size="hero" /></div>
-        <h1 class="hero-enter-item" id="home-title">楚地之雨</h1>
+        <h1 class="hero-title" id="home-title" aria-label={heroTitle}>
+          <span class="hero-title-line" aria-hidden="true">
+            {heroTitleChars.map((char, index) => (
+              <span class="hero-title-char" style={`--char-index: ${index}`}>{char}</span>
+            ))}
+          </span>
+        </h1>
         <p class="hero-intro hero-enter-item">
           我是雨，描摹着这地球的<br />
           微不足道无踪无迹的一滴雨
