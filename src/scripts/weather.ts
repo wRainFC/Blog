@@ -228,8 +228,8 @@ export class WeatherEngine {
   }
 
   private layerCount(layer: RainLayer) {
-    if (this.isMobile()) return layer === "far" ? 15 : layer === "mid" ? 6 : 3;
-    return layer === "far" ? 36 : layer === "mid" ? 16 : 6;
+    if (this.isMobile()) return layer === "far" ? 12 : layer === "mid" ? 4 : 2;
+    return layer === "far" ? 28 : layer === "mid" ? 12 : 4;
   }
 
   private chooseImpactX(layer: RainLayer) {
@@ -252,20 +252,20 @@ export class WeatherEngine {
       : this.waterlineY + randomBetween(-2, 2);
 
     if (drop.layer === "far") {
-      drop.length = randomBetween(22, 42);
-      drop.width = randomBetween(.55, .9);
+      drop.length = randomBetween(18, 34);
+      drop.width = randomBetween(.5, .8);
       drop.speed = randomBetween(600, 820);
-      drop.opacity = randomBetween(.1, .18);
+      drop.opacity = randomBetween(.08, .15);
     } else if (drop.layer === "mid") {
-      drop.length = randomBetween(44, 78);
-      drop.width = randomBetween(.85, 1.25);
+      drop.length = randomBetween(36, 64);
+      drop.width = randomBetween(.8, 1.1);
       drop.speed = randomBetween(820, 1120);
-      drop.opacity = randomBetween(.18, .3);
+      drop.opacity = randomBetween(.16, .26);
     } else {
-      drop.length = randomBetween(78, 126);
-      drop.width = randomBetween(1.2, 1.75);
+      drop.length = randomBetween(64, 104);
+      drop.width = randomBetween(1.1, 1.5);
       drop.speed = randomBetween(1100, 1460);
-      drop.opacity = randomBetween(.3, .48);
+      drop.opacity = randomBetween(.26, .4);
     }
 
     drop.y = -drop.length - randomBetween(8, Math.max(30, this.height * .18));
@@ -364,7 +364,7 @@ export class WeatherEngine {
 
   private spawnSplash(drop: Drop) {
     if (drop.layer === "far") return;
-    const count = drop.layer === "near" ? 5 : 3;
+    const count = drop.layer === "near" ? 3 : 2;
     for (let index = 0; index < count; index += 1) {
       const splash = this.splashes.find((candidate) => !candidate.active);
       if (!splash) break;
@@ -402,9 +402,9 @@ export class WeatherEngine {
 
   private drawRainDrops() {
     const styles: Record<RainLayer, { core: string; coreWidth: number; soft: string; softWidth: number; head: string; headWidth: number }> = {
-      far: { core: "rgba(27, 29, 27, .14)", coreWidth: .72, soft: "rgba(34, 36, 33, .035)", softWidth: 1.8, head: "rgba(45, 48, 44, 0)", headWidth: 0 },
-      mid: { core: "rgba(27, 29, 27, .28)", coreWidth: 1.05, soft: "rgba(34, 36, 33, .07)", softWidth: 2.7, head: "rgba(47, 50, 46, .6)", headWidth: 1.15 },
-      near: { core: "rgba(27, 29, 27, .46)", coreWidth: 1.5, soft: "rgba(34, 36, 33, .11)", softWidth: 3.8, head: "rgba(47, 50, 46, .82)", headWidth: 1.7 },
+      far: { core: "rgba(27, 29, 27, .12)", coreWidth: .65, soft: "rgba(34, 36, 33, .03)", softWidth: 1.6, head: "rgba(45, 48, 44, 0)", headWidth: 0 },
+      mid: { core: "rgba(27, 29, 27, .24)", coreWidth: .95, soft: "rgba(34, 36, 33, .06)", softWidth: 2.4, head: "rgba(47, 50, 46, .52)", headWidth: 1.05 },
+      near: { core: "rgba(27, 29, 27, .4)", coreWidth: 1.35, soft: "rgba(34, 36, 33, .095)", softWidth: 3.4, head: "rgba(47, 50, 46, .72)", headWidth: 1.5 },
     };
 
     this.context.lineCap = "round";

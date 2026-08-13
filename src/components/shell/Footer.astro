@@ -1,12 +1,26 @@
+---
+import Wordmark from "./Wordmark.astro";
+import { navigation } from "../../config/site";
+
+const year = new Date().getFullYear();
+const links = [
+  ...navigation,
+  { href: "/search", label: "搜索" },
+  { href: "/rss.xml", label: "RSS 订阅" },
+];
+---
+
 <footer class="site-footer" data-pagefind-ignore>
   <div class="footer-inner">
-    <p class="copyright">© {new Date().getFullYear()} 楚地之雨 · 静观，笃学，常记。</p>
-    <nav class="footer-links" aria-label="页脚导航">
-      <a href="/learn">Learn</a>
-      <a href="/writing">Writing</a>
-      <a href="/about">About</a>
-      <a href="/search">Search</a>
-      <a href="/rss.xml">RSS</a>
-    </nav>
+    <div class="footer-row footer-top">
+      <span class="footer-brand"><Wordmark size="footer" inverse /></span>
+      <nav class="footer-nav" aria-label="页脚导航">
+        {links.map((link) => <a href={link.href}>{link.label}</a>)}
+      </nav>
+    </div>
+    <div class="footer-row footer-bottom">
+      <p class="footer-copyright">© {year} wRainFC</p>
+      <p class="footer-epigraph">描摹这地球的微不足道无踪无迹的一滴雨。</p>
+    </div>
   </div>
 </footer>

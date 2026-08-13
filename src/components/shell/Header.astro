@@ -13,10 +13,8 @@ const links = navigation;
 
 <header class:list={["site-header", { "is-overlay": variant === "overlay" }]} data-pagefind-ignore>
   <div class="header-inner">
-    <a class="brand" href="/" aria-label="楚地之雨首页">
-      <span class="brand-seal" aria-hidden="true">楚</span>
-      <span class="brand-name">楚地之雨</span>
-      <span class="brand-wordmark"><Wordmark /></span>
+    <a class="brand" href="/" aria-label="wRainFC 首页">
+      <Wordmark />
     </a>
 
     <nav class="desktop-nav" aria-label="主导航">
@@ -28,16 +26,22 @@ const links = navigation;
           {link.label}
         </a>
       ))}
-      <a class="search-link" href="/search" aria-label="搜索文章">
-        <span aria-hidden="true">⌕</span> 搜索
-      </a>
-      <button class="theme-control" type="button" data-theme-control aria-pressed="false" aria-label="切换至深色主题" title="切换至深色主题">
-        <svg class="theme-control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <g class="theme-control-sun"><circle cx="12" cy="12" r="3.4" /><path d="M12 2.5v2.3m0 14.4v2.3M2.5 12h2.3m14.4 0h2.3M5.3 5.3 7 7m10 10 1.7 1.7m0-13.4L17 7M7 17l-1.7 1.7" /></g>
-          <path class="theme-control-moon" d="M17.2 18.1A8.3 8.3 0 0 1 9.1 4.2a8.4 8.4 0 1 0 8.1 13.9Z" />
-        </svg>
-        <span data-theme-control-label>切换至深色主题</span>
-      </button>
+      <span class="nav-actions">
+        <a class="search-link" href="/search" aria-label="搜索文章">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="M15.4 15.4 20 20" />
+          </svg>
+          <span>搜索</span>
+        </a>
+        <button class="theme-control" type="button" data-theme-control aria-pressed="false" aria-label="切换至深色主题" title="切换至深色主题">
+          <svg class="theme-control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <g class="theme-control-sun"><circle cx="12" cy="12" r="3.4" /><path d="M12 2.5v2.3m0 14.4v2.3M2.5 12h2.3m14.4 0h2.3M5.3 5.3 7 7m10 10 1.7 1.7m0-13.4L17 7M7 17l-1.7 1.7" /></g>
+            <path class="theme-control-moon" d="M17.2 18.1A8.3 8.3 0 0 1 9.1 4.2a8.4 8.4 0 1 0 8.1 13.9Z" />
+          </svg>
+          <span data-theme-control-label>切换至深色主题</span>
+        </button>
+      </span>
     </nav>
 
     <details class="mobile-menu">
