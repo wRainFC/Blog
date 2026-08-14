@@ -283,7 +283,17 @@ html.reveal-motion [data-reveal].is-visible .reveal-item {
 .course-stamp i { width: 1px; height: 12px; background: var(--line); }
 .article-grid { display: grid; grid-template-columns: minmax(0, var(--reading)) 200px; gap: 100px; align-items: start; padding: 68px 0 130px; }
 .article-body { min-width: 0; }
-.article-toc { position: sticky; top: var(--content-sticky-offset); padding-left: 22px; border-left: 1px solid var(--line); }
+.article-toc {
+  position: sticky;
+  top: var(--content-sticky-offset);
+  max-height: calc(100vh - var(--content-sticky-offset) - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  padding-left: 22px;
+  border-left: 1px solid var(--line);
+}
 .article-toc > p { margin: 0 0 18px; font-family: var(--serif); font-size: 15px; }
 .article-toc nav { display: flex; flex-direction: column; gap: 10px; }
 .article-toc a { color: var(--ink-faint); font-size: 11px; line-height: 1.5; transition: color .2s; }
