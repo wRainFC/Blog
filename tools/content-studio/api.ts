@@ -6,6 +6,7 @@ import type { AstroMarkdownOptions } from "@astrojs/markdown-remark";
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 import { CheckRunner } from "./check-runner";
 import { ContentStore } from "./content-store";
+import { DeployRunner } from "./deploy-runner";
 import {
   parseDraft,
   parseReference,
@@ -35,6 +36,7 @@ const responseMime: Record<string, string> = {
 export function createStudioMiddleware(options: MiddlewareOptions) {
   const store = new ContentStore(options.workspaceRoot);
   const checks = new CheckRunner(options.workspaceRoot);
+  const deploys = new DeployRunner(options.workspaceRoot);
   let processorPromise: ReturnType<typeof createMarkdownProcessor> | undefined;
 
   const renderMarkdown = async (body: string) => {
@@ -96,8 +98,37 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
         } catch (error) {
           refreshWarning = error instanceof Error ? error.message : String(error);
         }
-        const checkJob = checks.start();
+        const checkJob = payload.runCheck === false ? undefined : checks.start();
         return json(response, 200, { ...saved, checkJob, refreshWarning });
+      }
+
+      if (action === "deploy" && request.method === "POST") {
+        const payload = await readJson(request, 32 * 1024);
+        if (!isRecord(payload)) throw new StudioError("发布请求格式不正确。");
+        const ref = parseReference(payload.ref);
+        const expectedRevision = typeof payload.expectedRevision === "string"
+          ? payload.expectedRevision
+          : undefined;
+        if (!expectedRevision) throw new StudioError("发布请求缺少 revision。", 400);
+        const entry = await store.getEntry(ref);
+        if (entry.revision !== expectedRevision) {
+          throw new StudioError("文件已在工作台之外发生变化，请重新加载后发布。", 409);
+        }
+        if (entry.draft.kind !== "course" && entry.draft.draft) {
+          throw new StudioError("草稿不能发布，请先切换为公开状态。", 422);
+        }
+        return json(response, 202, deploys.start({
+          ref,
+          repoPath: entry.repoPath,
+          sitePath: entry.sitePath,
+          title: entry.draft.title,
+        }));
+      }
+
+      if (action === "deploy" && request.method === "GET") {
+        const job = deploys.get(url.searchParams.get("id") ?? undefined);
+        if (!job) throw new StudioError("没有找到发布任务。", 404);
+        return json(response, 200, job);
       }
 
       if (action === "preview" && request.method === "POST") {

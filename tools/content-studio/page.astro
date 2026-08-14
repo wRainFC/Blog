@@ -13,216 +13,160 @@ const token = process.env.CONTENT_STUDIO_TOKEN ?? "";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>内容工作台 · 砚边</title>
+    <title>写作 · 砚边</title>
   </head>
   <body class="studio-body document-theme">
     <div class="studio-shell">
       <header class="studio-header">
         <div class="studio-brand">
           <span class="studio-seal" aria-hidden="true">砚</span>
-          <div>
-            <strong>砚边</strong>
-            <span>内容工作台</span>
-          </div>
+          <div><strong>砚边写作</strong><span>Markdown → 网站</span></div>
         </div>
         <div class="studio-header-status" aria-live="polite">
           <span id="dirty-status" class="status-pill is-clean">已保存</span>
-          <button id="check-status" class="status-button" type="button">尚未校验</button>
+          <button id="activity-status" class="status-button" type="button">准备就绪</button>
         </div>
         <div class="studio-header-actions">
-          <button id="run-check" class="button button-quiet" type="button">运行检查</button>
-          <button id="theme-toggle" class="icon-button" type="button" title="切换主题" aria-label="切换主题">◐</button>
-          <button id="save-entry" class="button button-primary" type="button" disabled>保存</button>
+          <button id="save-entry" class="button button-quiet" type="button" disabled>保存草稿</button>
+          <button id="publish-entry" class="button button-primary" type="button" disabled>发布到网站</button>
         </div>
       </header>
 
-      <div class="mobile-tabs" role="tablist" aria-label="工作区视图">
-        <button class="is-active" data-mobile-pane="editor" type="button">编辑</button>
-        <button data-mobile-pane="preview" type="button">预览</button>
-      </div>
-
-      <div class="studio-workspace" data-mobile-view="editor">
-        <aside class="content-sidebar" aria-label="内容导航">
+      <div class="studio-workspace">
+        <aside class="content-sidebar" aria-label="文章列表">
           <div class="sidebar-create">
-            <button type="button" data-create="note"><span>＋</span> 笔记</button>
-            <button type="button" data-create="essay"><span>＋</span> 随笔</button>
-            <button type="button" data-create="course"><span>＋</span> 课程</button>
+            <button class="create-primary" type="button" data-create="note"><span>＋</span> 写课程笔记</button>
+            <button type="button" data-create="essay">写随笔</button>
           </div>
           <label class="search-field">
-            <span class="sr-only">搜索内容</span>
-            <input id="catalog-search" type="search" placeholder="搜索标题、标签或 ID" autocomplete="off" />
+            <span class="sr-only">搜索文章</span>
+            <input id="catalog-search" type="search" placeholder="搜索文章…" autocomplete="off" />
           </label>
-          <div class="catalog-filters" aria-label="发布状态筛选">
-            <button type="button" class="is-active" data-filter="all">全部</button>
-            <button type="button" data-filter="draft">草稿</button>
-            <button type="button" data-filter="published">已发布</button>
-          </div>
           <nav id="catalog-list" class="catalog-list" aria-live="polite">
-            <p class="sidebar-message">正在读取内容…</p>
+            <p class="sidebar-message">正在读取文章…</p>
           </nav>
+          <button class="course-manage" type="button" data-create="course">＋ 添加课程</button>
         </aside>
 
-        <main class="editor-pane">
+        <main class="composer-pane">
           <section id="welcome-panel" class="welcome-panel">
-            <p class="eyebrow">LOCAL CONTENT STUDIO</p>
-            <h1>从一页清晰的表单开始写作。</h1>
-            <p>选择左侧已有内容，或创建一篇新的课程笔记、随笔与课程。所有内容都会直接保存到当前仓库。</p>
+            <p class="eyebrow">WRITE · CHECK · PUBLISH</p>
+            <h1>写完 Markdown，<br />补几项信息就发布。</h1>
+            <p>标题、课程和正文放在最前面；摘要、日期、URL 等信息会自动生成，也可以在发布设置里调整。</p>
+            <button class="button button-primary welcome-action" type="button" data-create="note">开始写笔记</button>
             <div id="welcome-stats" class="welcome-stats"></div>
           </section>
 
           <section id="entry-editor" class="entry-editor" hidden>
-            <div class="entry-heading">
+            <div class="entry-topline">
               <div>
-                <div class="entry-kicker">
-                  <span id="entry-kind-label">课程笔记</span>
-                  <span id="readonly-badge" class="readonly-badge" hidden>MDX 只读</span>
-                </div>
-                <h1 id="entry-heading-title">未命名内容</h1>
-                <p id="entry-path" class="entry-path">尚未保存</p>
-                <a id="entry-site-path" class="entry-site-path" href="#" hidden></a>
+                <span id="entry-kind-label" class="entry-kind">课程笔记</span>
+                <span id="readonly-badge" class="readonly-badge" hidden>MDX 只读</span>
+              </div>
+              <div class="entry-location">
+                <span id="entry-path">尚未保存</span>
+                <a id="entry-site-path" href="#" hidden></a>
               </div>
             </div>
 
             <div id="readonly-notice" class="notice" hidden>
-              这是 MDX 文件。v1 会保留并展示内容，但请使用代码编辑器修改含组件的正文。
-            </div>
-            <div id="slug-notice" class="notice notice-soft" hidden>
-              当前文章 ID 含有非英文字符，可以正常使用；若希望 URL 长期稳定，建议改为英文 kebab-case。
+              这是 MDX 文件，请使用代码编辑器修改含组件的正文。
             </div>
 
-            <form id="metadata-form" class="metadata-form" novalidate>
-              <div class="field field-id">
-                <label for="field-id">内容 ID <span>文件名与 URL</span></label>
-                <input id="field-id" name="id" required autocomplete="off" />
-              </div>
-              <div class="field field-title">
-                <label for="field-title">标题</label>
-                <input id="field-title" name="title" required autocomplete="off" />
+            <form id="metadata-form" novalidate>
+              <label class="title-field" for="field-title">
+                <span class="sr-only">标题</span>
+                <input id="field-title" name="title" required autocomplete="off" placeholder="文章标题" />
+              </label>
+
+              <div id="course-fields" class="course-fields" hidden>
+                <div class="field-grid">
+                  <label class="field"><span>课程 ID</span><input id="field-id" name="id" required autocomplete="off" /></label>
+                  <label class="field"><span>学期</span><input id="field-semester" name="semester" placeholder="大二 · 秋" /></label>
+                  <label class="field"><span>排序</span><input id="field-order" name="order" type="number" step="1" value="0" /></label>
+                </div>
+                <label class="field"><span>课程简介</span><textarea id="field-description" name="description" rows="4"></textarea></label>
               </div>
 
-              <div id="course-fields" class="field-grid field-group" hidden>
-                <div class="field">
-                  <label for="field-semester">学期</label>
-                  <input id="field-semester" name="semester" placeholder="大二 · 秋" />
-                </div>
-                <div class="field">
-                  <label for="field-order">排序</label>
-                  <input id="field-order" name="order" type="number" step="1" value="0" />
-                </div>
-                <div class="field field-wide">
-                  <label for="field-description">课程简介</label>
-                  <textarea id="field-description" name="description" rows="3"></textarea>
-                </div>
-              </div>
-
-              <div id="article-fields" class="field-group" hidden>
-                <div class="field">
-                  <label for="field-summary">摘要 <span>列表、SEO 与 RSS 使用</span></label>
-                  <textarea id="field-summary" name="summary" rows="3"></textarea>
-                </div>
-                <div class="field-grid field-grid-three">
-                  <div class="field">
-                    <label for="field-pub-date">发布日期</label>
-                    <input id="field-pub-date" name="pubDate" type="date" />
-                  </div>
-                  <div class="field">
-                    <label for="field-updated">更新时间 <span>可选</span></label>
-                    <input id="field-updated" name="updated" type="date" />
-                  </div>
-                  <div id="course-select-field" class="field">
-                    <label for="field-course">课程</label>
+              <div id="article-fields" class="article-fields" hidden>
+                <div id="note-context" class="note-context">
+                  <label id="course-select-field" class="field compact-field">
+                    <span>所属课程</span>
                     <select id="field-course" name="course"></select>
-                  </div>
-                </div>
-                <div id="chapter-field" class="field">
-                  <label for="field-chapter">章节</label>
-                  <input id="field-chapter" name="chapter" placeholder="第五章 · 树" />
-                </div>
-                <div class="field">
-                  <label for="field-tags">标签 <span>用逗号或回车分隔</span></label>
-                  <div class="tag-editor">
-                    <div id="tag-chips" class="tag-chips"></div>
-                    <input id="field-tags" name="tags" list="tag-suggestions" autocomplete="off" placeholder="输入标签后按回车" />
-                    <datalist id="tag-suggestions"></datalist>
-                  </div>
-                </div>
-                <div class="toggle-row">
-                  <label class="switch-field">
-                    <input id="field-draft" name="draft" type="checkbox" />
-                    <span>保存为草稿</span>
                   </label>
-                  <label id="featured-field" class="switch-field" hidden>
-                    <input id="field-featured" name="featured" type="checkbox" />
-                    <span>首页精选</span>
+                  <label id="chapter-field" class="field compact-field">
+                    <span>章节</span>
+                    <input id="field-chapter" name="chapter" placeholder="未分类" />
                   </label>
                 </div>
+
+                <section id="markdown-section" class="markdown-section">
+                  <div class="composer-toolbar">
+                    <div class="pane-tabs" role="tablist" aria-label="正文视图">
+                      <button class="is-active" type="button" data-composer-pane="write">Markdown</button>
+                      <button type="button" data-composer-pane="preview">预览</button>
+                    </div>
+                    <div class="markdown-toolbar" role="toolbar" aria-label="Markdown 工具">
+                      <button type="button" data-markdown="heading" title="二级标题">H2</button>
+                      <button type="button" data-markdown="bold" title="粗体"><strong>B</strong></button>
+                      <button type="button" data-markdown="link" title="链接">↗</button>
+                      <button type="button" data-markdown="quote" title="引用">❞</button>
+                      <button type="button" data-markdown="code" title="代码块">&lt;/&gt;</button>
+                      <button type="button" data-markdown="math" title="数学公式">∑</button>
+                      <button id="image-button" type="button" data-markdown="image" title="上传图片">图片</button>
+                    </div>
+                    <span id="body-count" class="body-count">0 字</span>
+                  </div>
+                  <textarea id="field-body" data-composer-view="write" spellcheck="true" placeholder="在这里粘贴或开始写 Markdown…"></textarea>
+                  <div id="preview-view" class="preview-view" data-composer-view="preview" hidden>
+                    <div id="preview-empty" class="preview-empty">开始输入后显示预览。</div>
+                    <iframe id="preview-frame" title="Markdown 预览" sandbox="" hidden></iframe>
+                    <div id="preview-errors" class="preview-errors" hidden></div>
+                  </div>
+                </section>
+
+                <details class="publish-settings">
+                  <summary>发布设置 <span>自动生成，可按需修改</span></summary>
+                  <div class="settings-grid">
+                    <label class="field field-wide">
+                      <span>摘要 <small>留空时自动取正文开头</small></span>
+                      <textarea id="field-summary" name="summary" rows="3"></textarea>
+                    </label>
+                    <label class="field">
+                      <span>文章 ID <small>文件名与 URL</small></span>
+                      <input id="field-article-id" name="articleId" autocomplete="off" />
+                    </label>
+                    <label class="field"><span>发布日期</span><input id="field-pub-date" name="pubDate" type="date" /></label>
+                    <label class="field"><span>更新时间 <small>可选</small></span><input id="field-updated" name="updated" type="date" /></label>
+                    <label class="field field-wide">
+                      <span>标签 <small>用逗号分隔，可选</small></span>
+                      <input id="field-tags" name="tags" list="tag-suggestions" autocomplete="off" placeholder="极限, 连续, 证明" />
+                      <datalist id="tag-suggestions"></datalist>
+                    </label>
+                    <div class="toggle-row field-wide">
+                      <label class="switch-field"><input id="field-draft" name="draft" type="checkbox" /><span>保持为草稿</span></label>
+                      <label id="featured-field" class="switch-field" hidden><input id="field-featured" name="featured" type="checkbox" /><span>首页精选</span></label>
+                    </div>
+                  </div>
+                  <div id="slug-notice" class="notice notice-soft" hidden>中文 ID 可以使用；若希望 URL 更稳定，建议改为英文 kebab-case。</div>
+                </details>
               </div>
             </form>
-
-            <section id="markdown-section" class="markdown-section" hidden>
-              <div class="markdown-heading">
-                <div>
-                  <h2>正文</h2>
-                  <span id="body-count">0 字</span>
-                </div>
-                <div class="markdown-toolbar" role="toolbar" aria-label="Markdown 工具">
-                  <button type="button" data-markdown="heading" title="二级标题">H2</button>
-                  <button type="button" data-markdown="bold" title="粗体"><strong>B</strong></button>
-                  <button type="button" data-markdown="italic" title="斜体"><em>I</em></button>
-                  <button type="button" data-markdown="link" title="链接">↗</button>
-                  <button type="button" data-markdown="quote" title="引用">❞</button>
-                  <button type="button" data-markdown="list" title="列表">≡</button>
-                  <button type="button" data-markdown="code" title="代码块">&lt;/&gt;</button>
-                  <button type="button" data-markdown="math" title="数学公式">∑</button>
-                  <button type="button" data-markdown="callout" title="Callout">!</button>
-                  <button id="image-button" type="button" data-markdown="image" title="上传图片">▧</button>
-                </div>
-              </div>
-              <textarea id="field-body" spellcheck="true" placeholder="从这里开始写 Markdown…"></textarea>
-            </section>
           </section>
         </main>
-
-        <aside class="preview-pane" aria-label="内容预览">
-          <div class="preview-heading">
-            <div>
-              <span>实时预览</span>
-              <small id="preview-status">等待内容</small>
-            </div>
-            <button id="refresh-preview" class="icon-button" type="button" title="刷新预览" aria-label="刷新预览">↻</button>
-          </div>
-          <div id="preview-empty" class="preview-empty">
-            <span>文</span>
-            <p>选择文章后，这里会按照网站的真实排版渲染。</p>
-          </div>
-          <iframe id="preview-frame" title="Markdown 实时预览" sandbox="" hidden></iframe>
-          <div id="preview-errors" class="preview-errors" hidden></div>
-        </aside>
       </div>
 
-      <details id="check-panel" class="check-panel">
-        <summary>项目检查输出</summary>
-        <pre id="check-output">尚未运行 pnpm check。</pre>
+      <details id="activity-panel" class="activity-panel">
+        <summary>发布与检查记录</summary>
+        <pre id="activity-output">尚无记录。</pre>
       </details>
     </div>
 
     <dialog id="asset-dialog" class="studio-dialog">
       <form method="dialog">
-        <div class="dialog-heading">
-          <span class="studio-seal">图</span>
-          <div>
-            <h2>插入文章图片</h2>
-            <p>图片会保存到当前文章的专属资源目录。</p>
-          </div>
-        </div>
-        <label class="field">
-          <span>选择图片</span>
-          <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml" />
-        </label>
-        <label class="field">
-          <span>替代文字</span>
-          <input id="asset-alt" placeholder="简要描述图片内容" />
-        </label>
+        <div><h2>插入图片</h2><p>图片会保存到当前文章旁的资源目录。</p></div>
+        <label class="field"><span>图片文件</span><input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/*" /></label>
+        <label class="field"><span>替代文字</span><input id="asset-alt" placeholder="简要描述图片" /></label>
         <div class="dialog-actions">
           <button value="cancel" class="button button-quiet">取消</button>
           <button id="upload-asset" value="default" class="button button-primary">上传并插入</button>
