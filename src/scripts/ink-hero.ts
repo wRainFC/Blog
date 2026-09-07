@@ -1,4 +1,4 @@
-import { applyTheme, hasSavedTheme, readTheme, themeColor, type Theme } from "./theme";
+import { readTheme, type Theme, type ThemeTransitionMode } from "./theme";
 import { WeatherEngine } from "./weather";
 import { applyScrollProgress } from "./parallax";
 
@@ -11,8 +11,6 @@ export function setupInkHero() {
   const waterline = hero.querySelector<HTMLElement>("[data-hero-waterline]");
   const weatherControl = hero.querySelector<HTMLButtonElement>("[data-weather-control]");
   const weatherControlLabel = hero.querySelector<HTMLElement>("[data-weather-control-label]");
-  const themeControl = hero.querySelector<HTMLButtonElement>("[data-theme-control]");
-  const themeControlLabel = hero.querySelector<HTMLElement>("[data-theme-control-label]");
   const header = document.querySelector<HTMLElement>(".site-header.is-overlay");
   const context = canvas?.getContext("2d", { alpha: true });
   if (!stage || !canvas || !context) return;
@@ -22,7 +20,6 @@ export function setupInkHero() {
 
   const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mobileQuery = window.matchMedia("(max-width: 760px)");
-  const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
   const weather = new WeatherEngine({ canvas, stage, waterline, context, isMobile: () => mobileQuery.matches });
 
   let reduced = reduceQuery.matches;
@@ -38,7 +35,6 @@ export function setupInkHero() {
   let currentTheme = readTheme();
   let weatherMix = currentTheme === "dark" ? 1 : 0;
   let targetWeatherMix = weatherMix;
-  let themeTransitionTimer = 0;
   let intersectionObserver: IntersectionObserver | undefined;
   let resizeObserver: ResizeObserver | undefined;
 
@@ -59,39 +55,19 @@ export function setupInkHero() {
     }
     if (weatherControlLabel) weatherControlLabel.textContent = weatherLabel;
 
-    const themeLabel = dark ? "切换至山雨" : "切换至夜色";
-    if (themeControl) {
-      themeControl.setAttribute("aria-pressed", String(dark));
-      themeControl.setAttribute("aria-label", themeLabel);
-      themeControl.title = themeLabel;
-    }
-    if (themeControlLabel) themeControlLabel.textContent = themeLabel;
     hero.dataset.weather = dark ? "meteor" : "rain";
     hero.toggleAttribute("data-weather-paused", manuallyPaused);
   };
 
-  const updateThemeOrigin = () => {
-    if (!themeControl) return;
-    const controlRect = themeControl.getBoundingClientRect();
-    const stageRect = stage.getBoundingClientRect();
-    hero.style.setProperty("--theme-origin-x", `${controlRect.left + controlRect.width / 2 - stageRect.left}px`);
-    hero.style.setProperty("--theme-origin-y", `${controlRect.top + controlRect.height / 2 - stageRect.top}px`);
-  };
-
-  const syncTheme = (theme: Theme) => {
+  const syncTheme = (theme: Theme, mode: ThemeTransitionMode) => {
     currentTheme = theme;
     targetWeatherMix = theme === "dark" ? 1 : 0;
-    hero.dataset.themeTransition = theme;
-    window.clearTimeout(themeTransitionTimer);
-    themeTransitionTimer = window.setTimeout(() => {
-      delete hero.dataset.themeTransition;
-    }, 1100);
-    if (manuallyPaused) {
+    if (mode !== "fallback" || manuallyPaused) {
       weatherMix = targetWeatherMix;
       weather.drawStatic(weatherMix);
     }
     updateControls();
-    if (shouldRun()) startFrame();
+    if (mode !== "snapshot" && shouldRun()) startFrame();
   };
 
   const frame = (time: number) => {
@@ -107,7 +83,7 @@ export function setupInkHero() {
     lastPaintTime = time;
 
     if (Math.abs(targetWeatherMix - weatherMix) > .001) {
-      const step = delta / .82;
+      const step = delta / .85;
       weatherMix += Math.sign(targetWeatherMix - weatherMix)
         * Math.min(Math.abs(targetWeatherMix - weatherMix), step);
     } else {
@@ -148,7 +124,6 @@ export function setupInkHero() {
 
   const resizeCanvas = () => {
     weather.resize();
-    updateThemeOrigin();
     weather.drawStatic(weatherMix);
     applyParallax();
   };
@@ -175,15 +150,6 @@ export function setupInkHero() {
     syncPlayback();
   };
 
-  const onSystemThemeChange = (event: MediaQueryListEvent) => {
-    if (!hasSavedTheme()) applyTheme(event.matches ? "dark" : "light", false);
-  };
-
-  const onThemeControlClick = () => {
-    updateThemeOrigin();
-    applyTheme(currentTheme === "dark" ? "light" : "dark", true);
-  };
-
   const onWeatherControlClick = () => {
     manuallyPaused = !manuallyPaused;
     updateControls();
@@ -192,15 +158,21 @@ export function setupInkHero() {
   };
 
   const onExternalThemeChange = (event: Event) => {
-    const detail = (event as CustomEvent<{ theme?: Theme }>).detail;
+    const detail = (event as CustomEvent<{ mode?: ThemeTransitionMode; theme?: Theme }>).detail;
     if (!detail?.theme || detail.theme === currentTheme) return;
-    updateThemeOrigin();
-    syncTheme(detail.theme);
+    syncTheme(detail.theme, detail.mode ?? "fallback");
+  };
+
+  const onThemeTransitionStart = () => {
+    stopFrame(false);
+  };
+
+  const onThemeTransitionEnd = () => {
+    if (shouldRun()) startFrame();
   };
 
   const cleanup = () => {
     stopFrame(true);
-    window.clearTimeout(themeTransitionTimer);
     intersectionObserver?.disconnect();
     resizeObserver?.disconnect();
     document.removeEventListener("visibilitychange", onVisibilityChange);
@@ -208,11 +180,11 @@ export function setupInkHero() {
     window.removeEventListener("pagehide", cleanup);
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("wrain:theme-change", onExternalThemeChange);
+    window.removeEventListener("wrain:theme-transition-start", onThemeTransitionStart);
+    window.removeEventListener("wrain:theme-transition-end", onThemeTransitionEnd);
     reduceQuery.removeEventListener("change", onReducedMotionChange);
     mobileQuery.removeEventListener("change", onMobileChange);
-    themeQuery.removeEventListener("change", onSystemThemeChange);
     weatherControl?.removeEventListener("click", onWeatherControlClick);
-    themeControl?.removeEventListener("click", onThemeControlClick);
     header?.style.removeProperty("--home-header-alpha");
     header?.style.removeProperty("--home-header-line");
     header?.style.removeProperty("--home-header-blur");
@@ -226,11 +198,11 @@ export function setupInkHero() {
   window.addEventListener("pagehide", cleanup, { once: true });
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("wrain:theme-change", onExternalThemeChange);
+  window.addEventListener("wrain:theme-transition-start", onThemeTransitionStart);
+  window.addEventListener("wrain:theme-transition-end", onThemeTransitionEnd);
   reduceQuery.addEventListener("change", onReducedMotionChange);
   mobileQuery.addEventListener("change", onMobileChange);
-  themeQuery.addEventListener("change", onSystemThemeChange);
   weatherControl?.addEventListener("click", onWeatherControlClick);
-  themeControl?.addEventListener("click", onThemeControlClick);
 
   if ("IntersectionObserver" in window) {
     intersectionObserver = new IntersectionObserver(([entry]) => {
@@ -248,7 +220,6 @@ export function setupInkHero() {
   resizeCanvas();
   applyParallax();
   updateControls();
-  document.querySelector<HTMLMetaElement>("meta[data-theme-color]")?.setAttribute("content", themeColor(currentTheme));
   window.requestAnimationFrame(() => {
     enteredAt = performance.now();
     hero.setAttribute("data-entered", "true");

@@ -1,7 +1,30 @@
 export type Theme = "light" | "dark";
 
+export interface ThemeOrigin {
+  x: number;
+  y: number;
+}
+
+export interface ApplyThemeOptions {
+  animate?: boolean;
+  origin?: ThemeOrigin;
+  persist?: boolean;
+}
+
+export type ThemeTransitionMode = "none" | "fallback" | "snapshot";
+
+interface ThemeEventDetail {
+  mode: ThemeTransitionMode;
+  theme: Theme;
+}
+
 const storageKey = "wrain-theme";
 const THEME_EVENT = "wrain:theme-change";
+const THEME_TRANSITION_START_EVENT = "wrain:theme-transition-start";
+const THEME_TRANSITION_END_EVENT = "wrain:theme-transition-end";
+
+let transitionTask: Promise<void> | undefined;
+let teardownControls: (() => void) | undefined;
 
 export const themeColor = (theme: Theme): string =>
   theme === "dark" ? "#09111b" : "#faf9f5";
@@ -18,20 +41,21 @@ export const hasSavedTheme = (): boolean => {
   }
 };
 
-export function applyTheme(theme: Theme, persist = true): void {
-  document.documentElement.dataset.theme = theme;
-  document.querySelector<HTMLMetaElement>("meta[data-theme-color]")?.setAttribute("content", themeColor(theme));
-  if (persist) {
-    try { localStorage.setItem(storageKey, theme); } catch {}
-  }
-  window.dispatchEvent(new CustomEvent(THEME_EVENT, { detail: { theme } }));
-}
+const dispatchThemeEvent = (name: string, detail: ThemeEventDetail) => {
+  window.dispatchEvent(new CustomEvent<ThemeEventDetail>(name, { detail }));
+};
 
-const updateControls = (theme: Theme) => {
+const labelForControl = (control: HTMLElement, theme: Theme): string => {
   const dark = theme === "dark";
-  const label = dark ? "切换至浅色主题" : "切换至深色主题";
+  return dark
+    ? control.dataset.themeLabelToLight ?? "切换至浅色主题"
+    : control.dataset.themeLabelToDark ?? "切换至深色主题";
+};
+
+export const updateThemeControls = (theme: Theme): void => {
+  const dark = theme === "dark";
   document.querySelectorAll<HTMLElement>("[data-theme-control]").forEach((control) => {
-    if (control.closest("[data-ink-hero]")) return;
+    const label = labelForControl(control, theme);
     control.setAttribute("aria-pressed", String(dark));
     control.setAttribute("aria-label", label);
     control.setAttribute("title", label);
@@ -39,38 +63,126 @@ const updateControls = (theme: Theme) => {
   });
 };
 
-export function setupThemeControls() {
-  const controls = [...document.querySelectorAll<HTMLButtonElement>("[data-theme-control]")]
-    .filter((control) => !control.closest("[data-ink-hero]"));
-  const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  const hasHero = Boolean(document.querySelector("[data-ink-hero]"));
+const commitTheme = (
+  theme: Theme,
+  persist: boolean,
+  mode: ThemeTransitionMode,
+): void => {
+  document.documentElement.dataset.theme = theme;
+  document.querySelector<HTMLMetaElement>("meta[data-theme-color]")
+    ?.setAttribute("content", themeColor(theme));
+  if (persist) {
+    try { localStorage.setItem(storageKey, theme); } catch {}
+  }
+  updateThemeControls(theme);
+  dispatchThemeEvent(THEME_EVENT, { mode, theme });
+};
 
-  updateControls(readTheme());
-  controls.forEach((control) => {
-    control.addEventListener("click", () => applyTheme(readTheme() === "dark" ? "light" : "dark"));
+const controlOrigin = (event: MouseEvent, control: HTMLElement): ThemeOrigin => {
+  if (event.detail > 0) return { x: event.clientX, y: event.clientY };
+  const rect = control.getBoundingClientRect();
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+};
+
+const setTransitionGeometry = (origin?: ThemeOrigin): void => {
+  const root = document.documentElement;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const x = Math.min(width, Math.max(0, origin?.x ?? width / 2));
+  const y = Math.min(height, Math.max(0, origin?.y ?? height / 2));
+  const radius = Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
+  root.style.setProperty("--theme-transition-x", `${x}px`);
+  root.style.setProperty("--theme-transition-y", `${y}px`);
+  root.style.setProperty("--theme-transition-radius", `${Math.ceil(radius)}px`);
+};
+
+const clearTransitionState = (): void => {
+  const root = document.documentElement;
+  delete root.dataset.themeTransition;
+  root.style.removeProperty("--theme-transition-x");
+  root.style.removeProperty("--theme-transition-y");
+  root.style.removeProperty("--theme-transition-radius");
+};
+
+export function applyTheme(theme: Theme, options: ApplyThemeOptions = {}): Promise<void> {
+  if (transitionTask || readTheme() === theme) return transitionTask ?? Promise.resolve();
+
+  const { animate = true, origin, persist = true } = options;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canSnapshot = animate && !reduced && !document.hidden
+    && typeof document.startViewTransition === "function";
+
+  if (!canSnapshot) {
+    const mode = animate && !reduced && !document.hidden ? "fallback" : "none";
+    commitTheme(theme, persist, mode);
+    return Promise.resolve();
+  }
+
+  setTransitionGeometry(origin);
+  document.documentElement.dataset.themeTransition = theme;
+  dispatchThemeEvent(THEME_TRANSITION_START_EVENT, { mode: "snapshot", theme });
+
+  transitionTask = (async () => {
+    let transition: ViewTransition;
+    try {
+      transition = document.startViewTransition(() => {
+        commitTheme(theme, persist, "snapshot");
+      });
+    } catch {
+      clearTransitionState();
+      commitTheme(theme, persist, "fallback");
+      dispatchThemeEvent(THEME_TRANSITION_END_EVENT, { mode: "fallback", theme });
+      return;
+    }
+
+    try {
+      await transition.finished;
+    } catch {
+      // The state update still commits when the visual transition is skipped.
+    } finally {
+      clearTransitionState();
+      dispatchThemeEvent(THEME_TRANSITION_END_EVENT, { mode: "snapshot", theme });
+    }
+  })();
+
+  void transitionTask.finally(() => {
+    transitionTask = undefined;
   });
+  return transitionTask;
+}
+
+export function setupThemeControls(): void {
+  teardownControls?.();
+
+  const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const onControlClick = (event: MouseEvent) => {
+    const target = event.target instanceof Element
+      ? event.target.closest<HTMLButtonElement>("button[data-theme-control]")
+      : null;
+    if (!target || transitionTask) return;
+    void applyTheme(readTheme() === "dark" ? "light" : "dark", {
+      origin: controlOrigin(event, target),
+    });
+  };
 
   const onSystemThemeChange = (event: MediaQueryListEvent) => {
-    if (!hasSavedTheme()) applyTheme(event.matches ? "dark" : "light", false);
+    if (!hasSavedTheme()) {
+      void applyTheme(event.matches ? "dark" : "light", { animate: false, persist: false });
+    }
   };
 
-  const onExternalThemeChange = (event: Event) => {
-    const theme = (event as CustomEvent<{ theme?: Theme }>).detail?.theme;
-    if (theme === "light" || theme === "dark") updateControls(theme);
-  };
-
-  window.addEventListener(THEME_EVENT, onExternalThemeChange);
-
-  if (!hasHero) themeQuery.addEventListener("change", onSystemThemeChange);
+  updateThemeControls(readTheme());
+  document.addEventListener("click", onControlClick);
+  themeQuery.addEventListener("change", onSystemThemeChange);
 
   const cleanup = () => {
-    themeQuery.removeEventListener("change", onSystemThemeChange);
-    window.removeEventListener(THEME_EVENT, onExternalThemeChange);
-    controls.forEach((control) => {
-      control.replaceWith(control.cloneNode(true));
-    });
+    document.removeEventListener("click", onControlClick);
     document.removeEventListener("astro:before-swap", cleanup);
+    themeQuery.removeEventListener("change", onSystemThemeChange);
+    if (teardownControls === cleanup) teardownControls = undefined;
   };
 
+  teardownControls = cleanup;
   document.addEventListener("astro:before-swap", cleanup, { once: true });
 }

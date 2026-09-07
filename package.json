@@ -13,7 +13,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "test:studio": "vitest run tools/content-studio",
-    "test:unit": "vitest run src/lib/content"
+    "test:unit": "vitest run src/lib/content src/scripts/theme.test.ts"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.2.2",

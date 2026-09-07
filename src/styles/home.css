@@ -44,9 +44,6 @@
   --parallax-mid: 0px;
   --parallax-near: 0px;
   --parallax-water: 0px;
-  --theme-origin-x: 56px;
-  --theme-origin-y: calc(100% - 48px);
-  --theme-reveal: 0vmax;
   position: relative;
   height: 140svh;
   min-height: 1000px;
@@ -64,7 +61,6 @@ html[data-theme="dark"] .has-overlay-header .ink-hero {
   --ink-faint: #778da3;
   --line: rgba(218, 232, 248, .18);
   --line-soft: rgba(218, 232, 248, .08);
-  --theme-reveal: 160vmax;
 }
 
 .hero-stage {
@@ -184,19 +180,10 @@ html[data-theme="dark"] .has-overlay-header .ink-hero {
 .hero-stars { fill: #e6eeee; opacity: .68; }
 .hero-night-scene {
   opacity: 0;
-  transition: opacity var(--dur-base) cubic-bezier(.2, .72, .24, 1);
+  transition: opacity .85s cubic-bezier(.2, .72, .24, 1);
 }
 
 html[data-theme="dark"] .hero-night-scene { opacity: 1; }
-
-@supports (clip-path: circle(0vmax at 0 0)) {
-  .hero-night-scene {
-    opacity: 1;
-    clip-path: circle(var(--theme-reveal) at var(--theme-origin-x) var(--theme-origin-y));
-    transition: clip-path var(--dur-scene) cubic-bezier(.16, .78, .2, 1);
-    will-change: clip-path;
-  }
-}
 
 .hero-waterline {
   position: absolute;
