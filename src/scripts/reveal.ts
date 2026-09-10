@@ -1,31 +1,43 @@
-export function setupScrollReveal() {
-  const targets = [...document.querySelectorAll<HTMLElement>("[data-reveal]")];
-  if (!targets.length) return;
+const STAGGER_MS = 45;
+const MAX_STAGGER_INDEX = 4;
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let observer: IntersectionObserver | undefined;
+export function setupScrollReveal(): () => void {
+  const root = document.documentElement;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const skipArchive = document.body.dataset.pageKind === "archive"
+    && root.dataset.skipArchiveReveal === "true";
+  delete root.dataset.skipArchiveReveal;
 
-  if (!reduceMotion.matches && "IntersectionObserver" in window) {
-    document.documentElement.classList.add("reveal-motion");
-    observer = new IntersectionObserver((entries, obs) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        obs.unobserve(entry.target);
-      });
-    }, { threshold: 0, rootMargin: "0px 0px -10%" });
-    targets.forEach((target) => observer?.observe(target));
-  } else {
+  const groups = [...document.querySelectorAll<HTMLElement>("[data-reveal]")];
+  const targets = groups.flatMap((group) => {
+    const items = [...group.querySelectorAll<HTMLElement>(".reveal-item")];
+    return items.length ? items : [group];
+  });
+
+  if (!targets.length || reduced || skipArchive || !("IntersectionObserver" in window)) {
     targets.forEach((target) => target.classList.add("is-visible"));
+    return () => {};
   }
 
-  const cleanup = () => {
-    observer?.disconnect();
-    document.documentElement.classList.remove("reveal-motion");
-    document.removeEventListener("astro:before-swap", cleanup);
-    window.removeEventListener("pagehide", cleanup);
-  };
+  root.classList.add("reveal-motion");
+  const observer = new IntersectionObserver((entries) => {
+    const entering = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-  document.addEventListener("astro:before-swap", cleanup, { once: true });
-  window.addEventListener("pagehide", cleanup, { once: true });
+    entering.forEach((entry, index) => {
+      const target = entry.target as HTMLElement;
+      const delay = Math.min(index, MAX_STAGGER_INDEX) * STAGGER_MS;
+      target.style.setProperty("--reveal-delay", `${delay}ms`);
+      target.classList.add("is-visible");
+      observer.unobserve(target);
+    });
+  }, { threshold: 0, rootMargin: "0px 0px -8%" });
+
+  targets.forEach((target) => observer.observe(target));
+
+  return () => {
+    observer.disconnect();
+    root.classList.remove("reveal-motion");
+  };
 }

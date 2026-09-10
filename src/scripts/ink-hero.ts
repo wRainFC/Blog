@@ -32,6 +32,7 @@ export function setupInkHero() {
   let enteredAt = performance.now();
   let weatherStarted = false;
   let manuallyPaused = false;
+  let routeTransitioning = document.documentElement.dataset.routeBusy === "true";
   let currentTheme = readTheme();
   let weatherMix = currentTheme === "dark" ? 1 : 0;
   let targetWeatherMix = weatherMix;
@@ -41,7 +42,7 @@ export function setupInkHero() {
   const applyParallax = () =>
     applyScrollProgress(hero, header, { reduced, mobile: mobileQuery.matches });
 
-  const shouldRun = () => !reduced && !manuallyPaused && inView && pageVisible;
+  const shouldRun = () => !reduced && !manuallyPaused && !routeTransitioning && inView && pageVisible;
 
   const updateControls = () => {
     const dark = currentTheme === "dark";
@@ -171,6 +172,16 @@ export function setupInkHero() {
     if (shouldRun()) startFrame();
   };
 
+  const onRouteTransitionStart = () => {
+    routeTransitioning = true;
+    stopFrame(false);
+  };
+
+  const onRouteTransitionEnd = () => {
+    routeTransitioning = false;
+    if (shouldRun()) startFrame();
+  };
+
   const cleanup = () => {
     stopFrame(true);
     intersectionObserver?.disconnect();
@@ -182,6 +193,8 @@ export function setupInkHero() {
     window.removeEventListener("wrain:theme-change", onExternalThemeChange);
     window.removeEventListener("wrain:theme-transition-start", onThemeTransitionStart);
     window.removeEventListener("wrain:theme-transition-end", onThemeTransitionEnd);
+    window.removeEventListener("wrain:route-transition-start", onRouteTransitionStart);
+    window.removeEventListener("wrain:route-transition-end", onRouteTransitionEnd);
     reduceQuery.removeEventListener("change", onReducedMotionChange);
     mobileQuery.removeEventListener("change", onMobileChange);
     weatherControl?.removeEventListener("click", onWeatherControlClick);
@@ -200,6 +213,8 @@ export function setupInkHero() {
   window.addEventListener("wrain:theme-change", onExternalThemeChange);
   window.addEventListener("wrain:theme-transition-start", onThemeTransitionStart);
   window.addEventListener("wrain:theme-transition-end", onThemeTransitionEnd);
+  window.addEventListener("wrain:route-transition-start", onRouteTransitionStart);
+  window.addEventListener("wrain:route-transition-end", onRouteTransitionEnd);
   reduceQuery.addEventListener("change", onReducedMotionChange);
   mobileQuery.addEventListener("change", onMobileChange);
   weatherControl?.addEventListener("click", onWeatherControlClick);

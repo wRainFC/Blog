@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getCollection } from "astro:content";
 import { getCourseById, getCourseNotes } from "../../lib/content/queries";
-import { articleHref } from "../../lib/content/urls";
+import { articleHref, articleMotionId } from "../../lib/content/urls";
 
 export async function getStaticPaths() {
   const courses = await getCollection("courses");
@@ -19,7 +19,7 @@ const [course, notes] = await Promise.all([
 if (!course) throw new Error(`Course not found: ${courseId}`);
 ---
 
-<BaseLayout title={`${course.data.title}｜楚地之雨`} description={course.data.description || `${course.data.title}课程笔记归档。`}>
+<BaseLayout title={`${course.data.title}｜楚地之雨`} description={course.data.description || `${course.data.title}课程笔记归档。`} pageKind="archive">
   <section class="page-hero compact-hero course-page-hero">
     <p class="section-index">{course.data.semester}</p>
     <h1>{course.data.title}</h1>
@@ -28,7 +28,7 @@ if (!course) throw new Error(`Course not found: ${courseId}`);
   <section class="single-archive" data-pagefind-body data-reveal>
     <div class="archive-summary reveal-item"><span>{notes.length} 篇笔记</span><i></i><a href="/learn">返回全部课程</a></div>
     <div class="article-list">
-      {notes.map((note, index) => (
+      {notes.map((note) => (
         <ArticleCard
           href={articleHref(note)}
           title={note.data.title}
@@ -37,15 +37,9 @@ if (!course) throw new Error(`Course not found: ${courseId}`);
           kind="笔记"
           eyebrow={note.data.chapter}
           class="reveal-item"
-          style={`--reveal-order: ${index}`}
+          motionId={articleMotionId(note)}
         />
       ))}
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  import { setupScrollReveal } from "../../scripts/reveal";
-
-  setupScrollReveal();
-</script>

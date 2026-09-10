@@ -5,15 +5,18 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/prose.css";
 import "../styles/theme-transition.css";
+import "../styles/motion.css";
 import Header from "../components/shell/Header.astro";
 import Footer from "../components/shell/Footer.astro";
 import { siteConfig } from "../config/site";
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
   headerVariant?: "default" | "overlay";
+  pageKind?: "home" | "archive" | "article" | "utility";
 }
 
 const {
@@ -21,6 +24,7 @@ const {
   description = siteConfig.description,
   image = "/og.png",
   headerVariant = "default",
+  pageKind = "utility",
 } = Astro.props;
 
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
@@ -63,9 +67,13 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageUrl} />
+    <ClientRouter fallback="animate" />
     <title>{title}</title>
   </head>
-  <body class:list={{ "has-overlay-header": headerVariant === "overlay", "document-theme": headerVariant !== "overlay" }}>
+  <body
+    class:list={{ "has-overlay-header": headerVariant === "overlay", "document-theme": headerVariant !== "overlay" }}
+    data-page-kind={pageKind}
+  >
     <a class="skip-link" href="#main-content">跳到正文</a>
     <Header variant={headerVariant} />
     <main id="main-content"><slot /></main>
@@ -75,6 +83,17 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
 
 <script>
   import { setupThemeControls } from "../scripts/theme";
+  import { setupSiteMotion } from "../scripts/site-motion";
 
-  setupThemeControls();
+  const lifecycle = window as Window & { __wrainPageLifecycle?: boolean };
+  const setupPage = () => {
+    setupThemeControls();
+    setupSiteMotion();
+  };
+
+  setupPage();
+  if (!lifecycle.__wrainPageLifecycle) {
+    lifecycle.__wrainPageLifecycle = true;
+    document.addEventListener("astro:page-load", setupPage);
+  }
 </script>

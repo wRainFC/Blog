@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getCourseSummaries, getPublishedNotes } from "../../lib/content/queries";
-import { articleHref, courseHref, topicHref } from "../../lib/content/urls";
+import { articleHref, articleMotionId, courseHref, topicHref } from "../../lib/content/urls";
 
 const [notes, courses] = await Promise.all([
   getPublishedNotes(),
@@ -12,7 +12,7 @@ const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
 const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
 ---
 
-<BaseLayout title="课程笔记｜楚地之雨" description="按课程、学期和主题整理的大学学习笔记。">
+<BaseLayout title="课程笔记｜楚地之雨" description="按课程、学期和主题整理的大学学习笔记。" pageKind="archive">
   <section class="page-hero compact-hero">
     <p class="section-index">COURSE NOTES</p>
     <h1>我们必须知道，<br />我们终将知道。</h1>
@@ -33,7 +33,7 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
     <div class="archive-content">
       <div class="archive-summary reveal-item"><span>共 {notes.length} 篇</span><i></i><span>{courses.length} 门课程</span></div>
       <div class="article-list">
-        {notes.map((note, index) => (
+        {notes.map((note) => (
           <ArticleCard
             href={articleHref(note)}
             title={note.data.title}
@@ -42,16 +42,10 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
             kind="笔记"
             eyebrow={`${courseNames.get(note.data.course.id)} · ${note.data.chapter}`}
             class="reveal-item"
-            style={`--reveal-order: ${index}`}
+            motionId={articleMotionId(note)}
           />
         ))}
       </div>
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  import { setupScrollReveal } from "../../scripts/reveal";
-
-  setupScrollReveal();
-</script>

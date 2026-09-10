@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getPublishedArticles, getArticlesByTopic, getCourseById } from "../../lib/content/queries";
-import { articleHref } from "../../lib/content/urls";
+import { articleHref, articleMotionId } from "../../lib/content/urls";
 
 export async function getStaticPaths() {
   const entries = await getPublishedArticles();
@@ -20,7 +20,7 @@ const noteCourses = await Promise.all(
 const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.title]));
 ---
 
-<BaseLayout title={`#${tag}｜楚地之雨`} description={`与“${tag}”相关的笔记和随笔。`}>
+<BaseLayout title={`#${tag}｜楚地之雨`} description={`与“${tag}”相关的笔记和随笔。`} pageKind="archive">
   <section class="page-hero compact-hero">
     <p class="section-index">TOPIC ARCHIVE</p>
     <h1>#{tag}</h1>
@@ -29,7 +29,7 @@ const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.
   <section class="single-archive" data-pagefind-body data-reveal>
     <div class="archive-summary reveal-item"><span>{entries.length} 篇内容</span></div>
     <div class="article-list">
-      {entries.map((entry, index) => {
+      {entries.map((entry) => {
         const isNote = entry.collection === "notes";
         return (
           <ArticleCard
@@ -40,16 +40,10 @@ const courseNames = new Map(noteCourses.map(([id, course]) => [id, course?.data.
             kind={isNote ? "笔记" : "随笔"}
             eyebrow={isNote ? courseNames.get(entry.data.course.id) : entry.data.tags[0]}
             class="reveal-item"
-            style={`--reveal-order: ${index}`}
+            motionId={articleMotionId(entry)}
           />
         );
       })}
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  import { setupScrollReveal } from "../../scripts/reveal";
-
-  setupScrollReveal();
-</script>

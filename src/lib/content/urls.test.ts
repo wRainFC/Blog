@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { articleHref, courseHref, topicHref } from "./urls";
+import { articleHref, articleMotionId, courseHref, topicHref } from "./urls";
 import type { Article } from "./queries";
 
 const essay = (id: string): Article =>
@@ -37,5 +37,18 @@ describe("articleHref", () => {
 describe("topicHref", () => {
   it("encodes the topic into the topics route", () => {
     expect(topicHref("树")).toBe("/topics/%E6%A0%91");
+  });
+});
+
+describe("articleMotionId", () => {
+  it("returns a stable CSS-safe name", () => {
+    expect(articleMotionId(essay("learning-slowly"))).toMatch(/^article-[a-z0-9]+$/);
+    expect(articleMotionId(essay("learning-slowly")))
+      .toBe(articleMotionId(essay("learning-slowly")));
+  });
+
+  it("distinguishes collections and non-Latin ids", () => {
+    expect(articleMotionId(essay("数据结构")))
+      .not.toBe(articleMotionId(note("数据结构", "data-structures")));
   });
 });

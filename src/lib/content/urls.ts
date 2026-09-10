@@ -18,6 +18,16 @@ export function articleHref(entry: Article): string {
   return `${courseHref(courseId)}/${slug}`;
 }
 
+export function articleMotionId(entry: Article): string {
+  const source = `${entry.collection}:${entry.id}`;
+  let hash = 0x811c9dc5;
+  for (const character of source) {
+    hash ^= character.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `article-${(hash >>> 0).toString(36)}`;
+}
+
 export function topicHref(topic: string): string {
   return `/topics/${encodeURIComponent(topic)}`;
 }

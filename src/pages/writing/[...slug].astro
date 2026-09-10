@@ -3,6 +3,7 @@ import { render } from "astro:content";
 import ArticleLayout from "../../layouts/ArticleLayout.astro";
 import { getPublishedEssays } from "../../lib/content/queries";
 import { readingTime } from "../../lib/content/format";
+import { articleMotionId } from "../../lib/content/urls";
 
 export async function getStaticPaths() {
   const essays = await getPublishedEssays();
@@ -22,6 +23,7 @@ const { Content, headings } = await render(entry);
   type="essay"
   headings={headings}
   readingTime={readingTime(entry.body)}
+  motionId={articleMotionId(entry)}
 >
   <Content />
 </ArticleLayout>

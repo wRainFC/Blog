@@ -2,12 +2,12 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getPublishedEssays } from "../../lib/content/queries";
-import { articleHref } from "../../lib/content/urls";
+import { articleHref, articleMotionId } from "../../lib/content/urls";
 
 const essays = await getPublishedEssays();
 ---
 
-<BaseLayout title="随笔思考｜楚地之雨" description="关于学习、成长和日常观察的个人随笔。">
+<BaseLayout title="随笔思考｜楚地之雨" description="关于学习、成长和日常观察的个人随笔。" pageKind="archive">
   <section class="page-hero essay-hero">
     <p class="section-index">ESSAYS & THOUGHTS</p>
     <h1>我们经历过的每一个日常，<br />就是接连不断发生的奇迹。</h1>
@@ -15,7 +15,7 @@ const essays = await getPublishedEssays();
   </section>
   <section class="essay-archive" data-pagefind-body data-reveal>
     {essays.map((essay, index) => (
-      <div class="essay-row reveal-item" style={`--reveal-order: ${index}`}>
+      <div class="essay-row reveal-item">
         <span class="essay-index">{String(index + 1).padStart(2, "0")}</span>
         <ArticleCard
           href={articleHref(essay)}
@@ -24,14 +24,9 @@ const essays = await getPublishedEssays();
           date={essay.data.pubDate}
           kind="随笔"
           eyebrow={essay.data.tags[0]}
+          motionId={articleMotionId(essay)}
         />
       </div>
     ))}
   </section>
 </BaseLayout>
-
-<script>
-  import { setupScrollReveal } from "../../scripts/reveal";
-
-  setupScrollReveal();
-</script>

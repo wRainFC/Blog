@@ -1,18 +1,59 @@
 ---
 interface Heading { depth: number; slug: string; text: string }
-interface Props { headings?: Heading[] }
+interface Props {
+  headings?: Heading[];
+  variant?: "desktop" | "mobile";
+}
 
-const headings = Astro.props.headings || [];
-const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const { headings = [], variant = "desktop" } = Astro.props;
+let parentSlug = "";
+const toc = headings
+  .filter((heading) => heading.depth === 2 || heading.depth === 3)
+  .map((heading) => {
+    if (heading.depth === 2) parentSlug = heading.slug;
+    return { ...heading, parentSlug: heading.depth === 3 ? parentSlug : heading.slug };
+  });
 ---
 
-{toc.length > 0 && (
-  <aside class="article-toc" data-pagefind-ignore>
+{toc.length > 0 && variant === "desktop" && (
+  <aside class="article-toc" data-desktop-toc data-pagefind-ignore>
     <p>本页目录</p>
     <nav aria-label="文章目录">
+      <span class="toc-indicator" data-toc-indicator aria-hidden="true"></span>
       {toc.map((heading) => (
-        <a class:list={[`depth-${heading.depth}`]} href={`#${heading.slug}`}>{heading.text}</a>
+        <a
+          class:list={[`depth-${heading.depth}`]}
+          href={`#${heading.slug}`}
+          data-toc-link
+          data-toc-slug={heading.slug}
+          data-toc-parent={heading.parentSlug}
+        >
+          {heading.text}
+        </a>
       ))}
     </nav>
   </aside>
+)}
+
+{toc.length > 0 && variant === "mobile" && (
+  <details class="article-toc-mobile" data-mobile-toc data-pagefind-ignore>
+    <summary>
+      <span>当前章节</span>
+      <strong data-mobile-toc-current>文章目录</strong>
+      <i aria-hidden="true"></i>
+    </summary>
+    <nav aria-label="移动端文章目录">
+      {toc.map((heading) => (
+        <a
+          class:list={[`depth-${heading.depth}`]}
+          href={`#${heading.slug}`}
+          data-toc-link
+          data-toc-slug={heading.slug}
+          data-toc-parent={heading.parentSlug}
+        >
+          {heading.text}
+        </a>
+      ))}
+    </nav>
+  </details>
 )}

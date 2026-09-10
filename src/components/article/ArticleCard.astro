@@ -9,23 +9,27 @@ interface Props {
   featured?: boolean;
   class?: string;
   style?: string;
+  motionId?: string;
 }
 
-const { href, title, summary, date, kind, eyebrow, featured = false, class: className, style } = Astro.props;
+const {
+  href, title, summary, date, kind, eyebrow, featured = false,
+  class: className, style, motionId,
+} = Astro.props;
 const formatted = new Intl.DateTimeFormat("zh-CN", {
   month: "2-digit",
   day: "2-digit",
 }).format(date);
 ---
 
-<article class:list={["article-card", { featured }, className]} style={style}>
-  <a href={href}>
+<article class:list={["article-card", { featured }, className]} style={style} data-article-card>
+  <a href={href} data-motion-link="article">
     <div class="card-topline">
       <span class="kind-mark">{kind}</span>
       {eyebrow && <span>{eyebrow}</span>}
       <time datetime={date.toISOString()}>{formatted}</time>
     </div>
-    <h3>{title}</h3>
+    <h3><span class="card-title-text" data-motion-title={motionId}>{title}</span></h3>
     <p>{summary}</p>
     <span class="read-more">继续阅读 <i aria-hidden="true">→</i></span>
   </a>

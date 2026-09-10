@@ -14,15 +14,25 @@
   --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
   --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --content: 1180px;
+  --header-content: 1080px;
   --reading: 720px;
-  --header-height: 84px;
-  --content-sticky-offset: 118px;
+  --header-height: 72px;
+  --content-sticky-offset: 102px;
   --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
   --ease-out-quint: cubic-bezier(.22, 1, .36, 1);
   --dur-fast: .25s;
   --dur-base: .6s;
   --dur-slow: .9s;
   --dur-scene: 1.15s;
+  --motion-instant: 120ms;
+  --motion-interact: 180ms;
+  --motion-context: 360ms;
+  --motion-reveal: 480ms;
+  --motion-distance-inline: 8px;
+  --motion-distance-block: 16px;
+  --motion-stagger: 45ms;
+  --motion-stagger-max: 180ms;
+  --motion-theme-reveal: 1650ms;
 }
 
 html[data-theme="dark"] body:is(.document-theme, .has-overlay-header) {

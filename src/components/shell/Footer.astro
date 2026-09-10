@@ -15,7 +15,11 @@ const links = [
     <div class="footer-row footer-top">
       <span class="footer-brand"><Wordmark size="footer" inverse /></span>
       <nav class="footer-nav" aria-label="页脚导航">
-        {links.map((link) => <a href={link.href}>{link.label}</a>)}
+        {links.map((link) => (
+          <a href={link.href} data-astro-reload={link.href === "/rss.xml" ? true : undefined}>
+            {link.label}
+          </a>
+        ))}
       </nav>
     </div>
     <div class="footer-row footer-bottom">

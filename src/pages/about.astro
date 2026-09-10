@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="关于｜楚地之雨" description="关于楚地之雨，以及这座个人知识花园为何存在。">
+<BaseLayout title="关于｜楚地之雨" description="关于楚地之雨，以及这座个人知识花园为何存在。" pageKind="utility">
   <section class="about-hero" data-pagefind-body>
     <div class="about-title">
       <p class="section-index">ABOUT THIS GARDEN</p>
@@ -31,6 +31,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
   <section class="about-contact">
     <p>如果一篇笔记恰好帮到了你，欢迎从这里继续探索。</p>
-    <div><a href="/learn">浏览课程笔记</a><a href="/rss.xml">订阅 RSS</a></div>
+    <div><a href="/learn">浏览课程笔记</a><a href="/rss.xml" data-astro-reload>订阅 RSS</a></div>
   </section>
 </BaseLayout>
