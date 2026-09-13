@@ -13,7 +13,7 @@ const links = [
 <footer class="site-footer" data-pagefind-ignore>
   <div class="footer-inner">
     <div class="footer-row footer-top">
-      <span class="footer-brand"><Wordmark size="footer" inverse /></span>
+      <span class="footer-brand"><Wordmark size="footer" /></span>
       <nav class="footer-nav" aria-label="页脚导航">
         {links.map((link) => (
           <a href={link.href} data-astro-reload={link.href === "/rss.xml" ? true : undefined}>
@@ -24,7 +24,7 @@ const links = [
     </div>
     <div class="footer-row footer-bottom">
       <p class="footer-copyright">© {year} wRainFC</p>
-      <p class="footer-epigraph">描摹这地球的微不足道无踪无迹的一滴雨。</p>
+      <p class="footer-epigraph">持续学习，保持清醒，也保留一点好奇。</p>
     </div>
   </div>
 </footer>

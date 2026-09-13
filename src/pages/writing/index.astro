@@ -5,28 +5,42 @@ import { getPublishedEssays } from "../../lib/content/queries";
 import { articleHref, articleMotionId } from "../../lib/content/urls";
 
 const essays = await getPublishedEssays();
+const yearGroups = [...essays.reduce((groups, essay) => {
+  const year = essay.data.pubDate.getFullYear();
+  const entries = groups.get(year) ?? [];
+  entries.push(essay);
+  groups.set(year, entries);
+  return groups;
+}, new Map<number, typeof essays>())].sort(([a], [b]) => b - a);
 ---
 
 <BaseLayout title="随笔思考｜楚地之雨" description="关于学习、成长和日常观察的个人随笔。" pageKind="archive">
-  <section class="page-hero essay-hero">
+  <section class="page-hero compact-hero essay-hero">
     <p class="section-index">ESSAYS & THOUGHTS</p>
-    <h1>我们经历过的每一个日常，<br />就是接连不断发生的奇迹。</h1>
-    <p>随便写点什么</p>
+    <h1>随笔与观察</h1>
+    <p>记录学习之外的判断、经验，以及那些还没有标准答案的问题。</p>
   </section>
   <section class="essay-archive" data-pagefind-body data-reveal>
-    {essays.map((essay, index) => (
-      <div class="essay-row reveal-item">
-        <span class="essay-index">{String(index + 1).padStart(2, "0")}</span>
-        <ArticleCard
-          href={articleHref(essay)}
-          title={essay.data.title}
-          summary={essay.data.summary}
-          date={essay.data.pubDate}
-          kind="随笔"
-          eyebrow={essay.data.tags[0]}
-          motionId={articleMotionId(essay)}
-        />
-      </div>
+    {yearGroups.map(([year, entries]) => (
+      <section class="writing-year reveal-item" aria-labelledby={`year-${year}`}>
+        <header class="writing-year__heading">
+          <h2 id={`year-${year}`}>{year}</h2>
+          <span>{entries.length} 篇</span>
+        </header>
+        <div class="article-list">
+          {entries.map((essay) => (
+            <ArticleCard
+              href={articleHref(essay)}
+              title={essay.data.title}
+              summary={essay.data.summary}
+              date={essay.data.pubDate}
+              kind="随笔"
+              eyebrow={essay.data.tags[0]}
+              motionId={articleMotionId(essay)}
+            />
+          ))}
+        </div>
+      </section>
     ))}
   </section>
 </BaseLayout>

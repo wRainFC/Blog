@@ -60,8 +60,21 @@ const links = navigation;
       </span>
     </nav>
 
-    <details class="mobile-menu">
-      <summary aria-label="打开导航"><span></span><span></span></summary>
+    <button
+      class="mobile-menu-toggle"
+      type="button"
+      data-menu-toggle
+      aria-expanded="false"
+      aria-controls="mobile-navigation"
+      aria-label="打开导航"
+    >
+      <span></span><span></span>
+    </button>
+
+    <div class="mobile-menu-panel" id="mobile-navigation" data-mobile-menu hidden>
+      <div class="mobile-menu-heading" aria-hidden="true">
+        <span>Navigation</span><span>wRain / FC</span>
+      </div>
       <nav aria-label="移动端导航">
         {links.map((link) => (
           <a href={link.href} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>
@@ -77,7 +90,8 @@ const links = navigation;
           <span data-theme-control-label>切换至深色主题</span>
         </button>
       </nav>
-    </details>
+      <p>课程、技术与日常思考的个人索引。</p>
+    </div>
   </div>
   <span
     class="reading-progress-track"

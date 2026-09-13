@@ -31,9 +31,9 @@ const {
   <article class="article-shell" data-pagefind-body>
     <header class="article-header">
       <p class="article-breadcrumb">
-        <a href={type === "note" && course ? courseHref(course.id) : "/writing"}>{type === "note" ? "课程笔记" : "随笔思考"}</a>
+        <a href={type === "note" && course ? courseHref(course.id) : "/writing"}>{type === "note" ? "学习" : "写作"}</a>
         <span>/</span>
-        <span>{course?.data.title || "片刻所思"}</span>
+        <span>{course?.data.title || "随笔"}</span>
       </p>
       <h1><span data-motion-title={motionId}>{title}</span></h1>
       <p class="article-summary">{summary}</p>

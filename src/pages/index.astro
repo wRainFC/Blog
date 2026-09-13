@@ -1,7 +1,7 @@
 ---
 import "../styles/home.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import InkHero from "../components/home/InkHero.astro";
+import EditorialHero from "../components/home/EditorialHero.astro";
 import ArticleCard from "../components/article/ArticleCard.astro";
 import { getCourseSummaries, getPublishedEssays, getPublishedNotes, byNewest } from "../lib/content/queries";
 import { articleHref, articleMotionId, courseHref } from "../lib/content/urls";
@@ -13,18 +13,27 @@ const [notes, essays, courses] = await Promise.all([
 ]);
 const recent = byNewest([...notes, ...essays]).slice(0, 4);
 const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
+const latestByCourse = new Map<string, Date>();
+for (const note of notes) {
+  const courseId = note.data.course.id;
+  const current = latestByCourse.get(courseId);
+  if (!current || note.data.pubDate > current) latestByCourse.set(courseId, note.data.pubDate);
+}
+const formatMonth = (date?: Date) => date
+  ? new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit" }).format(date)
+  : "尚未更新";
 ---
 
 <BaseLayout headerVariant="overlay" pageKind="home">
-  <InkHero />
+  <EditorialHero />
 
-  <section class="home-section home-content-bridge" data-reveal aria-labelledby="recent-title">
+  <section class="home-section home-content-bridge" id="recent" data-reveal aria-labelledby="recent-title">
     <header class="section-heading reveal-item">
       <div>
-        <p class="section-index">01 / RECENT</p>
+        <p class="section-index">01 / LATEST</p>
         <h2 id="recent-title">最近更新</h2>
       </div>
-      <a href="/writing">全部文章 <span aria-hidden="true">→</span></a>
+      <a href="/writing">查看全部 <span aria-hidden="true">↗</span></a>
     </header>
 
     <div class="home-recent-list article-list reveal-item">
@@ -48,10 +57,10 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
   <section class="home-section home-courses" data-reveal aria-labelledby="courses-title">
     <header class="section-heading reveal-item">
       <div>
-        <p class="section-index">02 / LEARNING NOTES</p>
-        <h2 id="courses-title">正在学习</h2>
+        <p class="section-index">02 / COURSES</p>
+        <h2 id="courses-title">课程索引</h2>
       </div>
-      <a href="/learn">进入知识库 <span>→</span></a>
+      <a href="/learn">全部课程 <span>↗</span></a>
     </header>
 
     <div class="course-grid reveal-item">
@@ -66,6 +75,7 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
             <span>{course.data.semester} · {course.count} 篇笔记</span>
           </span>
           <h3><span>{course.data.title}</span></h3>
+          <span class="course-updated">更新于 {formatMonth(latestByCourse.get(course.id))}</span>
         </a>
       ))}
     </div>

@@ -27,7 +27,7 @@ let transitionTask: Promise<void> | undefined;
 let teardownControls: (() => void) | undefined;
 
 export const themeColor = (theme: Theme): string =>
-  theme === "dark" ? "#09111b" : "#faf9f5";
+  theme === "dark" ? "#101411" : "#f3f1ec";
 
 export const readTheme = (): Theme =>
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";

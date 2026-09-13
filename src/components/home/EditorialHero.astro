@@ -1,0 +1,79 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import Wordmark from "../shell/Wordmark.astro";
+
+interface Props {
+  image?: ImageMetadata;
+  imageAlt?: string;
+}
+
+const { image, imageAlt } = Astro.props;
+if (image && !imageAlt?.trim()) {
+  throw new Error("EditorialHero requires imageAlt when an image is provided.");
+}
+---
+
+<section class="editorial-hero" data-editorial-hero aria-labelledby="home-title">
+  <canvas class="ambient-canvas" data-ambient-canvas aria-hidden="true"></canvas>
+
+  <div class="editorial-hero__shell">
+    <div class="editorial-hero__brand hero-reveal"><Wordmark size="hero" /></div>
+
+    <div class="editorial-hero__media hero-reveal" data-hero-stage>
+      <div class="editorial-hero__visual">
+        {image ? (
+          <Image
+            src={image}
+            alt={imageAlt!}
+            widths={[480, 720, 960, 1200]}
+            sizes="(max-width: 640px) 78vw, (max-width: 1100px) 52vw, 560px"
+            loading="eager"
+            fetchpriority="high"
+            class="editorial-hero__image"
+          />
+        ) : (
+          <div class="hero-placeholder" aria-hidden="true">
+            <span class="hero-placeholder__label">STUDY / NOTES / IDEAS</span>
+            <span class="hero-placeholder__orbit hero-placeholder__orbit--primary"></span>
+            <span class="hero-placeholder__orbit hero-placeholder__orbit--secondary"></span>
+            <span class="hero-placeholder__disc"></span>
+            <span class="hero-placeholder__satellite hero-placeholder__satellite--one"></span>
+            <span class="hero-placeholder__satellite hero-placeholder__satellite--two"></span>
+            <span class="hero-placeholder__index">01</span>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <div class="editorial-hero__copy hero-reveal">
+      <p class="editorial-hero__eyebrow">Personal knowledge index</p>
+      <h1 id="home-title">楚地之雨</h1>
+      <p>把课程、技术与日常思考，整理成一份可以长期回看的个人索引。</p>
+      <nav aria-label="主页快速入口">
+        <a href="/learn">浏览学习笔记 <span aria-hidden="true">↗</span></a>
+        <a href="/writing">阅读随笔 <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <a class="hero-scroll-cue" href="#recent" aria-label="前往最近更新">
+    <span>向下浏览</span><i aria-hidden="true"></i>
+  </a>
+
+  <button
+    class="ambient-control"
+    type="button"
+    data-ambient-control
+    aria-pressed="false"
+    aria-label="暂停环境动画"
+    title="暂停环境动画"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="8.5"></circle>
+      <path class="ambient-control__pause" d="M9.5 8.5v7m5-7v7"></path>
+      <path class="ambient-control__play" d="m10 8 6 4-6 4Z"></path>
+    </svg>
+    <span data-ambient-control-label>暂停动画</span>
+  </button>
+</section>

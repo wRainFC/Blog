@@ -38,7 +38,7 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#faf9f5" data-theme-color />
+    <meta name="theme-color" content="#f3f1ec" data-theme-color />
     <script is:inline>
       (() => {
         const key = "wrain-theme";
@@ -50,7 +50,7 @@ const imageUrl = Astro.site ? new URL(image, Astro.site) : new URL(image, Astro.
         document.documentElement.dataset.theme = theme;
         document.querySelector('meta[data-theme-color]')?.setAttribute(
           "content",
-          theme === "dark" ? "#09111b" : "#faf9f5",
+          theme === "dark" ? "#101411" : "#f3f1ec",
         );
       })();
     </script>

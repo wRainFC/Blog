@@ -1,12 +1,13 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
-import { getCourseSummaries, getPublishedNotes } from "../../lib/content/queries";
+import { getChapterTitleMap, getCourseSummaries, getPublishedNotes } from "../../lib/content/queries";
 import { articleHref, articleMotionId, courseHref, topicHref } from "../../lib/content/urls";
 
-const [notes, courses] = await Promise.all([
+const [notes, courses, chapterTitles] = await Promise.all([
   getPublishedNotes(),
   getCourseSummaries(),
+  getChapterTitleMap(),
 ]);
 const tags = [...new Set(notes.flatMap((note) => note.data.tags))];
 const courseNames = new Map(courses.map((course) => [course.id, course.data.title]));
@@ -15,8 +16,8 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
 <BaseLayout title="课程笔记｜楚地之雨" description="按课程、学期和主题整理的大学学习笔记。" pageKind="archive">
   <section class="page-hero compact-hero">
     <p class="section-index">COURSE NOTES</p>
-    <h1>我们必须知道，<br />我们终将知道。</h1>
-    <p>课程笔记</p>
+    <h1>学习与课程笔记</h1>
+    <p>按课程、章节与主题整理，把分散的知识连接成可以回看的结构。</p>
   </section>
 
   <section class="archive-shell" data-pagefind-body data-reveal>
@@ -31,7 +32,7 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
       </div>
     </aside>
     <div class="archive-content">
-      <div class="archive-summary reveal-item"><span>共 {notes.length} 篇</span><i></i><span>{courses.length} 门课程</span></div>
+      <div class="archive-summary reveal-item"><span>{notes.length} 篇笔记</span><i></i><span>{courses.length} 门课程</span><i></i><span>{tags.length} 个主题</span></div>
       <div class="article-list">
         {notes.map((note) => (
           <ArticleCard
@@ -40,7 +41,7 @@ const courseNames = new Map(courses.map((course) => [course.id, course.data.titl
             summary={note.data.summary}
             date={note.data.pubDate}
             kind="笔记"
-            eyebrow={`${courseNames.get(note.data.course.id)} · ${note.data.chapter}`}
+            eyebrow={`${courseNames.get(note.data.course.id)} · ${chapterTitles.get(`${note.data.course.id}:${note.data.chapter}`)}`}
             class="reveal-item"
             motionId={articleMotionId(note)}
           />

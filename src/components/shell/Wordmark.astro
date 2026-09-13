@@ -13,59 +13,52 @@ const { size = "compact", inverse = false } = Astro.props;
 >
   <span class="wordmark-visual" aria-hidden="true">
     <span class="wordmark-name">wRain</span>
-    <span class="wordmark-expansion"><b>F</b><i>rom</i></span>
-    <span class="wordmark-expansion"><b>C</b><i>hu</i></span>
+    <span class="wordmark-divider"></span>
+    <span class="wordmark-expansion">From Chu</span>
   </span>
 </span>
 
 <style>
   .wrain-wordmark,
   .wordmark-visual,
+  .wordmark-divider,
   .wordmark-expansion {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
   }
 
   .wordmark-visual {
     color: var(--ink);
-    font-family: Georgia, "Times New Roman", serif;
-    line-height: .9;
+    font-family: var(--sans);
+    line-height: 1;
     white-space: nowrap;
   }
 
   .wordmark-name {
-    margin-right: .12em;
-    font-style: italic;
-    font-weight: 600;
-    letter-spacing: -.055em;
+    font-weight: 680;
+    letter-spacing: -.065em;
   }
 
-  .wordmark-expansion + .wordmark-expansion { margin-left: .09em; }
-
-  .wordmark-expansion b {
-    color: var(--vermilion);
-    font-size: 1em;
-    font-weight: 700;
+  .wordmark-divider {
+    width: .32em;
+    height: .32em;
+    margin: 0 .48em;
+    border-radius: 50%;
+    background: var(--accent);
   }
 
-  .wordmark-expansion i {
-    margin-left: .04em;
+  .wordmark-expansion {
     color: var(--ink-faint);
-    font-family: var(--sans);
-    font-size: .29em;
-    font-style: normal;
-    font-weight: 400;
-    letter-spacing: .04em;
-    transform: translateY(-.08em);
+    font-size: .43em;
+    font-weight: 620;
+    letter-spacing: .13em;
+    text-transform: uppercase;
   }
 
-  .is-compact { font-size: 19px; }
-  .is-hero { font-size: clamp(31px, 4.1vw, 43px); }
-  .is-hero .wordmark-name { font-weight: 500; }
-  .is-hero .wordmark-expansion i { opacity: .72; }
-  .is-footer { font-size: 24px; }
+  .is-compact { font-size: 18px; }
+  .is-hero { font-size: clamp(24px, 3vw, 34px); }
+  .is-footer { font-size: 21px; }
 
   .is-inverse .wordmark-visual { color: var(--footer-wordmark, var(--on-accent)); }
-  .is-inverse .wordmark-expansion b { color: var(--vermilion); }
-  .is-inverse .wordmark-expansion i { color: var(--footer-fg-muted, rgba(242,247,255,.52)); }
+  .is-inverse .wordmark-expansion { color: var(--footer-fg-muted, rgba(242,247,255,.52)); }
 </style>

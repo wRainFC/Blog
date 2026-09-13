@@ -1,4 +1,5 @@
-import { setupInkHero } from "./ink-hero";
+import { setupEditorialHero } from "./editorial-hero";
+import { setupHeaderNavigation } from "./header-navigation";
 import { installNavigationMotion } from "./navigation-motion";
 import { setupReadingTracker } from "./reading-tracker";
 import { setupScrollReveal } from "./reveal";
@@ -9,7 +10,12 @@ export function setupSiteMotion(): void {
   installNavigationMotion();
   teardownPageMotion?.();
 
-  const cleanups = [setupScrollReveal(), setupReadingTracker()];
+  const cleanups = [
+    setupScrollReveal(),
+    setupReadingTracker(),
+    setupHeaderNavigation(),
+    setupEditorialHero(),
+  ];
   let cleaned = false;
   const cleanup = () => {
     if (cleaned) return;
@@ -21,5 +27,4 @@ export function setupSiteMotion(): void {
 
   teardownPageMotion = cleanup;
   document.addEventListener("astro:before-swap", cleanup, { once: true });
-  setupInkHero();
 }
