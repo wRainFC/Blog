@@ -1,4 +1,4 @@
-import { classifyRouteMotion, type RouteMotion } from "./motion";
+import { classifyRouteMotion, pageKindFromPath, type RouteMotion } from "./motion";
 
 interface AstroPreparationEvent extends Event {
   direction?: string;
@@ -17,8 +17,9 @@ interface AstroSwapEvent extends Event {
 
 let installed = false;
 let routeMotion: RouteMotion = "default";
-let activeMotionId = "";
 let hasTransitionPromise = false;
+let selectedItem: HTMLElement | null = null;
+let selectedGroup: HTMLElement | null = null;
 
 const setThemeControlsDisabled = (scope: Document, disabled: boolean) => {
   scope.querySelectorAll<HTMLButtonElement>("button[data-theme-control]").forEach((control) => {
@@ -29,32 +30,24 @@ const setThemeControlsDisabled = (scope: Document, disabled: boolean) => {
 
 const dispatchRouteEvent = (name: string) => window.dispatchEvent(new Event(name));
 
-const markTitle = (element: HTMLElement | null, motionId: string) => {
-  if (!element || !motionId) return;
-  element.style.setProperty("view-transition-name", motionId);
-  element.dataset.motionNamed = "true";
+const clearArticleSelection = () => {
+  selectedItem?.classList.remove("is-transition-source");
+  selectedGroup?.classList.remove("is-article-selection-group");
+  document.querySelectorAll(".is-transition-source")
+    .forEach((element) => element.classList.remove("is-transition-source"));
+  document.querySelectorAll(".is-article-selection-group")
+    .forEach((element) => element.classList.remove("is-article-selection-group"));
+  selectedItem = null;
+  selectedGroup = null;
 };
-
-const clearNamedTitles = () => {
-  document.querySelectorAll<HTMLElement>("[data-motion-named]").forEach((element) => {
-    element.style.removeProperty("view-transition-name");
-    delete element.dataset.motionNamed;
-  });
-};
-
-const currentArticleMotionId = () =>
-  document.querySelector<HTMLElement>(".article-header [data-motion-title]")?.dataset.motionTitle ?? "";
 
 const finishRouteMotion = () => {
   const root = document.documentElement;
   delete root.dataset.routeBusy;
   delete root.dataset.routeMotion;
-  delete root.dataset.archiveLeaving;
+  delete root.dataset.articleLeaving;
   setThemeControlsDisabled(document, false);
-  clearNamedTitles();
-  document.querySelectorAll(".is-transition-source")
-    .forEach((element) => element.classList.remove("is-transition-source"));
-  activeMotionId = "";
+  clearArticleSelection();
   hasTransitionPromise = false;
   dispatchRouteEvent("wrain:route-transition-end");
 };
@@ -68,22 +61,28 @@ const waitForThemeTransition = () => new Promise<void>((resolve) => {
 });
 
 function onArticleLinkClick(event: MouseEvent) {
-  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-  const link = event.target instanceof Element
-    ? event.target.closest<HTMLAnchorElement>("a[data-motion-link='article']")
-    : null;
-  if (!link) return;
-  const card = link.closest<HTMLElement>("[data-article-card]");
-  const title = card?.querySelector<HTMLElement>("[data-motion-title]") ?? null;
-  activeMotionId = title?.dataset.motionTitle ?? "";
-  card?.classList.add("is-transition-source");
-  document.documentElement.dataset.archiveLeaving = "true";
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = event.composedPath().find((target): target is HTMLAnchorElement =>
+    target instanceof HTMLAnchorElement
+      && target.matches("a[data-motion-link='article'], .pf-result a[href], .pagefind-ui__result a[href]")) ?? null;
+  if (!link || link.hasAttribute("download") || (link.target && link.target.toLowerCase() !== "_self")) return;
+
+  const target = new URL(link.href, window.location.href);
+  if (target.origin !== window.location.origin || pageKindFromPath(target.pathname) !== "article") return;
+
+  const item = link.closest<HTMLElement>("[data-article-card], .pf-result, .pagefind-ui__result");
+  if (!item) return;
+  clearArticleSelection();
+  selectedItem = item;
+  selectedGroup = selectedItem?.closest<HTMLElement>(".article-list, .pf-results, .pagefind-ui__results") ?? null;
+  selectedItem?.classList.add("is-transition-source");
+  selectedGroup?.classList.add("is-article-selection-group");
+  document.documentElement.dataset.articleLeaving = "true";
 }
 
 function onBeforePreparation(rawEvent: Event) {
   const event = rawEvent as AstroPreparationEvent;
   routeMotion = classifyRouteMotion(event.from.pathname, event.to.pathname);
-  activeMotionId ||= currentArticleMotionId();
   const root = document.documentElement;
   root.dataset.routeMotion = routeMotion;
   root.dataset.routeBusy = "true";
@@ -107,6 +106,8 @@ function onBeforePreparation(rawEvent: Event) {
 function onBeforeSwap(rawEvent: Event) {
   const event = rawEvent as AstroSwapEvent;
   const nextRoot = event.newDocument.documentElement;
+  const currentTheme = document.documentElement.dataset.theme;
+  if (currentTheme === "light" || currentTheme === "dark") nextRoot.dataset.theme = currentTheme;
   nextRoot.dataset.routeMotion = routeMotion;
   nextRoot.dataset.routeBusy = "true";
   const backNavigation = event.direction === "back" || event.direction === "backward"
@@ -115,21 +116,11 @@ function onBeforeSwap(rawEvent: Event) {
     nextRoot.dataset.skipArchiveReveal = "true";
   }
 
-  const source = activeMotionId
-    ? document.querySelector<HTMLElement>(`[data-motion-title="${CSS.escape(activeMotionId)}"]`)
-    : null;
-  const target = activeMotionId
-    ? event.newDocument.querySelector<HTMLElement>(`[data-motion-title="${CSS.escape(activeMotionId)}"]`)
-    : null;
-  if (source && target) {
-    markTitle(source, activeMotionId);
-    markTitle(target, activeMotionId);
-  }
   setThemeControlsDisabled(event.newDocument, true);
 
   if (event.viewTransition?.finished) {
     hasTransitionPromise = true;
-    void event.viewTransition.finished.finally(finishRouteMotion);
+    void event.viewTransition.finished.then(finishRouteMotion, finishRouteMotion);
   }
 }
 
@@ -141,7 +132,7 @@ function onPageLoad() {
 export function installNavigationMotion(): void {
   if (installed) return;
   installed = true;
-  document.addEventListener("click", onArticleLinkClick);
+  document.addEventListener("click", onArticleLinkClick, { capture: true });
   document.addEventListener("astro:before-preparation", onBeforePreparation);
   document.addEventListener("astro:before-swap", onBeforeSwap);
   document.addEventListener("astro:page-load", onPageLoad);

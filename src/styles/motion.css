@@ -7,12 +7,46 @@
   animation-timing-function: var(--ease-out-expo);
 }
 
-html[data-archive-leaving] .article-card:not(.is-transition-source) {
-  opacity: .64;
+.article-card,
+.pf-result,
+.pagefind-ui__result {
+  transition:
+    opacity var(--motion-interact) ease,
+    transform var(--motion-interact) var(--ease-out-expo),
+    background-color var(--motion-interact) ease;
 }
 
-html[data-archive-leaving] .article-card.is-transition-source h3 {
-  color: var(--vermilion);
+html[data-article-leaving] .article-list.is-article-selection-group .article-card:not(.is-transition-source),
+html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
+html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
+  opacity: .48;
+}
+
+html[data-article-leaving] .article-card.is-transition-source,
+html[data-article-leaving] .pf-result.is-transition-source,
+html[data-article-leaving] .pagefind-ui__result.is-transition-source {
+  transform: translateY(-2px);
+}
+
+html[data-article-leaving] .article-card.is-transition-source > a::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+html[data-article-leaving] .pf-result.is-transition-source,
+html[data-article-leaving] .pagefind-ui__result.is-transition-source {
+  --pf-background: var(--accent-soft);
+  --pf-border: var(--accent);
+  --pf-border-focus: var(--accent);
+  --pf-text: var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+
+html[data-article-leaving] .article-card.is-transition-source h3,
+html[data-article-leaving] .pf-result.is-transition-source .pf-result-link,
+html[data-article-leaving] .pagefind-ui__result.is-transition-source .pagefind-ui__result-link {
+  color: var(--accent);
 }
 
 html:not([data-theme-transition])[data-route-motion="section"]::view-transition-old(root) {
@@ -35,7 +69,10 @@ html:not([data-theme-transition])[data-route-motion="article-exit"]::view-transi
   animation: route-article-exit-old var(--motion-context) ease both;
 }
 
-html:not([data-theme-transition])[data-route-motion="article-exit"]::view-transition-new(root),
+html:not([data-theme-transition])[data-route-motion="article-exit"]::view-transition-new(root) {
+  animation: route-article-exit-new var(--motion-context) var(--ease-out-expo) both;
+}
+
 html:not([data-theme-transition])[data-route-motion="default"]::view-transition-new(root) {
   animation: route-default-new var(--motion-context) var(--ease-out-expo) both;
 }
@@ -53,15 +90,19 @@ html:not([data-theme-transition])[data-route-motion="default"]::view-transition-
 }
 
 @keyframes route-article-old {
-  to { opacity: .18; transform: translateY(calc(var(--motion-distance-block) * -.5)); }
+  to { opacity: .18; transform: translateY(calc(var(--motion-article-old) * -1)); }
 }
 
 @keyframes route-article-new {
-  from { opacity: 0; transform: translateY(calc(var(--motion-distance-block) * .5)); }
+  from { opacity: 0; transform: translateY(var(--motion-article-new)); }
 }
 
 @keyframes route-article-exit-old {
-  to { opacity: .18; transform: translateY(calc(var(--motion-distance-block) * .5)); }
+  to { opacity: .18; transform: translateY(var(--motion-article-old)); }
+}
+
+@keyframes route-article-exit-new {
+  from { opacity: 0; transform: translateY(calc(var(--motion-article-new) * -1)); }
 }
 
 @keyframes route-default-old {
@@ -76,8 +117,18 @@ html:not([data-theme-transition])[data-route-motion="default"]::view-transition-
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
-    animation-duration: .01ms !important;
+    animation: none !important;
   }
 
-  html[data-archive-leaving] .article-card:not(.is-transition-source) { opacity: 1; }
+  html[data-article-leaving] .article-list.is-article-selection-group .article-card:not(.is-transition-source),
+  html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
+  html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
+    opacity: 1;
+  }
+
+  html[data-article-leaving] .article-card.is-transition-source,
+  html[data-article-leaving] .pf-result.is-transition-source,
+  html[data-article-leaving] .pagefind-ui__result.is-transition-source {
+    transform: none;
+  }
 }

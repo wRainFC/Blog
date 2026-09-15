@@ -24,8 +24,8 @@ export function pageKindFromPath(pathname: string): PageKind {
 export function classifyRouteMotion(fromPath: string, toPath: string): RouteMotion {
   const from = pageKindFromPath(fromPath);
   const to = pageKindFromPath(toPath);
-  if (from === "archive" && to === "article") return "article-enter";
-  if (from === "article" && to === "archive") return "article-exit";
+  if (from !== "article" && to === "article") return "article-enter";
+  if (from === "article" && to !== "article") return "article-exit";
   if (from === "archive" && to === "archive") return "section";
   return "default";
 }

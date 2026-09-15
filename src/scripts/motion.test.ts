@@ -18,9 +18,16 @@ describe("page motion", () => {
   });
 
   it("chooses semantic transitions", () => {
+    expect(classifyRouteMotion("/", "/writing/a-note")).toBe("article-enter");
+    expect(classifyRouteMotion("/search", "/writing/a-note")).toBe("article-enter");
     expect(classifyRouteMotion("/writing", "/writing/a-note")).toBe("article-enter");
+    expect(classifyRouteMotion("/learn/data-structures", "/learn/data-structures/tree")).toBe("article-enter");
+    expect(classifyRouteMotion("/topics/algorithms", "/learn/data-structures/tree")).toBe("article-enter");
     expect(classifyRouteMotion("/writing/a-note", "/writing")).toBe("article-exit");
+    expect(classifyRouteMotion("/writing/a-note", "/")).toBe("article-exit");
+    expect(classifyRouteMotion("/learn/data-structures/tree", "/search")).toBe("article-exit");
     expect(classifyRouteMotion("/writing", "/learn")).toBe("section");
+    expect(classifyRouteMotion("/writing/a-note", "/writing/another-note")).toBe("default");
     expect(classifyRouteMotion("/", "/about")).toBe("default");
   });
 });

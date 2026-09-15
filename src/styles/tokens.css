@@ -18,6 +18,26 @@
   --sans: "Inter", "SF Pro Text", "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --serif: var(--sans);
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-micro: 12px;
+  --text-meta: 13px;
+  --text-ui: 14px;
+  --text-summary: 15px;
+  --text-body: 16px;
+  --text-prose: 17px;
+  --text-lead: clamp(17px, 1.5vw, 19px);
+  --text-card-title: clamp(20px, 1.7vw, 24px);
+  --text-chapter: clamp(28px, 3vw, 36px);
+  --text-section: clamp(44px, 5vw, 60px);
+  --text-page: clamp(52px, 6.5vw, 76px);
+  --text-article: clamp(46px, 5.8vw, 68px);
+  --leading-micro: 1.4;
+  --leading-meta: 1.45;
+  --leading-ui: 1.55;
+  --leading-summary: 1.7;
+  --leading-display: 1.04;
+  --tracking-display: -.055em;
+  --tracking-card: -.025em;
+  --tracking-micro: .12em;
   --content: 1180px;
   --header-content: 1080px;
   --reading: 720px;
@@ -40,9 +60,20 @@
   --motion-reveal: 420ms;
   --motion-distance-inline: 8px;
   --motion-distance-block: 14px;
+  --motion-article-old: 8px;
+  --motion-article-new: 12px;
   --motion-stagger: 35ms;
   --motion-stagger-max: 120ms;
   --motion-theme-reveal: 650ms;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --text-page: clamp(40px, 12vw, 54px);
+    --text-section: clamp(36px, 11vw, 48px);
+    --text-article: clamp(38px, 11vw, 50px);
+    --text-card-title: 20px;
+  }
 }
 
 html[data-theme="dark"] {
