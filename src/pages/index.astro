@@ -3,6 +3,7 @@ import "../styles/home.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import EditorialHero from "../components/home/EditorialHero.astro";
 import ArticleCard from "../components/article/ArticleCard.astro";
+import heroImage from "../assets/home-hero.jpg";
 import { getCourseSummaries, getPublishedEssays, getPublishedNotes, byNewest } from "../lib/content/queries";
 import { articleHref, articleMotionId, courseHref } from "../lib/content/urls";
 
@@ -25,7 +26,7 @@ const formatMonth = (date?: Date) => date
 ---
 
 <BaseLayout headerVariant="overlay" pageKind="home">
-  <EditorialHero />
+  <EditorialHero image={heroImage} imageAlt="浅蓝色双马尾动漫少女抱膝而坐，肩旁趴着一只小动物" />
 
   <section class="home-section home-content-bridge" id="recent" data-reveal aria-labelledby="recent-title">
     <header class="section-heading reveal-item">

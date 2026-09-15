@@ -22,27 +22,27 @@ if (image && !imageAlt?.trim()) {
 
     <div class="editorial-hero__media hero-reveal" data-hero-stage>
       <div class="editorial-hero__visual">
-        {image ? (
-          <Image
-            src={image}
-            alt={imageAlt!}
-            widths={[480, 720, 960, 1200]}
-            sizes="(max-width: 640px) 78vw, (max-width: 1100px) 52vw, 560px"
-            loading="eager"
-            fetchpriority="high"
-            class="editorial-hero__image"
-          />
-        ) : (
-          <div class="hero-placeholder" aria-hidden="true">
-            <span class="hero-placeholder__label">STUDY / NOTES / IDEAS</span>
-            <span class="hero-placeholder__orbit hero-placeholder__orbit--primary"></span>
-            <span class="hero-placeholder__orbit hero-placeholder__orbit--secondary"></span>
-            <span class="hero-placeholder__disc"></span>
-            <span class="hero-placeholder__satellite hero-placeholder__satellite--one"></span>
-            <span class="hero-placeholder__satellite hero-placeholder__satellite--two"></span>
-            <span class="hero-placeholder__index">01</span>
-          </div>
-        )}
+        <div class="hero-placeholder">
+          <span class="hero-placeholder__label" aria-hidden="true">STUDY / NOTES / IDEAS</span>
+          <span class="hero-placeholder__orbit hero-placeholder__orbit--primary" aria-hidden="true"></span>
+          <span class="hero-placeholder__orbit hero-placeholder__orbit--secondary" aria-hidden="true"></span>
+          <span class:list={["hero-placeholder__disc", image && "hero-placeholder__disc--portrait"]}>
+            {image && (
+              <Image
+                src={image}
+                alt={imageAlt!}
+                widths={[160, 240, 320, 480]}
+                sizes="(max-width: 640px) 36vw, 210px"
+                loading="eager"
+                fetchpriority="high"
+                class="hero-placeholder__portrait"
+              />
+            )}
+          </span>
+          <span class="hero-placeholder__satellite hero-placeholder__satellite--one" aria-hidden="true"></span>
+          <span class="hero-placeholder__satellite hero-placeholder__satellite--two" aria-hidden="true"></span>
+          <span class="hero-placeholder__index" aria-hidden="true">01</span>
+        </div>
       </div>
     </div>
 
