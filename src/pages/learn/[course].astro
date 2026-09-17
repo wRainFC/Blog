@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getCollection } from "astro:content";
-import { getCourseById, getCourseNotes } from "../../lib/content/queries";
+import { getCourseById, getCourseOutline } from "../../lib/content/queries";
 import { articleHref, articleMotionId } from "../../lib/content/urls";
 import { withBasePath } from "../../lib/site-path";
 
@@ -12,35 +12,37 @@ export async function getStaticPaths() {
 }
 
 const courseId = Astro.params.course!;
-const [course, notes] = await Promise.all([
+const [course, outline] = await Promise.all([
   getCourseById(courseId),
-  getCourseNotes(courseId),
+  getCourseOutline(courseId),
 ]);
 
 if (!course) throw new Error(`Course not found: ${courseId}`);
+const noteCount = outline.reduce((total, chapter) => total + chapter.notes.length, 0);
 ---
 
 <BaseLayout title={`${course.data.title}｜楚地之雨`} description={course.data.description || `${course.data.title}课程笔记归档。`} pageKind="archive">
   <section class="page-hero compact-hero course-page-hero">
-    <p class="section-index">{course.data.semester}</p>
+    <p class="section-index">COURSE / {course.data.semester}</p>
     <h1>{course.data.title}</h1>
-    <p>{course.data.description || "沿着章节继续向前，也随时回到概念的起点。"}</p>
+    <p>{course.data.description || "依照课程结构整理概念、推导与练习。"}</p>
   </section>
   <section class="single-archive" data-pagefind-body data-reveal>
-    <div class="archive-summary reveal-item"><span>{notes.length} 篇笔记</span><i></i><a href={withBasePath("/learn")}>返回全部课程</a></div>
-    <div class="article-list">
-      {notes.map((note) => (
-        <ArticleCard
-          href={articleHref(note)}
-          title={note.data.title}
-          summary={note.data.summary}
-          date={note.data.pubDate}
-          kind="笔记"
-          eyebrow={note.data.chapter}
-          class="reveal-item"
-          motionId={articleMotionId(note)}
-        />
-      ))}
-    </div>
+    <div class="archive-summary reveal-item"><span>{noteCount} 篇笔记</span><i></i><span>{outline.length} 个章节</span><i></i><a href={withBasePath("/learn")}>返回全部课程</a></div>
+    {outline.map((chapter, chapterIndex) => (
+      <section class="course-chapter reveal-item" aria-labelledby={`chapter-${chapter.id}`}>
+        <header class="course-chapter__heading">
+          <p>CHAPTER / {String(chapterIndex + 1).padStart(2, "0")}</p>
+          <h2 id={`chapter-${chapter.id}`}>{chapter.title}</h2>
+          <span>{chapter.notes.length} 篇</span>
+        </header>
+        <div class="article-list">
+          {chapter.notes.map((note) => (
+            <ArticleCard href={articleHref(note)} title={note.data.title} summary={note.data.summary}
+              date={note.data.pubDate} kind="笔记" eyebrow={chapter.title} class="reveal-item" motionId={articleMotionId(note)} />
+          ))}
+        </div>
+      </section>
+    ))}
   </section>
 </BaseLayout>

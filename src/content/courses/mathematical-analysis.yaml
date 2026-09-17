@@ -2,3 +2,6 @@ title: 数学分析
 semester: 大一 · 秋
 description: 从极限与连续开始，把直觉写成可检验的数学语言。
 order: 3
+chapters:
+  - id: chapter-01
+    title: 第一章 · 极限与连续

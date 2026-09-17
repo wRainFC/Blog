@@ -14,6 +14,7 @@ import {
   byNewest,
   getArticlesByTopic,
   getCourseNotes,
+  getCourseOutline,
   getCourseSummaries,
   getLatestArticles,
   getPublishedArticles,
@@ -37,6 +38,8 @@ const note = (id: string, overrides: Record<string, any> = {}): FakeEntry => ({
     tags: [],
     draft: false,
     course: { id: "course-a" },
+    chapter: "chapter-01",
+    order: Math.max(0, Number(id.match(/\d+$/)?.[0] ?? 1) - 1),
     ...overrides,
   },
 });
@@ -57,10 +60,14 @@ const essay = (id: string, overrides: Record<string, any> = {}): FakeEntry => ({
 const course = (id: string, overrides: Record<string, any> = {}): FakeEntry => ({
   id,
   collection: "courses",
-  data: { title: id, semester: "春", order: 0, ...overrides },
+  data: { title: id, semester: "春", order: 0, chapters: [{ id: "chapter-01", title: "第一章" }], ...overrides },
 });
 
 function given(collections: Record<string, FakeEntry[]>) {
+  if (!collections.courses) {
+    const ids = [...new Set((collections.notes ?? []).map((entry) => entry.data.course.id))];
+    collections.courses = ids.map((id) => course(id));
+  }
   mocks.getCollection.mockImplementation(async (name: string, filter?: (entry: any) => boolean) => {
     const items = collections[name] ?? [];
     return filter ? items.filter(filter) : [...items];
@@ -162,6 +169,24 @@ describe("getCourseNotes", () => {
     });
     const notes = await getCourseNotes("course-a");
     expect(notes.map((entry) => entry.id)).toEqual(["n1"]);
+  });
+});
+
+describe("getCourseOutline", () => {
+  it("uses chapter array order and note order, and hides empty chapters", async () => {
+    given({
+      courses: [course("course-a", { chapters: [{ id: "chapter-02", title: "第二章" }, { id: "chapter-01", title: "第一章" }, { id: "empty", title: "空章" }] })],
+      notes: [note("n1", { chapter: "chapter-01", order: 0 }), note("n2", { chapter: "chapter-02", order: 1 }), note("n3", { chapter: "chapter-02", order: 0 })],
+    });
+    const outline = await getCourseOutline("course-a");
+    expect(outline.map((group) => [group.title, group.notes.map((item) => item.id)])).toEqual([
+      ["第二章", ["n3", "n2"]], ["第一章", ["n1"]],
+    ]);
+  });
+
+  it("fails clearly for an unknown chapter", async () => {
+    given({ courses: [course("course-a")], notes: [note("n1", { chapter: "missing" })] });
+    await expect(getCourseOutline("course-a")).rejects.toThrow(/不存在的章节/);
   });
 });
 

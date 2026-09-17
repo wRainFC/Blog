@@ -1,3 +1,8 @@
 title: 数字逻辑与计算机组成
 semester: 大一 · 春
 description: 拉电线哈哈！
+chapters:
+  - id: chapter-07
+    title: 第七章
+  - id: chapter-08
+    title: 第八章

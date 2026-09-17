@@ -1,7 +1,7 @@
 ---
 import { render } from "astro:content";
 import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { getCourseById, getPublishedNotes } from "../../../lib/content/queries";
+import { getCourseById, getPublishedNotes, resolveCourseChapter } from "../../../lib/content/queries";
 import { readingTime } from "../../../lib/content/format";
 import { articleMotionId } from "../../../lib/content/urls";
 
@@ -17,6 +17,8 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const course = await getCourseById(entry.data.course.id);
+if (!course) throw new Error(`Course not found: ${entry.data.course.id}`);
+const chapter = resolveCourseChapter(course, entry);
 const { Content, headings } = await render(entry);
 ---
 
@@ -28,7 +30,7 @@ const { Content, headings } = await render(entry);
   tags={entry.data.tags}
   type="note"
   course={course}
-  chapter={entry.data.chapter}
+  chapter={chapter.title}
   headings={headings}
   readingTime={readingTime(entry.body)}
   motionId={articleMotionId(entry)}

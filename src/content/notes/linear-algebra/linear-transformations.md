@@ -3,7 +3,8 @@ title: "线性变换：矩阵背后真正发生了什么"
 summary: "不从矩阵乘法开始，而从空间如何被拉伸、旋转和压缩开始理解线性代数。"
 pubDate: 2026-05-27
 course: linear-algebra
-chapter: "第三章 · 线性映射"
+chapter: chapter-03
+order: 0
 tags:
   - 矩阵
   - 线性变换

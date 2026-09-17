@@ -2,3 +2,6 @@ title: 线性代数
 semester: 大一 · 春
 description: 关于什么是线性以及线性能给我们带来什么的故事
 order: 2
+chapters:
+  - id: chapter-03
+    title: 第三章 · 线性映射

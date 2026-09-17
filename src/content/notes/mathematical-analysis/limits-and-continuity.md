@@ -4,7 +4,8 @@ summary: "从 ε–δ 定义出发，理解极限为何不是一种模糊的靠�
 pubDate: 2026-06-18
 updated: 2026-06-23
 course: mathematical-analysis
-chapter: "第一章 · 极限与连续"
+chapter: chapter-01
+order: 0
 tags: ["极限", "连续", "证明"]
 draft: false
 ---
