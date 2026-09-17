@@ -1,13 +1,14 @@
 ---
 import Wordmark from "./Wordmark.astro";
 import { navigation } from "../../config/site";
+import { withBasePath, withoutBasePath } from "../../lib/site-path";
 
 interface Props {
   variant?: "default" | "overlay";
 }
 
 const { variant = "default" } = Astro.props;
-const pathname = Astro.url.pathname;
+const pathname = withoutBasePath(Astro.url.pathname);
 const links = navigation;
 ---
 
@@ -18,14 +19,14 @@ const links = navigation;
   transition:animate="none"
 >
   <div class="header-inner">
-    <a class="brand" href="/" aria-label="wRainFC 首页">
+    <a class="brand" href={withBasePath("/")} aria-label="wRainFC 首页">
       <Wordmark />
     </a>
 
     <nav class="desktop-nav" aria-label="主导航">
       {links.map((link) => (
         <a
-          href={link.href}
+          href={withBasePath(link.href)}
           aria-current={pathname.startsWith(link.href) ? "page" : undefined}
         >
           {link.label}
@@ -37,7 +38,7 @@ const links = navigation;
       <span class="nav-actions">
         <a
           class="search-link"
-          href="/search"
+          href={withBasePath("/search")}
           aria-label="搜索文章"
           aria-current={pathname.startsWith("/search") ? "page" : undefined}
         >
@@ -77,11 +78,11 @@ const links = navigation;
       </div>
       <nav aria-label="移动端导航">
         {links.map((link) => (
-          <a href={link.href} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>
+          <a href={withBasePath(link.href)} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>
             {link.label}
           </a>
         ))}
-        <a href="/search" aria-current={pathname.startsWith("/search") ? "page" : undefined}>搜索</a>
+        <a href={withBasePath("/search")} aria-current={pathname.startsWith("/search") ? "page" : undefined}>搜索</a>
         <button class="theme-control" type="button" data-theme-control aria-pressed="false" aria-label="切换至深色主题" title="切换至深色主题">
           <svg class="theme-control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <g class="theme-control-sun"><circle cx="12" cy="12" r="3.4" /><path d="M12 2.5v2.3m0 14.4v2.3M2.5 12h2.3m14.4 0h2.3M5.3 5.3 7 7m10 10 1.7 1.7m0-13.4L17 7M7 17l-1.7 1.7" /></g>

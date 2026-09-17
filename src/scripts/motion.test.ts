@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   classifyRouteMotion,
   getActiveHeadingIndex,
@@ -6,6 +6,8 @@ import {
   getReadingProgress,
   pageKindFromPath,
 } from "./motion";
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe("page motion", () => {
   it("classifies route kinds", () => {
@@ -29,6 +31,16 @@ describe("page motion", () => {
     expect(classifyRouteMotion("/writing", "/learn")).toBe("section");
     expect(classifyRouteMotion("/writing/a-note", "/writing/another-note")).toBe("default");
     expect(classifyRouteMotion("/", "/about")).toBe("default");
+  });
+
+  it("keeps article transitions and homepage detection under the Pages base", () => {
+    vi.stubEnv("BASE_URL", "/Blog/");
+    expect(pageKindFromPath("/Blog/")).toBe("home");
+    expect(pageKindFromPath("/Blog/learn/data-structures")).toBe("archive");
+    expect(pageKindFromPath("/Blog/learn/data-structures/tree")).toBe("article");
+    expect(classifyRouteMotion("/Blog/search", "/Blog/writing/a-note")).toBe("article-enter");
+    expect(classifyRouteMotion("/Blog/writing/a-note", "/Blog/")).toBe("article-exit");
+    expect(classifyRouteMotion("/Blog/writing", "/Blog/learn")).toBe("section");
   });
 });
 

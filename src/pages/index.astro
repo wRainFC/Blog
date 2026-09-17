@@ -6,6 +6,7 @@ import ArticleCard from "../components/article/ArticleCard.astro";
 import heroImage from "../assets/home-hero.jpg";
 import { getCourseSummaries, getPublishedEssays, getPublishedNotes, byNewest } from "../lib/content/queries";
 import { articleHref, articleMotionId, courseHref } from "../lib/content/urls";
+import { withBasePath } from "../lib/site-path";
 
 const [notes, essays, courses] = await Promise.all([
   getPublishedNotes(),
@@ -34,7 +35,7 @@ const formatMonth = (date?: Date) => date
         <p class="section-index">01 / LATEST</p>
         <h2 id="recent-title">最近更新</h2>
       </div>
-      <a href="/writing">查看全部 <span aria-hidden="true">↗</span></a>
+      <a href={withBasePath("/writing")}>查看全部 <span aria-hidden="true">↗</span></a>
     </header>
 
     <div class="home-recent-list article-list reveal-item">
@@ -61,7 +62,7 @@ const formatMonth = (date?: Date) => date
         <p class="section-index">02 / COURSES</p>
         <h2 id="courses-title">课程索引</h2>
       </div>
-      <a href="/learn">全部课程 <span>↗</span></a>
+      <a href={withBasePath("/learn")}>全部课程 <span>↗</span></a>
     </header>
 
     <div class="course-grid reveal-item">

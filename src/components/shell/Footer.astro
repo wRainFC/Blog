@@ -1,6 +1,7 @@
 ---
 import Wordmark from "./Wordmark.astro";
 import { navigation } from "../../config/site";
+import { withBasePath } from "../../lib/site-path";
 
 const year = new Date().getFullYear();
 const links = [
@@ -16,7 +17,7 @@ const links = [
       <span class="footer-brand"><Wordmark size="footer" /></span>
       <nav class="footer-nav" aria-label="页脚导航">
         {links.map((link) => (
-          <a href={link.href} data-astro-reload={link.href === "/rss.xml" ? true : undefined}>
+          <a href={withBasePath(link.href)} data-astro-reload={link.href === "/rss.xml" ? true : undefined}>
             {link.label}
           </a>
         ))}

@@ -1,3 +1,5 @@
+import { withoutBasePath } from "../lib/site-path";
+
 export const clamp = (value: number, minimum = 0, maximum = 1) =>
   Math.min(maximum, Math.max(minimum, value));
 
@@ -13,7 +15,7 @@ export type PageKind = "home" | "archive" | "article" | "utility";
 export type RouteMotion = "article-enter" | "article-exit" | "section" | "default";
 
 export function pageKindFromPath(pathname: string): PageKind {
-  const segments = pathname.split("/").filter(Boolean);
+  const segments = withoutBasePath(pathname).split("/").filter(Boolean);
   if (!segments.length) return "home";
   if (segments[0] === "writing") return segments.length === 1 ? "archive" : "article";
   if (segments[0] === "learn") return segments.length <= 2 ? "archive" : "article";

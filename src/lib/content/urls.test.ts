@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { articleHref, articleMotionId, courseHref, topicHref } from "./urls";
 import type { Article } from "./queries";
+import { withBasePath, withoutBasePath } from "../site-path";
+
+afterEach(() => vi.unstubAllEnvs());
 
 const essay = (id: string): Article =>
   ({ id, collection: "essays", data: {} }) as Article;
@@ -50,5 +53,35 @@ describe("articleMotionId", () => {
   it("distinguishes collections and non-Latin ids", () => {
     expect(articleMotionId(essay("数据结构")))
       .not.toBe(articleMotionId(note("数据结构", "data-structures")));
+  });
+});
+
+describe("GitHub Pages paths", () => {
+  it("prefixes content routes when deployed in a repository subdirectory", () => {
+    vi.stubEnv("BASE_URL", "/Blog/");
+    expect(courseHref("data-structures")).toBe("/Blog/learn/data-structures");
+    expect(articleHref(essay("learning-slowly"))).toBe("/Blog/writing/learning-slowly");
+    expect(articleHref(note("data-structures/数据结构", "data-structures")))
+      .toBe("/Blog/learn/data-structures/数据结构");
+    expect(topicHref("树")).toBe("/Blog/topics/%E6%A0%91");
+  });
+
+  it("preserves external, relative and already prefixed URLs", () => {
+    vi.stubEnv("BASE_URL", "/Blog");
+    expect(withBasePath("/")).toBe("/Blog/");
+    expect(withBasePath("/images/example.png?size=2#preview"))
+      .toBe("/Blog/images/example.png?size=2#preview");
+    expect(withBasePath("/Blog/search?q=树")).toBe("/Blog/search?q=树");
+    expect(withBasePath("/Blog-other")).toBe("/Blog/Blog-other");
+    for (const url of ["#chapter", "../example.png", "https://example.com/a", "//cdn.example.com/a", "mailto:a@example.com"]) {
+      expect(withBasePath(url)).toBe(url);
+    }
+  });
+
+  it("removes only the configured base segment for route matching", () => {
+    expect(withoutBasePath("/Blog", "/Blog/")).toBe("/");
+    expect(withoutBasePath("/Blog/learn", "/Blog/")).toBe("/learn");
+    expect(withoutBasePath("/Blog-other/learn", "/Blog")).toBe("/Blog-other/learn");
+    expect(withoutBasePath("/learn", "/")).toBe("/learn");
   });
 });

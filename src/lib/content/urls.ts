@@ -1,12 +1,13 @@
 import type { Article } from "./queries";
+import { withBasePath } from "../site-path";
 
 export function courseHref(courseId: string): string {
-  return `/learn/${encodeURIComponent(courseId)}`;
+  return withBasePath(`/learn/${encodeURIComponent(courseId)}`);
 }
 
 export function articleHref(entry: Article): string {
   if (entry.collection === "essays") {
-    return `/writing/${entry.id}`;
+    return withBasePath(`/writing/${entry.id}`);
   }
 
   const courseId = entry.data.course.id;
@@ -29,5 +30,5 @@ export function articleMotionId(entry: Article): string {
 }
 
 export function topicHref(topic: string): string {
-  return `/topics/${encodeURIComponent(topic)}`;
+  return withBasePath(`/topics/${encodeURIComponent(topic)}`);
 }

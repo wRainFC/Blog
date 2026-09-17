@@ -2,6 +2,7 @@ import rss from "@astrojs/rss";
 import { getPublishedArticles } from "../lib/content/queries";
 import { articleHref } from "../lib/content/urls";
 import { siteConfig } from "../config/site";
+import { withBasePath } from "../lib/site-path";
 
 export async function GET(context) {
   const items = (await getPublishedArticles())
@@ -17,7 +18,7 @@ export async function GET(context) {
   return rss({
     title: `${siteConfig.name} · wRainFC`,
     description: "一名大学生的课程笔记与随笔思考。",
-    site: context.site,
+    site: new URL(withBasePath("/"), context.site),
     items,
     customData: "<language>zh-CN</language>",
   });

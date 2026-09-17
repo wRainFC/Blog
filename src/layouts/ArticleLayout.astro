@@ -2,6 +2,7 @@
 import BaseLayout from "./BaseLayout.astro";
 import type { Course } from "../lib/content/queries";
 import { courseHref, topicHref } from "../lib/content/urls";
+import { withBasePath } from "../lib/site-path";
 import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 
@@ -31,7 +32,7 @@ const {
   <article class="article-shell" data-pagefind-body>
     <header class="article-header">
       <p class="article-breadcrumb">
-        <a href={type === "note" && course ? courseHref(course.id) : "/writing"}>{type === "note" ? "学习" : "写作"}</a>
+        <a href={type === "note" && course ? courseHref(course.id) : withBasePath("/writing")}>{type === "note" ? "学习" : "写作"}</a>
         <span>/</span>
         <span>{course?.data.title || "随笔"}</span>
       </p>

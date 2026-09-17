@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBasePath } from "../lib/site-path";
 ---
 
 <BaseLayout title="页面未找到｜楚地之雨" description="这里暂时没有内容。" pageKind="utility">
@@ -7,6 +8,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <span>404</span>
     <h1>页面未找到</h1>
     <p>这个地址可能已经移动，或者内容尚未发布。</p>
-    <a class="primary-button" href="/">返回首页</a>
+    <a class="primary-button" href={withBasePath("/")}>返回首页</a>
   </section>
 </BaseLayout>

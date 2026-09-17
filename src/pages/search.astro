@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBasePath } from "../lib/site-path";
 ---
 
 <BaseLayout title="搜索｜楚地之雨" description="搜索楚地之雨的课程笔记和随笔。" pageKind="utility">
@@ -10,15 +11,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <p>按标题、正文、课程或标签查找内容。</p>
     </div>
     <div class="search-panel" data-pagefind-ignore>
-      <pagefind-config show-images="false" excerpt-length="24"></pagefind-config>
+      <pagefind-config bundle-path={withBasePath("/pagefind/")} base-url={withBasePath("/")} show-images="false" excerpt-length="24"></pagefind-config>
       <pagefind-input placeholder="输入关键词，如：极限、树、成长"></pagefind-input>
       <pagefind-summary></pagefind-summary>
       <pagefind-results></pagefind-results>
       <p class="search-loading" data-search-loading>搜索索引将在正式构建后可用。</p>
     </div>
   </section>
-  <link href="/pagefind/pagefind-component-ui.css" rel="stylesheet" />
-  <script is:inline src="/pagefind/pagefind-component-ui.js" type="module"></script>
+  <link href={withBasePath("/pagefind/pagefind-component-ui.css")} rel="stylesheet" />
+  <script is:inline src={withBasePath("/pagefind/pagefind-component-ui.js")} type="module"></script>
   <script>
     customElements.whenDefined("pagefind-input").then(() => {
       document.querySelector("[data-search-loading]")?.remove();

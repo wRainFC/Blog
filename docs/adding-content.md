@@ -17,7 +17,7 @@ Windows 也可以双击 `content-studio.cmd`。工作台只监听本机地址，
 顶部只有两个主要动作：
 
 - “保存草稿”只写入本地内容文件，并自动运行 `pnpm check`。
-- “发布到网站”将文章设为公开，依次运行 `pnpm check`、`pnpm build`，创建内容提交并推送到 `origin/main`。外部托管平台随后根据 main 分支完成部署。
+- “发布到网站”将文章设为公开，依次运行 `pnpm check`、`pnpm build`，创建内容提交并推送到 `origin/main`。GitHub Actions 随后根据 main 分支构建并发布到 GitHub Pages。
 
 一键发布只会提交当前文章、文章专属图片，以及课程笔记依赖的课程 YAML。发布前如果发现其他工作区改动、当前分支不是 main、构建失败或 Git 推送失败，会停止并在“发布与检查记录”中显示原因。运行电脑需要已经配置好 GitHub 推送凭据。
 
@@ -243,10 +243,10 @@ pnpm check 会检查 frontmatter、课程引用和 Astro/TypeScript 类型；pnp
     ↓
 Studio 自动检查、构建、提交并推送
     ↓
-外部静态托管平台发布
+GitHub Actions 构建并发布到 GitHub Pages
 ~~~
 
-站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制。外部托管平台应设置真实域名，例如：
+站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制，部署子目录由 PUBLIC_BASE_PATH 控制。GitHub Actions 已配置网站域名与 `/Blog` 子目录；首次发布步骤见 [GitHub Pages 发布](github-pages.md)。其他静态托管平台应设置真实域名，例如：
 
 ~~~text
 PUBLIC_SITE_URL=https://example.com

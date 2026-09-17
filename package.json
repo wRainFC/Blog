@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.3.4",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -25,6 +26,7 @@
     "katex": "0.17.0",
     "rehype-callouts": "2.2.0",
     "rehype-katex": "7.0.1",
+    "rehype-raw": "7.0.0",
     "remark-math": "6.0.0"
   },
   "devDependencies": {

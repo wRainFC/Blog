@@ -21,7 +21,15 @@
 - `pnpm preview`：预览生产构建
 - `pnpm studio`：启动 Markdown 优先的本地写作工作台；可保存草稿或检查、构建并发布到 `origin/main`（Windows 也可以双击 `content-studio.cmd`）
 
-## 外部托管
+## GitHub Pages 发布
+
+仓库已配置 GitHub Actions：推送到 `main` 后自动构建并发布到 GitHub Pages。默认地址为 <https://wrainfc.github.io/Blog/>。
+
+首次发布需要在 GitHub 仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**，然后将代码和内容提交、推送到 `main`。部署进度与网站链接位于仓库的 Actions 页面。
+
+详细步骤、路径配置和本地发布预览见 [GitHub Pages 发布](docs/github-pages.md)。
+
+## 其他静态托管
 
 源码托管在 GitHub，外部静态托管平台负责构建和发布。构建环境需要 Node.js 20+，并执行：
 
@@ -35,3 +43,5 @@ pnpm build
 ```text
 PUBLIC_SITE_URL=https://example.com
 ```
+
+部署到子目录时，还需设置 `PUBLIC_BASE_PATH`（例如 `/Blog`）。本地开发默认使用根路径 `/`。

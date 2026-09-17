@@ -4,6 +4,7 @@ import ArticleCard from "../../components/article/ArticleCard.astro";
 import { getCollection } from "astro:content";
 import { getCourseById, getCourseNotes } from "../../lib/content/queries";
 import { articleHref, articleMotionId } from "../../lib/content/urls";
+import { withBasePath } from "../../lib/site-path";
 
 export async function getStaticPaths() {
   const courses = await getCollection("courses");
@@ -26,7 +27,7 @@ if (!course) throw new Error(`Course not found: ${courseId}`);
     <p>{course.data.description || "沿着章节继续向前，也随时回到概念的起点。"}</p>
   </section>
   <section class="single-archive" data-pagefind-body data-reveal>
-    <div class="archive-summary reveal-item"><span>{notes.length} 篇笔记</span><i></i><a href="/learn">返回全部课程</a></div>
+    <div class="archive-summary reveal-item"><span>{notes.length} 篇笔记</span><i></i><a href={withBasePath("/learn")}>返回全部课程</a></div>
     <div class="article-list">
       {notes.map((note) => (
         <ArticleCard

@@ -6,6 +6,10 @@ import { unified } from "@astrojs/markdown-remark";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeCallouts from "rehype-callouts";
+import rehypeRaw from "rehype-raw";
+import { rehypeBasePath } from "./src/lib/content/rehype-base-path.ts";
+
+const base = process.env.PUBLIC_BASE_PATH || "/";
 
 const studioIntegrations = process.env.CONTENT_STUDIO === "1"
   ? [(await import("./tools/content-studio/integration.ts")).contentStudio()]
@@ -13,6 +17,7 @@ const studioIntegrations = process.env.CONTENT_STUDIO === "1"
 
 export default defineConfig({
   site: process.env.PUBLIC_SITE_URL || "http://localhost:4321",
+  base,
   output: "static",
   integrations: [
     expressiveCode({
@@ -33,6 +38,11 @@ export default defineConfig({
       rehypePlugins: [
         [rehypeKatex, { throwOnError: true, output: "htmlAndMathml" }],
         rehypeCallouts,
+        [rehypeRaw, { passThrough: [
+          "mdxFlowExpression", "mdxTextExpression", "mdxJsxFlowElement",
+          "mdxJsxTextElement", "mdxjsEsm",
+        ] }],
+        [rehypeBasePath, { base }],
       ],
     }),
   },

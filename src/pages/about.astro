@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBasePath } from "../lib/site-path";
 ---
 
 <BaseLayout title="关于｜楚地之雨" description="关于楚地之雨，以及这个个人知识索引为何存在。" pageKind="utility">
@@ -31,6 +32,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
   <section class="about-contact">
     <p>从一个问题出发，继续向下探索。</p>
-    <div><a href="/learn">浏览课程笔记</a><a href="/rss.xml" data-astro-reload>订阅 RSS</a></div>
+    <div><a href={withBasePath("/learn")}>浏览课程笔记</a><a href={withBasePath("/rss.xml")} data-astro-reload>订阅 RSS</a></div>
   </section>
 </BaseLayout>
