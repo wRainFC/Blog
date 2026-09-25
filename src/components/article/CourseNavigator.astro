@@ -1,0 +1,65 @@
+---
+import type { Course, CourseOutlineGroup } from "../../lib/content/queries";
+import { articleHref, courseHref } from "../../lib/content/urls";
+
+interface Props {
+  course: Course;
+  outline: CourseOutlineGroup[];
+  currentNoteId: string;
+  currentChapterId?: string;
+  variant?: "desktop" | "mobile";
+}
+
+const { course, outline, currentNoteId, currentChapterId, variant = "desktop" } = Astro.props;
+const isMobile = variant === "mobile";
+---
+
+{isMobile ? (
+  <details class="course-navigator-mobile" data-pagefind-ignore open>
+    <summary>
+      <span>课程目录</span>
+      <strong>{course.data.title}</strong>
+      <i aria-hidden="true"></i>
+    </summary>
+    <nav aria-label={`${course.data.title}课程目录`}>
+      <a class="course-navigator__course-link" href={courseHref(course.id)}>查看课程总览</a>
+      {outline.map((chapter) => (
+        <details open={chapter.id === currentChapterId}>
+          <summary>
+            <span>{chapter.title}</span>
+            <small>{chapter.notes.length} 篇</small>
+          </summary>
+          <div class="course-navigator__notes">
+            {chapter.notes.map((note) => (
+              <a href={articleHref(note)} aria-current={note.id === currentNoteId ? "page" : undefined} class:list={{ "is-active": note.id === currentNoteId }}>
+                {note.data.title}
+              </a>
+            ))}
+          </div>
+        </details>
+      ))}
+    </nav>
+  </details>
+) : (
+  <aside class="course-navigator" data-pagefind-ignore>
+    <p>课程目录</p>
+    <a class="course-navigator__title" href={courseHref(course.id)}>{course.data.title}</a>
+    <nav aria-label={`${course.data.title}课程目录`}>
+      {outline.map((chapter) => (
+        <details open={chapter.id === currentChapterId}>
+          <summary>
+            <span>{chapter.title}</span>
+            <small>{chapter.notes.length}</small>
+          </summary>
+          <div class="course-navigator__notes">
+            {chapter.notes.map((note) => (
+              <a href={articleHref(note)} aria-current={note.id === currentNoteId ? "page" : undefined} class:list={{ "is-active": note.id === currentNoteId }}>
+                {note.data.title}
+              </a>
+            ))}
+          </div>
+        </details>
+      ))}
+    </nav>
+  </aside>
+)}

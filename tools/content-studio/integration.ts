@@ -1,6 +1,5 @@
 import { fileURLToPath } from "node:url";
 import type { AstroConfig, AstroIntegration } from "astro";
-import type { AstroMarkdownOptions } from "@astrojs/markdown-remark";
 import { createStudioMiddleware } from "./api";
 
 export function contentStudio(): AstroIntegration {
@@ -28,7 +27,7 @@ export function contentStudio(): AstroIntegration {
         server.middlewares.use(createStudioMiddleware({
           workspaceRoot,
           token,
-          markdown: resolvedConfig.markdown as AstroMarkdownOptions,
+          markdown: resolvedConfig.markdown,
           refreshContent: refreshContent ? () => refreshContent({ loaders: ["courses", "notes", "essays"] }) : undefined,
         }));
         logger.info("本地内容工作台已启用：/studio");

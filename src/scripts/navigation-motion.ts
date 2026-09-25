@@ -20,6 +20,11 @@ let routeMotion: RouteMotion = "default";
 let hasTransitionPromise = false;
 let selectedItem: HTMLElement | null = null;
 let selectedGroup: HTMLElement | null = null;
+let selectedTitle: HTMLElement | null = null;
+let selectionCleanupTimer = 0;
+const namedTitles = new Map<HTMLElement, string>();
+
+const ARTICLE_TITLE_TRANSITION_NAME = "article-selection-title";
 
 const setThemeControlsDisabled = (scope: Document, disabled: boolean) => {
   scope.querySelectorAll<HTMLButtonElement>("button[data-theme-control]").forEach((control) => {
@@ -30,7 +35,26 @@ const setThemeControlsDisabled = (scope: Document, disabled: boolean) => {
 
 const dispatchRouteEvent = (name: string) => window.dispatchEvent(new Event(name));
 
+const clearNamedTitles = () => {
+  namedTitles.forEach((previousName, title) => {
+    if (previousName) title.style.setProperty("view-transition-name", previousName);
+    else title.style.removeProperty("view-transition-name");
+  });
+  namedTitles.clear();
+};
+
+const markTransitionTitle = (title: HTMLElement) => {
+  if (!namedTitles.has(title)) {
+    namedTitles.set(title, title.style.getPropertyValue("view-transition-name"));
+  }
+  title.style.setProperty("view-transition-name", ARTICLE_TITLE_TRANSITION_NAME);
+};
+
 const clearArticleSelection = () => {
+  if (selectionCleanupTimer) {
+    window.clearTimeout(selectionCleanupTimer);
+    selectionCleanupTimer = 0;
+  }
   selectedItem?.classList.remove("is-transition-source");
   selectedGroup?.classList.remove("is-article-selection-group");
   document.querySelectorAll(".is-transition-source")
@@ -39,6 +63,8 @@ const clearArticleSelection = () => {
     .forEach((element) => element.classList.remove("is-article-selection-group"));
   selectedItem = null;
   selectedGroup = null;
+  selectedTitle = null;
+  delete document.documentElement.dataset.articleLeaving;
 };
 
 const finishRouteMotion = () => {
@@ -47,6 +73,7 @@ const finishRouteMotion = () => {
   delete root.dataset.routeMotion;
   delete root.dataset.articleLeaving;
   setThemeControlsDisabled(document, false);
+  clearNamedTitles();
   clearArticleSelection();
   hasTransitionPromise = false;
   dispatchRouteEvent("wrain:route-transition-end");
@@ -75,15 +102,28 @@ function onArticleLinkClick(event: MouseEvent) {
   clearArticleSelection();
   selectedItem = item;
   selectedGroup = selectedItem?.closest<HTMLElement>(".article-list, .pf-results, .pagefind-ui__results") ?? null;
+  selectedTitle = selectedItem.querySelector<HTMLElement>(
+    "[data-motion-title], .pf-result-link, .pagefind-ui__result-link",
+  ) ?? link;
   selectedItem?.classList.add("is-transition-source");
   selectedGroup?.classList.add("is-article-selection-group");
   document.documentElement.dataset.articleLeaving = "true";
+
+  selectionCleanupTimer = window.setTimeout(() => {
+    selectionCleanupTimer = 0;
+    if (!document.documentElement.dataset.routeBusy) clearArticleSelection();
+  }, 500);
 }
 
 function onBeforePreparation(rawEvent: Event) {
   const event = rawEvent as AstroPreparationEvent;
   routeMotion = classifyRouteMotion(event.from.pathname, event.to.pathname);
   const root = document.documentElement;
+  if (selectionCleanupTimer) {
+    window.clearTimeout(selectionCleanupTimer);
+    selectionCleanupTimer = 0;
+  }
+  if (routeMotion !== "article-enter") clearArticleSelection();
   root.dataset.routeMotion = routeMotion;
   root.dataset.routeBusy = "true";
   setThemeControlsDisabled(document, true);
@@ -114,6 +154,15 @@ function onBeforeSwap(rawEvent: Event) {
     || event.navigationType === "traverse";
   if (backNavigation && event.newDocument.body.dataset.pageKind === "archive") {
     nextRoot.dataset.skipArchiveReveal = "true";
+  }
+
+  const targetTitle = routeMotion === "article-enter" && selectedTitle
+    ? event.newDocument.querySelector<HTMLElement>(".article-header [data-motion-title]")
+    : null;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (selectedTitle && targetTitle && !reducedMotion && typeof document.startViewTransition === "function") {
+    markTransitionTitle(selectedTitle);
+    markTransitionTitle(targetTitle);
   }
 
   setThemeControlsDisabled(event.newDocument, true);

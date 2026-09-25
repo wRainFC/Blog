@@ -3,184 +3,139 @@ import "katex/dist/katex.min.css";
 import "../../src/styles/tokens.css";
 import "../../src/styles/prose.css";
 import "./studio.css";
-
 const token = process.env.CONTENT_STUDIO_TOKEN ?? "";
 ---
-
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>写作 · 砚边</title>
-  </head>
-  <body class="studio-body document-theme">
-    <div class="studio-shell">
-      <header class="studio-header">
-        <div class="studio-brand">
-          <span class="studio-seal" aria-hidden="true">砚</span>
-          <div><strong>砚边写作</strong><span>Markdown → 网站</span></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>内容工作台 · 砚边</title>
+</head>
+<body class="studio-body document-theme">
+  <div class="studio-shell">
+    <header class="studio-header">
+      <button id="sidebar-toggle" class="icon-button" type="button" aria-label="显示或隐藏内容导航" aria-expanded="true">☰</button>
+      <a class="studio-brand" href="/studio" aria-label="返回内容工作台首页"><span class="studio-seal" aria-hidden="true">砚边</span></a>
+      <div class="header-context"><span id="header-parent">内容工作台</span><strong id="header-title">概览</strong></div>
+      <button id="activity-status" class="header-status" type="button" hidden></button>
+      <span id="save-status" class="header-status" aria-live="polite">已保存</span>
+      <button id="primary-action" class="button button-primary" type="button" hidden></button>
+      <details id="global-menu" class="global-menu">
+        <summary aria-label="更多操作">···</summary>
+        <div class="menu-popover">
+          <button type="button" data-global-action="properties">属性</button>
+          <button type="button" data-global-action="outline">文内大纲</button>
+          <hr />
+          <button type="button" data-global-action="check">运行检查</button>
+          <button type="button" data-global-action="publish">发布到网站</button>
+          <hr id="delete-entry-separator" hidden />
+          <button type="button" data-global-action="delete" class="danger-action" hidden>删除文章</button>
         </div>
-        <div class="studio-header-status" aria-live="polite">
-          <span id="dirty-status" class="status-pill is-clean">已保存</span>
-          <button id="activity-status" class="status-button" type="button">准备就绪</button>
-        </div>
-        <div class="studio-header-actions">
-          <button id="save-entry" class="button button-quiet" type="button" disabled>保存草稿</button>
-          <button id="publish-entry" class="button button-primary" type="button" disabled>发布到网站</button>
-        </div>
-      </header>
-
-      <div class="studio-workspace">
-        <aside class="content-sidebar" aria-label="文章列表">
-          <div class="sidebar-create">
-            <button class="create-primary" type="button" data-create="note"><span>＋</span> 写课程笔记</button>
-            <button type="button" data-create="essay">写随笔</button>
-          </div>
-          <label class="search-field">
-            <span class="sr-only">搜索文章</span>
-            <input id="catalog-search" type="search" placeholder="搜索文章…" autocomplete="off" />
-          </label>
-          <nav id="catalog-list" class="catalog-list" aria-live="polite">
-            <p class="sidebar-message">正在读取文章…</p>
-          </nav>
-          <button class="course-manage" type="button" data-create="course">＋ 添加课程</button>
-        </aside>
-
-        <main class="composer-pane">
-          <section id="welcome-panel" class="welcome-panel">
-            <p class="eyebrow">WRITE · CHECK · PUBLISH</p>
-            <h1>写完 Markdown，<br />补几项信息就发布。</h1>
-            <p>标题、课程和正文放在最前面；摘要、日期、URL 等信息会自动生成，也可以在发布设置里调整。</p>
-            <button class="button button-primary welcome-action" type="button" data-create="note">开始写笔记</button>
-            <div id="welcome-stats" class="welcome-stats"></div>
-          </section>
-
-          <section id="entry-editor" class="entry-editor" hidden>
-            <div class="entry-topline">
-              <div>
-                <span id="entry-kind-label" class="entry-kind">课程笔记</span>
-                <span id="readonly-badge" class="readonly-badge" hidden>MDX 只读</span>
-              </div>
-              <div class="entry-location">
-                <span id="entry-path">尚未保存</span>
-                <a id="entry-site-path" href="#" hidden></a>
-              </div>
-            </div>
-
-            <div id="readonly-notice" class="notice" hidden>
-              这是 MDX 文件，请使用代码编辑器修改含组件的正文。
-            </div>
-
-            <form id="metadata-form" novalidate>
-              <label class="title-field" for="field-title">
-                <span class="sr-only">标题</span>
-                <input id="field-title" name="title" required autocomplete="off" placeholder="文章标题" />
-              </label>
-
-              <div id="course-fields" class="course-fields" hidden>
-                <div class="field-grid">
-                  <label class="field"><span>课程 ID</span><input id="field-id" name="id" required autocomplete="off" /></label>
-                  <label class="field"><span>学期</span><input id="field-semester" name="semester" placeholder="大二 · 秋" /></label>
-                  <label class="field"><span>排序</span><input id="field-order" name="order" type="number" step="1" value="0" /></label>
-                </div>
-                <label class="field"><span>课程简介</span><textarea id="field-description" name="description" rows="4"></textarea></label>
-              </div>
-
-              <div id="article-fields" class="article-fields" hidden>
-                <div id="note-context" class="note-context">
-                  <label id="course-select-field" class="field compact-field">
-                    <span>所属课程</span>
-                    <select id="field-course" name="course"></select>
-                  </label>
-                  <label id="chapter-field" class="field compact-field">
-                    <span>章节</span>
-                    <input id="field-chapter" name="chapter" placeholder="未分类" />
-                  </label>
-                </div>
-
-                <section id="markdown-section" class="markdown-section">
-                  <div class="composer-toolbar">
-                    <div class="pane-tabs" role="tablist" aria-label="正文视图">
-                      <button class="is-active" type="button" data-composer-pane="write">Markdown</button>
-                      <button type="button" data-composer-pane="preview">预览</button>
-                    </div>
-                    <div class="markdown-toolbar" role="toolbar" aria-label="Markdown 工具">
-                      <button type="button" data-markdown="heading" title="二级标题">H2</button>
-                      <button type="button" data-markdown="bold" title="粗体"><strong>B</strong></button>
-                      <button type="button" data-markdown="link" title="链接">↗</button>
-                      <button type="button" data-markdown="quote" title="引用">❞</button>
-                      <button type="button" data-markdown="code" title="代码块">&lt;/&gt;</button>
-                      <button type="button" data-markdown="math" title="数学公式">∑</button>
-                      <button id="image-button" type="button" data-markdown="image" title="上传图片">图片</button>
-                    </div>
-                    <span id="body-count" class="body-count">0 字</span>
-                  </div>
-                  <textarea id="field-body" data-composer-view="write" spellcheck="true" placeholder="在这里粘贴或开始写 Markdown…"></textarea>
-                  <div id="preview-view" class="preview-view" data-composer-view="preview" hidden>
-                    <div id="preview-empty" class="preview-empty">开始输入后显示预览。</div>
-                    <iframe id="preview-frame" title="Markdown 预览" sandbox="" hidden></iframe>
-                    <div id="preview-errors" class="preview-errors" hidden></div>
-                  </div>
-                </section>
-
-                <details class="publish-settings">
-                  <summary>发布设置 <span>自动生成，可按需修改</span></summary>
-                  <div class="settings-grid">
-                    <label class="field field-wide">
-                      <span>摘要 <small>留空时自动取正文开头</small></span>
-                      <textarea id="field-summary" name="summary" rows="3"></textarea>
-                    </label>
-                    <label class="field">
-                      <span>文章 ID <small>文件名与 URL</small></span>
-                      <input id="field-article-id" name="articleId" autocomplete="off" />
-                    </label>
-                    <label class="field"><span>发布日期</span><input id="field-pub-date" name="pubDate" type="date" /></label>
-                    <label class="field"><span>更新时间 <small>可选</small></span><input id="field-updated" name="updated" type="date" /></label>
-                    <label class="field field-wide">
-                      <span>标签 <small>用逗号分隔，可选</small></span>
-                      <input id="field-tags" name="tags" list="tag-suggestions" autocomplete="off" placeholder="极限, 连续, 证明" />
-                      <datalist id="tag-suggestions"></datalist>
-                    </label>
-                    <div class="toggle-row field-wide">
-                      <label class="switch-field"><input id="field-draft" name="draft" type="checkbox" /><span>保持为草稿</span></label>
-                      <label id="featured-field" class="switch-field" hidden><input id="field-featured" name="featured" type="checkbox" /><span>首页精选</span></label>
-                    </div>
-                  </div>
-                  <div id="slug-notice" class="notice notice-soft" hidden>中文 ID 可以使用；若希望 URL 更稳定，建议改为英文 kebab-case。</div>
-                </details>
-              </div>
-            </form>
-          </section>
-        </main>
-      </div>
-
-      <details id="activity-panel" class="activity-panel">
-        <summary>发布与检查记录</summary>
-        <pre id="activity-output">尚无记录。</pre>
       </details>
-    </div>
+    </header>
 
-    <dialog id="asset-dialog" class="studio-dialog">
-      <form method="dialog">
-        <div><h2>插入图片</h2><p>图片会保存到当前文章旁的资源目录。</p></div>
-        <label class="field"><span>图片文件</span><input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/*" /></label>
-        <label class="field"><span>替代文字</span><input id="asset-alt" placeholder="简要描述图片" /></label>
-        <div class="dialog-actions">
-          <button value="cancel" class="button button-quiet">取消</button>
-          <button id="upload-asset" value="default" class="button button-primary">上传并插入</button>
+    <div class="studio-workspace">
+      <aside id="content-sidebar" class="content-sidebar" aria-label="内容导航">
+        <div class="sidebar-tools">
+          <label class="search-field"><span class="sr-only">搜索内容</span><input id="catalog-search" type="search" placeholder="搜索内容…" /></label>
+          <label class="filter-field"><span class="sr-only">筛选状态</span><select id="catalog-status"><option value="all">全部</option><option value="draft">草稿</option><option value="published">已发布</option><option value="issues">待整理</option></select></label>
         </div>
-      </form>
-    </dialog>
+        <nav id="catalog-list" class="catalog-list" aria-live="polite"><p class="sidebar-message">正在读取内容…</p></nav>
+        <div class="sidebar-footer"><button type="button" data-create="course">＋ 新建课程</button><button type="button" data-create="essay">新建随笔</button></div>
+      </aside>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <main id="main-workspace" class="main-workspace">
+        <section id="welcome-panel" class="welcome-panel">
+          <p class="eyebrow">工作台</p>
+          <h1>继续上次的工作</h1>
+          <p>从最近内容继续，或从左侧选择一门课程。</p>
+          <div id="welcome-content" class="welcome-content"></div>
+        </section>
 
-    <script is:inline define:vars={{ token }}>
-      window.__CONTENT_STUDIO_TOKEN__ = token;
-    </script>
-    <script>
-      import "./client.ts";
-    </script>
-  </body>
+        <section id="course-board" class="course-board" hidden>
+          <div id="structure-backup" class="recovery-banner" hidden><span></span><div><button type="button" data-recovery="structure-restore">恢复</button><button type="button" data-recovery="structure-discard">放弃</button></div></div>
+          <header class="course-heading">
+            <div><p class="eyebrow">课程目录</p><h1 id="board-title"></h1><p id="board-description"></p></div>
+            <button id="add-chapter" class="button" type="button">＋ 新增章节</button>
+          </header>
+          <div id="chapter-outline" class="chapter-outline" tabindex="-1"></div>
+        </section>
+
+        <section id="entry-editor" class="entry-editor" hidden>
+          <div id="entry-backup" class="recovery-banner" hidden><span></span><div><button type="button" data-recovery="entry-restore">恢复</button><button type="button" data-recovery="entry-discard">放弃</button></div></div>
+          <div class="entry-meta-line"><span id="entry-kind-label">文章</span><span id="entry-path"></span></div>
+          <div id="readonly-notice" class="notice" hidden>MDX 正文包含组件，因此正文只读；文章属性仍可编辑。</div>
+          <form id="entry-form" novalidate>
+            <label class="title-field"><span class="sr-only">标题</span><input id="field-title" placeholder="无标题" required /></label>
+
+            <div id="course-create-fields" class="course-create-fields" hidden>
+              <label class="field"><span>课程 ID</span><input id="field-course-id" /></label>
+              <label class="field"><span>学期</span><input id="field-semester" /></label>
+              <label class="field"><span>排序</span><input id="field-course-order" type="number" step="1" /></label>
+              <label class="field field-wide"><span>课程简介</span><textarea id="field-description" rows="4"></textarea></label>
+            </div>
+
+            <div id="article-editor-fields" hidden>
+              <label class="summary-field"><span class="sr-only">摘要</span><textarea id="field-summary" rows="2" placeholder="用一句话概括这篇文章…"></textarea></label>
+              <section id="composer" class="composer" data-mode="write">
+                <div class="composer-bar">
+                  <div class="mode-tabs" role="tablist" aria-label="编辑模式">
+                    <button type="button" data-composer-mode="write" role="tab">编辑</button>
+                    <button type="button" data-composer-mode="preview" role="tab">预览</button>
+                    <button type="button" data-composer-mode="split" role="tab" class="split-mode">分屏</button>
+                  </div>
+                  <div class="markdown-toolbar" role="toolbar" aria-label="Markdown 工具">
+                    <button type="button" data-markdown="heading" title="二级标题">H2</button>
+                    <button type="button" data-markdown="bold" title="粗体"><strong>B</strong></button>
+                    <button type="button" data-markdown="link" title="链接">↗</button>
+                    <button type="button" data-markdown="quote" title="引用">❞</button>
+                    <button type="button" data-markdown="code" title="代码">&lt;/&gt;</button>
+                    <details class="toolbar-more"><summary aria-label="更多插入操作">更多</summary><div class="menu-popover"><button type="button" data-markdown="math">公式</button><button id="image-button" type="button" data-markdown="image">图片</button></div></details>
+                  </div>
+                  <span id="body-count" class="body-count">0 字</span>
+                </div>
+                <div class="composer-views">
+                  <textarea id="field-body" class="write-view" spellcheck="true" placeholder="在这里开始写 Markdown…"></textarea>
+                  <div id="preview-view" class="preview-view"><div id="preview-empty" class="preview-empty">开始输入后显示预览。</div><iframe id="preview-frame" title="Markdown 预览" sandbox="" hidden></iframe><div id="preview-errors" class="preview-errors" hidden></div></div>
+                </div>
+              </section>
+            </div>
+          </form>
+        </section>
+      </main>
+
+      <div id="surface-backdrop" class="surface-backdrop" hidden></div>
+      <aside id="side-sheet" class="side-sheet" aria-label="辅助面板" hidden>
+        <header><div><span>辅助面板</span><h2 id="side-sheet-title"></h2></div><button id="side-sheet-close" class="icon-button" type="button" aria-label="关闭辅助面板">×</button></header>
+        <div id="side-sheet-body" class="side-sheet-body"></div>
+      </aside>
+    </div>
+  </div>
+
+  <dialog id="structure-dialog" class="studio-dialog">
+    <form method="dialog">
+      <div><h2 id="structure-dialog-title"></h2><p id="structure-dialog-description"></p></div>
+      <label id="structure-text-field" class="field"><span id="structure-text-label"></span><input id="structure-text-input" /></label>
+      <label id="structure-target-field" class="field" hidden><span>目标章节</span><select id="structure-target"></select></label>
+      <div class="dialog-actions"><button value="cancel" class="button button-quiet">取消</button><button id="structure-confirm" value="confirm" class="button button-primary">确认</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="asset-dialog" class="studio-dialog">
+    <form method="dialog"><div><h2>插入图片</h2><p>图片会保存到当前文章旁的资源目录。</p></div><label class="field"><span>图片文件</span><input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,image/*" /></label><label class="field"><span>替代文字</span><input id="asset-alt" /></label><div class="dialog-actions"><button value="cancel" class="button button-quiet">取消</button><button id="upload-asset" value="confirm" class="button button-primary">上传并插入</button></div></form>
+  </dialog>
+
+  <dialog id="switch-dialog" class="studio-dialog"><form method="dialog"><h2>保存当前修改？</h2><p>切换内容前，可以保存、放弃或继续留在这里。</p><div class="dialog-actions"><button value="cancel" class="button button-quiet">取消</button><button value="discard" class="button">放弃</button><button value="save" class="button button-primary">保存并切换</button></div></form></dialog>
+  <dialog id="delete-entry-dialog" class="studio-dialog" aria-labelledby="delete-entry-heading" aria-describedby="delete-entry-description">
+    <form method="dialog">
+      <div><h2 id="delete-entry-heading">删除文章？</h2><p id="delete-entry-description">“<strong id="delete-entry-name"></strong>”及其专属图片将移至工作台回收站，不会立即永久删除。</p><p id="delete-entry-dirty" class="dialog-warning" hidden>尚未保存的修改也会被放弃。</p></div>
+      <div class="dialog-actions"><button value="cancel" class="button button-quiet">取消</button><button value="delete" class="button button-danger">移至回收站</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script is:inline define:vars={{ token }}>window.__CONTENT_STUDIO_TOKEN__ = token;</script>
+  <script>import "./client.ts";</script>
+</body>
 </html>

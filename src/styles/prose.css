@@ -34,6 +34,8 @@
 .prose .expressive-code .frame { box-shadow: none; }
 .prose .expressive-code pre { border: 1px solid var(--line); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
 .prose .expressive-code .header { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.prose .course-article-nav a { color: var(--ink-faint); border-bottom: 0; text-decoration: none; }
+.prose .course-article-nav a:hover { color: var(--accent-strong); border-bottom: 0; }
 .article-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); }
 
 html[data-theme="dark"] .prose .callout { border-color: var(--line); }

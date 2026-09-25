@@ -1,6 +1,6 @@
 ---
-title: 测试
-summary: nothing here
+title: 宏
+summary: 本文为 AIGC
 pubDate: 2026-07-20
 tags:
   - 测试

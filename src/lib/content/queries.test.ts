@@ -14,6 +14,7 @@ import {
   byNewest,
   getArticlesByTopic,
   getCourseNotes,
+  getCourseNavigation,
   getCourseOutline,
   getCourseSummaries,
   getLatestArticles,
@@ -209,5 +210,29 @@ describe("getCourseSummaries", () => {
       ["course-b", 1],
       ["course-a", 2],
     ]);
+  });
+});
+
+describe("getCourseNavigation", () => {
+  it("returns adjacent notes in chapter and order sequence", () => {
+    const outline = [
+      { id: "chapter-01", title: "第一章", notes: [note("n1"), note("n2")] },
+      { id: "chapter-02", title: "第二章", notes: [note("n3")] },
+    ];
+    expect(getCourseNavigation(outline as any, "n2")).toEqual({
+      previous: { note: outline[0].notes[0], chapterTitle: "第一章" },
+      next: { note: outline[1].notes[0], chapterTitle: "第二章" },
+    });
+  });
+
+  it("handles first, last, and unknown notes", () => {
+    const outline = [{ id: "chapter-01", title: "第一章", notes: [note("n1"), note("n2")] }];
+    expect(getCourseNavigation(outline as any, "n1")).toEqual({
+      next: { note: outline[0].notes[1], chapterTitle: "第一章" },
+    });
+    expect(getCourseNavigation(outline as any, "n2")).toEqual({
+      previous: { note: outline[0].notes[0], chapterTitle: "第一章" },
+    });
+    expect(getCourseNavigation(outline as any, "missing")).toEqual({});
   });
 });

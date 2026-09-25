@@ -46,3 +46,4 @@ package-lock.json
 /.wrangler/
 /outputs/
 /work/
+/.content-studio-trash/

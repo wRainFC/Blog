@@ -6,6 +6,12 @@ export type Essay = CollectionEntry<"essays">;
 export type Article = Note | Essay;
 export type CourseOutlineGroup = { id: string; title: string; notes: Note[] };
 
+export type CourseNavigationItem = { note: Note; chapterTitle: string };
+export type CourseNavigation = {
+  previous?: CourseNavigationItem;
+  next?: CourseNavigationItem;
+};
+
 export async function getPublishedNotes(): Promise<Note[]> {
   const [notes, courses] = await Promise.all([getCollection("notes"), getCollection("courses")]);
   assertNoteStructure(notes, courses);
@@ -52,6 +58,13 @@ export async function getCourseOutline(courseId: string): Promise<CourseOutlineG
 
 export async function getCourseNotes(courseId: string): Promise<Note[]> {
   return (await getCourseOutline(courseId)).flatMap((chapter) => chapter.notes);
+}
+
+export function getCourseNavigation(outline: CourseOutlineGroup[], noteId: string): CourseNavigation {
+  const notes = outline.flatMap((chapter) => chapter.notes.map((note) => ({ note, chapterTitle: chapter.title })));
+  const index = notes.findIndex((item) => item.note.id === noteId);
+  if (index < 0) return {};
+  return { previous: notes[index - 1], next: notes[index + 1] };
 }
 
 export async function getCourseSummaries() {

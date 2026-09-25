@@ -23,9 +23,9 @@
 
 ## GitHub Pages 发布
 
-仓库已配置 GitHub Actions：推送到 `main` 后自动构建并发布到 GitHub Pages。默认地址为 <https://wrainfc.github.io/Blog/>。
+仓库已配置 GitHub Actions：推送到 `main` 后自动构建并发布到 GitHub Pages。网站地址为 <https://wrain.art/>。
 
-首次发布需要在 GitHub 仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**，然后将代码和内容提交、推送到 `main`。部署进度与网站链接位于仓库的 Actions 页面。
+首次发布需要在 GitHub 仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**，并在 **Custom domain** 中绑定 `wrain.art`、配置域名 DNS，然后将代码和内容提交、推送到 `main`。部署进度与网站链接位于仓库的 Actions 页面。
 
 详细步骤、路径配置和本地发布预览见 [GitHub Pages 发布](docs/github-pages.md)。
 

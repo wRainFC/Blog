@@ -12,24 +12,32 @@ pnpm studio
 
 Windows 也可以双击 `content-studio.cmd`。工作台只监听本机地址，打开后访问 `/studio`。
 
-工作台采用 Markdown 优先的最小流程：选择“写课程笔记”或“写随笔”，填写标题并写正文即可。文章 ID 和发布日期会自动生成；摘要留空时会从正文开头生成；课程笔记的章节留空时使用“未分类”。标签、更新时间、精选状态等低频字段收在“发布设置”中。
+工作台同时负责知识结构、frontmatter 与 Markdown 写作。界面默认只显示内容导航和当前任务；属性、大纲、变更与检查结果在需要时共用同一个侧页。结构调整与正文保存仍是两条独立流程。
 
-顶部只有两个主要动作：
+工作台可以完成：
 
-- “保存草稿”只写入本地内容文件，并自动运行 `pnpm check`。
-- “发布到网站”将文章设为公开，依次运行 `pnpm check`、`pnpm build`，创建内容提交并推送到 `origin/main`。GitHub Actions 随后根据 main 分支构建并发布到 GitHub Pages。
+- 创建课程、章节笔记和随笔。
+- 新增、重命名、排序、删除或合并章节，并移动或批量移动笔记。
+- 从课程概览或具体章节直接创建笔记，并自动带入课程和章节。
+- 修改标题、摘要、日期、标签、草稿状态、精选状态等 frontmatter。
+- 搜索内容并按草稿、已发布或待完善状态筛选；目录默认只展开当前课程。
+- 完整编辑和预览 Markdown，使用工具栏并上传图片；MDX 正文只读，但仍可编辑属性。
+- 从 H2/H3 生成文内大纲，诊断 H1、层级跳跃、空标题和重复 slug。
+- 删除不再需要的笔记或随笔；文件及其专属图片会先移至 `.content-studio-trash/`，便于误删后手动恢复。
 
-一键发布只会提交当前文章、文章专属图片，以及课程笔记依赖的课程 YAML。发布前如果发现其他工作区改动、当前分支不是 main、构建失败或 Git 推送失败，会停止并在“发布与检查记录”中显示原因。运行电脑需要已经配置好 GitHub 推送凭据。
+章节 ID 是课程内稳定、唯一的小写 kebab-case，保存后不可修改；标题可以随时重命名。结构操作会先保存在浏览器草稿中；点击“审阅调整”后由服务端生成按文件和字段分组的差异，再统一应用。任一文件在外部发生变化时，整次提交都会拒绝，不会写入部分结果。
 
-工作台 v1 对 `.mdx` 文件只读，因为含有 Astro/JSX 组件的正文仍应使用代码编辑器维护。文章 ID、课程 ID 和笔记所属课程在首次保存后不能在工作台内重命名；需要迁移 URL 时请手动处理并同步检查引用。
+顶部同一时间只显示一个与当前任务相关的主要动作：
 
-图片上传后会放到文章旁的 `assets/{article-id}/` 目录，并插入相对路径，例如：
+- 文章有修改时显示“保存”，保存文章属性和 Markdown 正文并自动运行 `pnpm check`；不会应用尚在暂存区的章节调整。
+- 课程结构有修改时显示“审阅调整”，确认后只修改课程的 `chapters` 与笔记的 `chapter`、`order`，不会改动正文。
+- 检查和“发布到网站”位于右上角更多菜单；发布会依次运行 `pnpm check`、`pnpm build`，创建内容提交并推送到 `origin/main`。GitHub Actions 随后根据 main 分支构建并发布到 GitHub Pages。
 
-~~~text
-![图片说明](./assets/my-article/diagram.png)
-~~~
+一键发布只会提交当前文章、文章专属图片，以及课程笔记依赖的课程 YAML。发布前如果发现其他工作区改动、当前分支不是 main、构建失败或 Git 推送失败，会停止并在统一任务侧页中显示原因。运行电脑需要已经配置好 GitHub 推送凭据。
 
-工作台不会删除未使用的资源。一键发布会创建内容提交，但不会修改或提交与当前文章无关的文件。
+`.md` 可以完整编辑；`.mdx` 可以预览并维护 frontmatter，但正文保持只读。文章 ID、课程 ID 和笔记所属课程在首次保存后不能在工作台内重命名；需要迁移 URL 时请手动处理并同步检查引用。
+
+一键发布会创建内容提交，但不会修改或提交与当前文章无关的文件。正文图片和其他文章资源也由独立正文编辑流程维护。
 
 ## 1. 添加一门课程
 
@@ -48,6 +56,13 @@ title: 数据结构
 semester: 大二 · 秋
 description: 用不变量、递归和可运行代码建立对数据结构的理解。
 order: 1
+chapters:
+  - id: chapter-01
+    title: 第一章 · 绪论
+  - id: chapter-02
+    title: 第二章 · 线性表
+  - id: chapter-03
+    title: 第三章 · 树
 ~~~
 
 字段说明：
@@ -56,6 +71,7 @@ order: 1
 - semester：学期，必填。
 - description：课程简介，可选。
 - order：课程在首页和课程列表中的顺序，可选，默认是 0。
+- chapters：有序章节实体数组；`id` 是稳定引用，`title` 是公开展示标题。数组位置就是章节顺序。
 
 文件名会成为课程 ID。例如：
 
@@ -97,7 +113,8 @@ summary: "用不变量理解插入与查找，并用 TypeScript 写出一个结�
 pubDate: 2026-06-09
 updated: 2026-06-12
 course: data-structures
-chapter: "第五章 · 树"
+chapter: chapter-05
+order: 0
 tags: ["树", "递归", "TypeScript"]
 draft: false
 ---
@@ -110,7 +127,8 @@ draft: false
 - pubDate：发布日期，格式为 YYYY-MM-DD，必填。
 - updated：最后更新时间，可选。
 - course：课程 ID，必须能在 src/content/courses/ 中找到。
-- chapter：章节名称，必填。
+- chapter：课程内存在的稳定章节 ID，必填。
+- order：章节内顺序，必填，使用从 0 开始的非负整数；同一章节内不可重复。
 - tags：标签数组，可选，默认为空数组。
 - draft：是否草稿，可选，默认为 false。
 
@@ -233,20 +251,20 @@ pnpm check 会检查 frontmatter、课程引用和 Astro/TypeScript 类型；pnp
 ## 8. 推荐写作流程
 
 ~~~text
-在 Studio 中选择“写课程笔记”或“写随笔”
+在 Studio 中规划课程与章节
     ↓
-填写标题与课程，完成 Markdown 正文
+从章节创建笔记骨架并补全 frontmatter
     ↓
-需要时保存草稿
+在 Studio 中完成 Markdown（MDX 正文仍使用代码编辑器）
     ↓
-点击“发布到网站”
+回到 Studio 检查状态并点击“发布到网站”
     ↓
 Studio 自动检查、构建、提交并推送
     ↓
 GitHub Actions 构建并发布到 GitHub Pages
 ~~~
 
-站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制，部署子目录由 PUBLIC_BASE_PATH 控制。GitHub Actions 已配置网站域名与 `/Blog` 子目录；首次发布步骤见 [GitHub Pages 发布](github-pages.md)。其他静态托管平台应设置真实域名，例如：
+站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制，部署子目录由 PUBLIC_BASE_PATH 控制。GitHub Actions 已配置 `https://wrain.art` 与根路径 `/`；域名绑定和首次发布步骤见 [GitHub Pages 发布](github-pages.md)。其他静态托管平台应设置真实域名，例如：
 
 ~~~text
 PUBLIC_SITE_URL=https://example.com

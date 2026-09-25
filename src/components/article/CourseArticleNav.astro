@@ -1,0 +1,30 @@
+---
+import type { Note } from "../../lib/content/queries";
+import { articleHref } from "../../lib/content/urls";
+
+interface Props {
+  previousNote?: Note;
+  nextNote?: Note;
+  previousChapter?: string;
+  nextChapter?: string;
+}
+
+const { previousNote, nextNote, previousChapter, nextChapter } = Astro.props;
+---
+
+{(previousNote || nextNote) && (
+  <nav class="course-article-nav" aria-label="课程笔记导航">
+    {previousNote ? (
+      <a class="course-article-nav__previous" href={articleHref(previousNote)}>
+        <span>上一篇{previousChapter ? ` · ${previousChapter}` : ""}</span>
+        <strong>← {previousNote.data.title}</strong>
+      </a>
+    ) : <span aria-hidden="true"></span>}
+    {nextNote && (
+      <a class="course-article-nav__next" href={articleHref(nextNote)}>
+        <span>下一篇{nextChapter ? ` · ${nextChapter}` : ""}</span>
+        <strong>{nextNote.data.title} →</strong>
+      </a>
+    )}
+  </nav>
+)}

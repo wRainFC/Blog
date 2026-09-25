@@ -9,7 +9,10 @@ import { ContentStore } from "./content-store";
 import { DeployRunner } from "./deploy-runner";
 import {
   parseDraft,
+  parseChangeSetId,
+  parseDeleteEntryRequest,
   parseReference,
+  parseStructurePreviewRequest,
   StudioError,
   type EntryReference,
 } from "./model";
@@ -24,13 +27,8 @@ interface MiddlewareOptions {
 type Next = (error?: unknown) => void;
 
 const responseMime: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".avif": "image/avif",
-  ".svg": "image/svg+xml",
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+  ".gif": "image/gif", ".avif": "image/avif", ".svg": "image/svg+xml",
 };
 
 export function createStudioMiddleware(options: MiddlewareOptions) {
@@ -38,12 +36,36 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
   const checks = new CheckRunner(options.workspaceRoot);
   const deploys = new DeployRunner(options.workspaceRoot);
   let processorPromise: ReturnType<typeof createMarkdownProcessor> | undefined;
-
   const renderMarkdown = async (body: string) => {
     processorPromise ??= createMarkdownProcessor(options.markdown);
     return (await processorPromise).render(body);
   };
-
+  const mutationResponse = async <T extends object>(result: T, runCheck = true) => {
+    let refreshWarning: string | undefined;
+    try { await options.refreshContent?.(); }
+    catch (error) { refreshWarning = error instanceof Error ? error.message : String(error); }
+    return { ...result, checkJob: runCheck ? checks.start() : undefined, refreshWarning };
+  };
+  let mutationTail = Promise.resolve();
+  let pendingMutations = 0;
+  const mutateRepository = async <T>(operation: () => Promise<T>): Promise<T> => {
+    pendingMutations += 1;
+    const previous = mutationTail;
+    let release: () => void = () => {};
+    mutationTail = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+    try {
+      if (deploys.isBusy()) throw new StudioError("发布任务正在使用仓库，请等待发布结束后再修改内容。", 423);
+      return await operation();
+    } finally {
+      pendingMutations -= 1;
+      release();
+    }
+  };
+  const assertDeployAvailable = () => {
+    if (deploys.isBusy()) throw new StudioError("已有发布任务正在运行。", 423);
+    if (pendingMutations) throw new StudioError("内容正在写入，请等待保存结束后再发布。", 423);
+  };
   return async (request: IncomingMessage, response: ServerResponse, next: Next) => {
     const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
     const isApi = url.pathname.startsWith("/__content-studio/api/");
@@ -56,25 +78,19 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
         assertToken(url.searchParams.get("token"), options.token);
         if (request.method !== "GET") throw new StudioError("方法不允许。", 405);
         const ref = referenceFromSearch(url.searchParams);
-        const source = requiredSearch(url.searchParams, "path");
-        const path = await store.resolvePreviewAsset(ref, source);
+        const path = await store.resolvePreviewAsset(ref, requiredSearch(url.searchParams, "path"));
         const mime = responseMime[extname(path).toLowerCase()];
         if (!mime) throw new StudioError("资源类型不受支持。", 415);
-        response.statusCode = 200;
-        response.setHeader("Content-Type", mime);
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("X-Content-Type-Options", "nosniff");
-        response.end(await readFile(path));
-        return;
+        response.statusCode = 200; response.setHeader("Content-Type", mime); response.setHeader("Cache-Control", "no-store");
+        response.setHeader("X-Content-Type-Options", "nosniff"); response.end(await readFile(path)); return;
       }
-
       assertToken(request.headers["x-content-studio-token"], options.token);
       if (request.method !== "GET") assertSameOrigin(request);
       response.setHeader("Cache-Control", "no-store");
 
       const action = url.pathname.slice("/__content-studio/api/".length);
-      if (action === "catalog" && request.method === "GET") {
-        return json(response, 200, await store.catalog());
+      if (action === "workspace" && request.method === "GET") {
+        return json(response, 200, await store.workspace());
       }
 
       if (action === "entry" && request.method === "GET") {
@@ -91,15 +107,24 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
         const expectedRevision = typeof payload.expectedRevision === "string"
           ? payload.expectedRevision
           : undefined;
-        const saved = await store.save({ mode, draft, ref, expectedRevision });
-        let refreshWarning: string | undefined;
-        try {
-          await options.refreshContent?.();
-        } catch (error) {
-          refreshWarning = error instanceof Error ? error.message : String(error);
-        }
-        const checkJob = payload.runCheck === false ? undefined : checks.start();
-        return json(response, 200, { ...saved, checkJob, refreshWarning });
+        const saved = await mutateRepository(() => store.save({ mode, draft, ref, expectedRevision }));
+        return json(response, 200, await mutationResponse(saved, payload.runCheck !== false));
+      }
+
+      if (action === "entry" && request.method === "DELETE") {
+        const requestPayload = parseDeleteEntryRequest(await readJson(request, 32 * 1024));
+        const deleted = await mutateRepository(() => store.deleteEntry(requestPayload));
+        return json(response, 200, await mutationResponse(deleted));
+      }
+
+      if (action === "structure/preview" && request.method === "POST") {
+        return json(response, 200, await store.previewStructure(parseStructurePreviewRequest(await readJson(request, 2 * 1024 * 1024))));
+      }
+
+      if (action === "structure/apply" && request.method === "POST") {
+        const changeSetId = parseChangeSetId(await readJson(request, 32 * 1024));
+        const result = await mutateRepository(() => store.applyStructureChangeSet(changeSetId));
+        return json(response, 200, await mutationResponse(result));
       }
 
       if (action === "deploy" && request.method === "POST") {
@@ -117,6 +142,7 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
         if (entry.draft.kind !== "course" && entry.draft.draft) {
           throw new StudioError("草稿不能发布，请先切换为公开状态。", 422);
         }
+        assertDeployAvailable();
         return json(response, 202, deploys.start({
           ref,
           repoPath: entry.repoPath,
@@ -133,22 +159,13 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
 
       if (action === "preview" && request.method === "POST") {
         const payload = await readJson(request, 2 * 1024 * 1024);
-        if (!isRecord(payload) || typeof payload.body !== "string") {
-          throw new StudioError("预览请求格式不正确。");
-        }
+        if (!isRecord(payload) || typeof payload.body !== "string") throw new StudioError("预览请求格式不正确。");
         const ref = payload.ref == null ? undefined : parseReference(payload.ref);
         try {
           const result = await renderMarkdown(payload.body);
-          const code = ref
-            ? rewriteRelativeImages(result.code, ref, options.token)
-            : result.code;
-          return json(response, 200, { html: code, headings: result.metadata.headings, diagnostics: [] });
+          return json(response, 200, { html: ref ? rewriteRelativeImages(result.code, ref, options.token) : result.code, headings: result.metadata.headings, diagnostics: [] });
         } catch (error) {
-          return json(response, 200, {
-            html: "",
-            headings: [],
-            diagnostics: [error instanceof Error ? error.message : String(error)],
-          });
+          return json(response, 200, { html: "", headings: [], diagnostics: [error instanceof Error ? error.message : String(error)] });
         }
       }
 
@@ -157,8 +174,7 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
         const filename = requiredSearch(url.searchParams, "filename");
         const mime = String(request.headers["content-type"] ?? "").split(";", 1)[0].trim();
         const contents = await readBuffer(request, 10 * 1024 * 1024);
-        const result = await store.saveAsset(ref, filename, mime, contents);
-        return json(response, 200, result);
+        return json(response, 200, await mutateRepository(() => store.saveAsset(ref, filename, mime, contents)));
       }
 
       if (action === "check" && request.method === "POST") {
@@ -185,20 +201,12 @@ export function createStudioMiddleware(options: MiddlewareOptions) {
 }
 
 function rewriteRelativeImages(html: string, ref: EntryReference, token: string): string {
-  return html.replace(
-    /(<img\b[^>]*?\bsrc=)(["'])([^"']+)(\2)/gi,
-    (match, prefix: string, quote: string, source: string) => {
-      if (/^(?:[a-z]+:|\/\/|\/|#)/i.test(source)) return match;
-      const params = new URLSearchParams({
-        token,
-        kind: ref.kind,
-        id: ref.id,
-        path: source.replaceAll("&amp;", "&"),
-      });
-      if (ref.course) params.set("course", ref.course);
-      return `${prefix}${quote}/__content-studio/asset?${params}${quote}`;
-    },
-  );
+  return html.replace(/(<img\b[^>]*?\bsrc=)(["'])([^"']+)(\2)/gi, (match, prefix: string, quote: string, source: string) => {
+    if (/^(?:[a-z]+:|\/\/|\/|#)/i.test(source)) return match;
+    const params = new URLSearchParams({ token, kind: ref.kind, id: ref.id, path: source.replaceAll("&amp;", "&") });
+    if (ref.course) params.set("course", ref.course);
+    return `${prefix}${quote}/__content-studio/asset?${params}${quote}`;
+  });
 }
 
 function referenceFromSearch(params: URLSearchParams): EntryReference {

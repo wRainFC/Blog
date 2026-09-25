@@ -65,6 +65,10 @@ export class DeployRunner {
     return job ? { ...job } : undefined;
   }
 
+  isBusy(): boolean {
+    return [...this.jobs.values()].some((job) => job.status !== "passed" && job.status !== "failed");
+  }
+
   private async run(job: DeployJob, request: DeployRequest): Promise<void> {
     job.startedAt = new Date().toISOString();
     job.status = "checking";

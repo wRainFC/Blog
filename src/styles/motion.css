@@ -7,46 +7,163 @@
   animation-timing-function: var(--ease-out-expo);
 }
 
-.article-card,
-.pf-result,
-.pagefind-ui__result {
+::view-transition-group(article-selection-title) {
+  animation-duration: var(--motion-context);
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(article-selection-title),
+::view-transition-new(article-selection-title) {
+  animation-duration: var(--motion-context);
+  animation-timing-function: ease;
+  mix-blend-mode: normal;
+}
+
+.article-card {
   transition:
     opacity var(--motion-interact) ease,
     transform var(--motion-interact) var(--ease-out-expo),
     background-color var(--motion-interact) ease;
 }
 
-html[data-article-leaving] .article-list.is-article-selection-group .article-card:not(.is-transition-source),
-html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
-html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
-  opacity: .48;
+.pf-result,
+.pagefind-ui__result {
+  transition:
+    opacity var(--motion-interact) ease,
+    transform var(--motion-interact) var(--ease-out-expo),
+    background-color var(--motion-interact) ease !important;
 }
 
-html[data-article-leaving] .article-card.is-transition-source,
+.article-card h3,
+.article-card .read-more {
+  transition: color var(--motion-interact) ease;
+}
+
+.search-panel .pf-result-card {
+  transition:
+    color var(--motion-interact) ease,
+    background-color var(--motion-interact) ease,
+    border-color var(--motion-interact) ease,
+    box-shadow var(--motion-interact) ease !important;
+}
+
+.search-panel :is(.pf-result-link, .pagefind-ui__result-link) {
+  transition: color var(--motion-interact) ease !important;
+}
+
+.search-panel .pf-result-link:hover {
+  text-decoration: none !important;
+}
+
+.article-card:focus-within,
+html[data-article-leaving] .article-card.is-transition-source {
+  transform: translateY(-1px);
+}
+
+.pf-result:focus-within,
+.pagefind-ui__result:focus-within,
 html[data-article-leaving] .pf-result.is-transition-source,
 html[data-article-leaving] .pagefind-ui__result.is-transition-source {
-  transform: translateY(-2px);
+  transform: translateY(-1px) !important;
 }
 
+.article-card:focus-within > a::before,
 html[data-article-leaving] .article-card.is-transition-source > a::before {
   opacity: 1;
   transform: scale(1);
 }
 
+.article-card:focus-within h3,
+.article-card:focus-within .read-more,
+html[data-article-leaving] .article-card.is-transition-source h3,
+html[data-article-leaving] .article-card.is-transition-source .read-more {
+  color: var(--accent-strong);
+}
+
+.article-card:focus-within .read-more i,
+html[data-article-leaving] .article-card.is-transition-source .read-more i {
+  transform: translateX(4px);
+}
+
+.pf-result:focus-within,
+.pagefind-ui__result:focus-within,
 html[data-article-leaving] .pf-result.is-transition-source,
 html[data-article-leaving] .pagefind-ui__result.is-transition-source {
   --pf-background: var(--accent-soft);
   --pf-border: var(--accent);
   --pf-border-focus: var(--accent);
-  --pf-text: var(--accent);
+  --pf-text: var(--accent-strong);
+  --pagefind-ui-background: var(--accent-soft);
+  --pagefind-ui-border: var(--accent);
+  --pagefind-ui-primary: var(--accent-strong);
+  --pagefind-ui-text: var(--accent-strong);
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
 }
 
-html[data-article-leaving] .article-card.is-transition-source h3,
+.article-list:has(.article-card:focus-within) .article-card:not(:focus-within),
+html[data-article-leaving] .article-list.is-article-selection-group .article-card:not(.is-transition-source) {
+  opacity: .68;
+}
+
+.pf-results:has(.pf-result:focus-within) .pf-result:not(:focus-within),
+.pagefind-ui__results:has(.pagefind-ui__result:focus-within) .pagefind-ui__result:not(:focus-within),
+html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
+html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
+  opacity: .68 !important;
+}
+
 html[data-article-leaving] .pf-result.is-transition-source .pf-result-link,
 html[data-article-leaving] .pagefind-ui__result.is-transition-source .pagefind-ui__result-link {
-  color: var(--accent);
+  color: var(--accent-strong);
+}
+
+@media (hover: hover) {
+  .article-card:hover {
+    transform: translateY(-1px);
+  }
+
+  .pf-result:hover,
+  .pagefind-ui__result:hover {
+    transform: translateY(-1px) !important;
+  }
+
+  .article-card:hover > a::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .article-card:hover h3,
+  .article-card:hover .read-more {
+    color: var(--accent-strong);
+  }
+
+  .article-card:hover .read-more i {
+    transform: translateX(4px);
+  }
+
+  .pf-result:hover,
+  .pagefind-ui__result:hover {
+    --pf-background: var(--accent-soft);
+    --pf-border: var(--accent);
+    --pf-border-focus: var(--accent);
+    --pf-text: var(--accent-strong);
+    --pagefind-ui-background: var(--accent-soft);
+    --pagefind-ui-border: var(--accent);
+    --pagefind-ui-primary: var(--accent-strong);
+    --pagefind-ui-text: var(--accent-strong);
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+  }
+
+  .article-list:has(.article-card:hover) .article-card:not(:hover) {
+    opacity: .68;
+  }
+
+  .pf-results:has(.pf-result:hover) .pf-result:not(:hover),
+  .pagefind-ui__results:has(.pagefind-ui__result:hover) .pagefind-ui__result:not(:hover) {
+    opacity: .68 !important;
+  }
 }
 
 html:not([data-theme-transition])[data-route-motion="section"]::view-transition-old(root) {
@@ -121,14 +238,53 @@ html:not([data-theme-transition])[data-route-motion="default"]::view-transition-
   }
 
   html[data-article-leaving] .article-list.is-article-selection-group .article-card:not(.is-transition-source),
-  html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
-  html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
+  .article-list:has(.article-card:focus-within) .article-card:not(:focus-within) {
     opacity: 1;
   }
 
-  html[data-article-leaving] .article-card.is-transition-source,
+  .pf-results:has(.pf-result:focus-within) .pf-result:not(:focus-within),
+  .pagefind-ui__results:has(.pagefind-ui__result:focus-within) .pagefind-ui__result:not(:focus-within),
+  html[data-article-leaving] .pf-results.is-article-selection-group .pf-result:not(.is-transition-source),
+  html[data-article-leaving] .pagefind-ui__results.is-article-selection-group .pagefind-ui__result:not(.is-transition-source) {
+    opacity: 1 !important;
+  }
+
+  .article-card:focus-within,
+  html[data-article-leaving] .article-card.is-transition-source {
+    transform: none;
+  }
+
+  .pf-result:focus-within,
+  .pagefind-ui__result:focus-within,
   html[data-article-leaving] .pf-result.is-transition-source,
   html[data-article-leaving] .pagefind-ui__result.is-transition-source {
+    transform: none !important;
+  }
+
+  .article-card:focus-within .read-more i,
+  html[data-article-leaving] .article-card.is-transition-source .read-more i {
     transform: none;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) and (hover: hover) {
+  .article-list:has(.article-card:hover) .article-card:not(:hover) {
+    opacity: 1;
+  }
+
+  .pf-results:has(.pf-result:hover) .pf-result:not(:hover),
+  .pagefind-ui__results:has(.pagefind-ui__result:hover) .pagefind-ui__result:not(:hover) {
+    opacity: 1 !important;
+  }
+
+  .article-card:hover,
+  .article-card:hover .read-more i {
+    transform: none;
+  }
+
+  .pf-result:hover,
+  .pagefind-ui__result:hover {
+    transform: none !important;
   }
 }
