@@ -1,0 +1,17 @@
+title: 现代密码学
+semester: 大二 · 秋
+description: 从古典密码、完美保密性到计算安全，系统梳理现代密码学的安全定义、构造与证明。
+order: 5
+chapters:
+  - id: chapter-00-01
+    title: 第 00–01 讲 · 导论与古典密码
+  - id: chapter-02
+    title: 第二章 · 完美保密性
+  - id: chapter-03
+    title: 第三章 · 计算安全
+  - id: chapter-04
+    title: 第四章 · 流密码
+  - id: chapter-05
+    title: 第五章 · CPA 安全与伪随机函数
+  - id: chapter-06
+    title: 第六章 · 分组密码
