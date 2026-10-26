@@ -414,7 +414,11 @@ html[data-theme="dark"] .theme-control-moon { opacity: 1; }
 .related-articles__heading .section-index { margin-bottom: 8px; }
 .related-articles__heading h2 { margin: 0; color: var(--ink); font-size: clamp(26px, 4vw, 34px); font-weight: 620; letter-spacing: -.035em; line-height: 1.2; }
 .related-articles__list { border-bottom: 0; }
-.related-card > a { grid-template-columns: 108px minmax(0, 1fr) auto; gap: 20px; padding: 22px 0; }
+.related-card > a {
+  grid-template-columns: 108px minmax(180px, .85fr) minmax(220px, 1.15fr) auto;
+  gap: 20px;
+  padding: 22px 0;
+}
 .related-card .card-topline time { flex-basis: auto; margin-left: auto; }
 .related-card p { -webkit-line-clamp: 2; }
 
