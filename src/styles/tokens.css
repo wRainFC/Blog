@@ -1,20 +1,20 @@
 :root {
-  --paper: #f4f1ea;
-  --paper-deep: #e8e2d8;
-  --paper-light: #fbfaf6;
-  --surface: #faf9f4;
+  --paper: #f5f7fb;
+  --paper-deep: #e7ebf4;
+  --paper-light: #fbfcff;
+  --surface: #ffffff;
   --surface-raised: #ffffff;
-  --on-accent: #fff9f0;
-  --ink: #202932;
-  --ink-soft: #4d5962;
-  --ink-faint: #637078;
-  --line: rgba(32, 41, 50, .14);
-  --line-soft: rgba(32, 41, 50, .075);
-  --accent: #2e6f67;
-  --accent-strong: #20554f;
-  --accent-soft: rgba(46, 111, 103, .11);
-  --accent-warm: #a35442;
-  --accent-warm-soft: rgba(163, 84, 66, .12);
+  --on-accent: #ffffff;
+  --ink: #162033;
+  --ink-soft: #435069;
+  --ink-faint: #62708a;
+  --line: rgba(22, 32, 51, .14);
+  --line-soft: rgba(22, 32, 51, .075);
+  --accent: #5b5ce2;
+  --accent-strong: #4546b8;
+  --accent-soft: rgba(91, 92, 226, .11);
+  --accent-warm: #2b7a90;
+  --accent-warm-soft: rgba(43, 122, 144, .13);
   --vermilion: var(--accent);
   --vermilion-dark: var(--accent-strong);
   --sans: "Inter", "SF Pro Text", "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
@@ -79,21 +79,21 @@
 }
 
 html[data-theme="dark"] {
-  --paper: #111719;
-  --paper-deep: #0c1012;
-  --paper-light: #182124;
-  --surface: #1b2628;
-  --surface-raised: #223033;
-  --on-accent: #10201f;
-  --ink: #f3f0e8;
-  --ink-soft: #c9d1cf;
-  --ink-faint: #9eadaa;
-  --line: rgba(243, 240, 232, .15);
-  --line-soft: rgba(243, 240, 232, .08);
-  --accent: #78bcaf;
-  --accent-strong: #a1d4ca;
-  --accent-soft: rgba(120, 188, 175, .15);
-  --accent-warm: #d18c76;
-  --accent-warm-soft: rgba(209, 140, 118, .14);
+  --paper: #0b1220;
+  --paper-deep: #070c16;
+  --paper-light: #111c30;
+  --surface: #16243b;
+  --surface-raised: #1e3150;
+  --on-accent: #06232a;
+  --ink: #eefcfb;
+  --ink-soft: #c5dada;
+  --ink-faint: #91adb3;
+  --line: rgba(238, 252, 251, .16);
+  --line-soft: rgba(238, 252, 251, .08);
+  --accent: #65d8cf;
+  --accent-strong: #9aece5;
+  --accent-soft: rgba(101, 216, 207, .16);
+  --accent-warm: #b7a5ff;
+  --accent-warm-soft: rgba(183, 165, 255, .16);
   color-scheme: dark;
 }

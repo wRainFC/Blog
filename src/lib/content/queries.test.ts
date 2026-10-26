@@ -17,10 +17,12 @@ import {
   getCourseNavigation,
   getCourseOutline,
   getCourseSummaries,
+  getRelatedArticles,
   getLatestArticles,
   getPublishedArticles,
   getPublishedEssays,
   getPublishedNotes,
+  getTopicSummaries,
 } from "./queries";
 
 interface FakeEntry {
@@ -156,6 +158,56 @@ describe("getArticlesByTopic", () => {
     });
     const articles = await getArticlesByTopic("算法");
     expect(articles.map((entry) => entry.id).sort()).toEqual(["e1", "n1"]);
+  });
+});
+
+describe("getRelatedArticles", () => {
+  it("prioritizes chapter, course, and shared tags, excludes the current article, and fills by recency", async () => {
+    const current = note("n1", { course: { id: "course-a" }, chapter: "chapter-01", tags: ["算法"] });
+    given({
+      notes: [
+        current,
+        note("same-chapter", { course: { id: "course-a" }, chapter: "chapter-01", order: 1, tags: [], pubDate: new Date("2026-01-01") }),
+        note("same-course", { course: { id: "course-a" }, chapter: "chapter-02", order: 0, tags: [], pubDate: new Date("2026-06-01") }),
+        note("same-tag", { course: { id: "course-b" }, order: 0, tags: ["算法"], pubDate: new Date("2026-07-01") }),
+      ],
+      essays: [essay("recent", { pubDate: new Date("2026-08-01") })],
+      courses: [
+        course("course-a", { chapters: [{ id: "chapter-01", title: "第一章" }, { id: "chapter-02", title: "第二章" }] }),
+        course("course-b"),
+      ],
+    });
+
+    const related = await getRelatedArticles(current as any, 5);
+    expect(related.map((entry) => entry.id)).toEqual(["same-chapter", "same-course", "same-tag", "recent"]);
+  });
+
+  it("uses updated date before publication date for stable recency ordering", async () => {
+    const current = essay("current", { tags: ["学习"] });
+    given({
+      essays: [
+        current,
+        essay("old", { tags: ["学习"], pubDate: new Date("2026-06-01") }),
+        essay("updated", { tags: ["学习"], pubDate: new Date("2026-05-01"), updated: new Date("2026-09-01") }),
+      ],
+    });
+    expect((await getRelatedArticles(current as any, 2)).map((entry) => entry.id)).toEqual(["updated", "old"]);
+  });
+});
+
+describe("getTopicSummaries", () => {
+  it("counts published articles and tracks the latest effective date", async () => {
+    given({
+      notes: [note("n1", { tags: ["算法"], pubDate: new Date("2026-01-01") })],
+      essays: [
+        essay("e1", { tags: ["算法", "生活"], pubDate: new Date("2026-03-01"), updated: new Date("2026-04-01") }),
+        essay("draft", { tags: ["算法"], draft: true, pubDate: new Date("2026-12-01") }),
+      ],
+    });
+    expect(await getTopicSummaries()).toEqual([
+      { tag: "算法", count: 2, latestDate: new Date("2026-04-01") },
+      { tag: "生活", count: 1, latestDate: new Date("2026-04-01") },
+    ]);
   });
 });
 

@@ -4,7 +4,7 @@ import { withBasePath } from "../lib/site-path";
 ---
 
 <BaseLayout title="搜索｜楚地之雨" description="搜索楚地之雨的课程笔记和随笔。" pageKind="utility">
-  <section class="search-page">
+  <section class="search-page" data-search-page>
     <div class="page-hero compact-hero">
       <p class="section-index">SEARCH</p>
       <h1>搜索</h1>
@@ -12,17 +12,66 @@ import { withBasePath } from "../lib/site-path";
     </div>
     <div class="search-panel" data-pagefind-ignore>
       <pagefind-config bundle-path={withBasePath("/pagefind/")} base-url={withBasePath("/")} show-images="false" excerpt-length="24"></pagefind-config>
-      <pagefind-input placeholder="输入关键词，如：极限、树、成长"></pagefind-input>
+      <pagefind-input shortcut="mod+k" placeholder="输入关键词，如：极限、树、成长"></pagefind-input>
+      <p class="search-shortcut-hint">按 / 或 ⌘K 快速聚焦搜索</p>
+      <div class="search-filters" data-pagefind-ignore>
+        <pagefind-filter-pane expanded open="类型,课程,标签,时间" sort="count-desc"></pagefind-filter-pane>
+      </div>
       <pagefind-summary></pagefind-summary>
       <pagefind-results></pagefind-results>
+      <aside class="search-empty" data-search-empty hidden>
+        <p>没有找到匹配内容，可以从主题或最近更新继续浏览。</p>
+        <nav aria-label="搜索推荐入口">
+          <a href={withBasePath("/topics")}>浏览主题总览 <span aria-hidden="true">↗</span></a>
+          <a href={withBasePath("/#recent")}>查看最近更新 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
       <p class="search-loading" data-search-loading>搜索索引将在正式构建后可用。</p>
     </div>
   </section>
   <link href={withBasePath("/pagefind/pagefind-component-ui.css")} rel="stylesheet" />
   <script is:inline src={withBasePath("/pagefind/pagefind-component-ui.js")} type="module"></script>
   <script>
-    customElements.whenDefined("pagefind-input").then(() => {
-      document.querySelector("[data-search-loading]")?.remove();
-    });
+    const setupSearchPage = () => {
+      const page = document.querySelector<HTMLElement>("[data-search-page]");
+      if (!page || page.dataset.searchReady === "true") return;
+      page.dataset.searchReady = "true";
+      const host = page.querySelector<HTMLElement>("pagefind-input");
+      const results = page.querySelector<HTMLElement>("pagefind-results");
+      const empty = page.querySelector<HTMLElement>("[data-search-empty]");
+      const input = () => host?.querySelector<HTMLInputElement>("input");
+      const syncEmptyState = () => {
+        const value = input()?.value.trim() ?? "";
+        const loading = results?.querySelector("[aria-busy='true']");
+        const resultItems = results?.querySelectorAll(".pf-results > li, .pagefind-ui__result").length ?? 0;
+        if (empty) empty.hidden = !value || Boolean(loading) || resultItems > 0;
+      };
+
+      const onKeydown = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement | null;
+        const editable = target?.matches("input, textarea, select, [contenteditable='true']");
+        if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey || editable) return;
+        event.preventDefault();
+        const focus = () => input()?.focus();
+        if (customElements.get("pagefind-input")) focus();
+        else void customElements.whenDefined("pagefind-input").then(focus);
+      };
+      document.addEventListener("keydown", onKeydown);
+
+      const observer = results ? new MutationObserver(syncEmptyState) : undefined;
+      observer?.observe(results!, { childList: true, subtree: true, attributes: true });
+      input()?.addEventListener("input", syncEmptyState);
+      customElements.whenDefined("pagefind-input").then(() => {
+        page.querySelector("[data-search-loading]")?.remove();
+        syncEmptyState();
+      });
+      document.addEventListener("astro:before-swap", () => {
+        document.removeEventListener("keydown", onKeydown);
+        observer?.disconnect();
+      }, { once: true });
+    };
+
+    setupSearchPage();
+    document.addEventListener("astro:page-load", setupSearchPage);
   </script>
 </BaseLayout>

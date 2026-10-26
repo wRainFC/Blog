@@ -36,6 +36,9 @@
 .prose .expressive-code .header { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
 .prose .course-article-nav a { color: var(--ink-faint); border-bottom: 0; text-decoration: none; }
 .prose .course-article-nav a:hover { color: var(--accent-strong); border-bottom: 0; }
+.prose .related-articles a { color: inherit; border-bottom: 0; text-decoration: none; }
+.prose .related-articles a:hover { color: inherit; border-bottom: 0; }
+.prose .related-articles__heading h2 { margin: 0; color: var(--ink); font-size: clamp(26px, 4vw, 34px); font-weight: 620; letter-spacing: -.035em; line-height: 1.2; }
 .article-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); }
 
 html[data-theme="dark"] .prose .callout { border-color: var(--line); }

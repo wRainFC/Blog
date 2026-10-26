@@ -1,0 +1,34 @@
+---
+import ArticleCard from "./ArticleCard.astro";
+import type { Article } from "../../lib/content/queries";
+import { articleHref, articleMotionId } from "../../lib/content/urls";
+
+interface Props {
+  articles: Article[];
+}
+
+const { articles } = Astro.props;
+---
+
+{articles.length > 0 && (
+  <section class="related-articles" data-pagefind-ignore aria-labelledby="related-articles-title">
+    <header class="related-articles__heading">
+      <p class="section-index">KEEP READING</p>
+      <h2 id="related-articles-title">相关文章</h2>
+    </header>
+    <div class="article-list related-articles__list">
+      {articles.map((article) => (
+        <ArticleCard
+          href={articleHref(article)}
+          title={article.data.title}
+          summary={article.data.summary}
+          date={article.data.updated ?? article.data.pubDate}
+          kind={article.collection === "notes" ? "笔记" : "随笔"}
+          eyebrow={article.data.tags[0]}
+          class="related-card"
+          motionId={articleMotionId(article)}
+        />
+      ))}
+    </div>
+  </section>
+)}

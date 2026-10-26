@@ -1,10 +1,13 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleCard from "../../components/article/ArticleCard.astro";
-import { getPublishedEssays } from "../../lib/content/queries";
-import { articleHref, articleMotionId } from "../../lib/content/urls";
+import { getPublishedEssays, getTopicSummaries } from "../../lib/content/queries";
+import { articleHref, articleMotionId, topicHref } from "../../lib/content/urls";
 
 const essays = await getPublishedEssays();
+const topicSummaries = await getTopicSummaries();
+const essayTags = new Set(essays.flatMap((essay) => essay.data.tags));
+const essayTopics = topicSummaries.filter((topic) => essayTags.has(topic.tag));
 const yearGroups = [...essays.reduce((groups, essay) => {
   const year = essay.data.pubDate.getFullYear();
   const entries = groups.get(year) ?? [];
@@ -21,6 +24,14 @@ const yearGroups = [...essays.reduce((groups, essay) => {
     <p>记录学习之外的判断、经验，以及那些还没有标准答案的问题。</p>
   </section>
   <section class="essay-archive" data-pagefind-body data-reveal>
+    {essayTopics.length > 0 && (
+      <div class="essay-topics reveal-item">
+        <p>随笔主题</p>
+        <div class="tag-cloud">
+          {essayTopics.map((topic) => <a href={topicHref(topic.tag)}>#{topic.tag}<small>{topic.count}</small></a>)}
+        </div>
+      </div>
+    )}
     {yearGroups.map(([year, entries]) => (
       <section class="writing-year reveal-item" aria-labelledby={`year-${year}`}>
         <header class="writing-year__heading">

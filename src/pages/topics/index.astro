@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedArticles, getTopicSummaries } from "../../lib/content/queries";
+import { formatDate } from "../../lib/content/format";
+import { topicHref } from "../../lib/content/urls";
+
+const [topics, articles] = await Promise.all([getTopicSummaries(), getPublishedArticles()]);
+---
+
+<BaseLayout title="主题总览｜楚地之雨" description="按主题浏览楚地之雨的课程笔记和随笔。" pageKind="archive">
+  <section class="page-hero compact-hero">
+    <p class="section-index">TOPIC INDEX</p>
+    <h1>主题总览</h1>
+    <p>从标签进入一组相互连接的课程笔记与随笔，看看一个概念如何在不同文章中继续展开。</p>
+  </section>
+  <section class="single-archive topics-archive" data-pagefind-body data-reveal>
+    <div class="archive-summary reveal-item">
+      <span>{topics.length} 个主题</span><i></i><span>{articles.length} 篇文章</span>
+    </div>
+    <div class="topic-grid">
+      {topics.map((topic) => (
+        <article class="topic-card reveal-item">
+          <a href={topicHref(topic.tag)}>
+            <span class="topic-card__eyebrow">TOPIC</span>
+            <h2>#{topic.tag}</h2>
+            <div class="topic-card__meta">
+              <span>{topic.count} 篇文章</span>
+              <time datetime={topic.latestDate.toISOString()}>最近使用于 {formatDate(topic.latestDate)}</time>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

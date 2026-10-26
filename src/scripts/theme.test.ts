@@ -84,7 +84,7 @@ describe("theme transitions", () => {
     await applyTheme("dark", { animate: false });
 
     expect(env.root.dataset.theme).toBe("dark");
-    expect(env.meta.content).toBe("#111719");
+    expect(env.meta.content).toBe("#0b1220");
     expect(env.stored.get("wrain-theme")).toBe("dark");
     expect(env.attributes.get("aria-pressed")).toBe("true");
     expect(env.attributes.get("aria-label")).toBe("切换至山雨");

@@ -11,6 +11,7 @@ export type CourseNavigation = {
   previous?: CourseNavigationItem;
   next?: CourseNavigationItem;
 };
+export type TopicSummary = { tag: string; count: number; latestDate: Date };
 
 export async function getPublishedNotes(): Promise<Note[]> {
   const [notes, courses] = await Promise.all([getCollection("notes"), getCollection("courses")]);
@@ -33,6 +34,42 @@ export async function getLatestArticles(limit = 3): Promise<Article[]> {
 
 export async function getArticlesByTopic(topic: string): Promise<Article[]> {
   return byNewest((await getPublishedArticles()).filter((entry) => entry.data.tags.includes(topic)));
+}
+
+export async function getRelatedArticles(article: Article, limit = 5): Promise<Article[]> {
+  if (limit <= 0) return [];
+  const candidates = (await getPublishedArticles()).filter((entry) => entry.id !== article.id || entry.collection !== article.collection);
+  const currentTags = new Set(article.data.tags);
+  const related = candidates.map((entry) => {
+    const sharedTags = entry.data.tags.reduce((count, tag) => count + (currentTags.has(tag) ? 1 : 0), 0);
+    const sameCourse = isNote(article) && isNote(entry) && article.data.course.id === entry.data.course.id;
+    const sameChapter = sameCourse && article.data.chapter === entry.data.chapter;
+    const score = (sameChapter ? 8 : 0) + (sameCourse ? 4 : 0) + sharedTags * 2;
+    return { entry, score };
+  });
+
+  return related
+    .sort((a, b) => b.score - a.score || effectiveDate(b.entry).getTime() - effectiveDate(a.entry).getTime()
+      || b.entry.data.pubDate.getTime() - a.entry.data.pubDate.getTime() || a.entry.id.localeCompare(b.entry.id))
+    .slice(0, limit)
+    .map(({ entry }) => entry);
+}
+
+export async function getTopicSummaries(): Promise<TopicSummary[]> {
+  const summaries = new Map<string, TopicSummary>();
+  for (const entry of await getPublishedArticles()) {
+    for (const tag of entry.data.tags) {
+      const existing = summaries.get(tag);
+      const latestDate = effectiveDate(entry);
+      if (!existing) summaries.set(tag, { tag, count: 1, latestDate });
+      else {
+        existing.count += 1;
+        if (latestDate > existing.latestDate) existing.latestDate = latestDate;
+      }
+    }
+  }
+  return [...summaries.values()].sort((a, b) => b.count - a.count
+    || b.latestDate.getTime() - a.latestDate.getTime() || a.tag.localeCompare(b.tag));
 }
 
 export async function getCourseById(id: string): Promise<Course | undefined> {
@@ -82,8 +119,16 @@ export function byNewest<T extends Article>(items: T[]): T[] {
   return [...items].sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime() || a.id.localeCompare(b.id));
 }
 
+export function effectiveDate(entry: Article): Date {
+  return entry.data.updated ?? entry.data.pubDate;
+}
+
 function byChapterOrder(a: Note, b: Note): number {
   return a.data.order - b.data.order || b.data.pubDate.getTime() - a.data.pubDate.getTime() || a.id.localeCompare(b.id);
+}
+
+function isNote(entry: Article): entry is Note {
+  return entry.collection === "notes";
 }
 
 function assertNoteStructure(notes: Note[], courses: Course[]): void {

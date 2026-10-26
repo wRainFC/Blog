@@ -46,7 +46,7 @@ const links = navigation;
             <circle cx="10.5" cy="10.5" r="6.5" />
             <path d="M15.4 15.4 20 20" />
           </svg>
-          <span>搜索</span>
+          <span class="search-link-label">搜索</span>
           {pathname.startsWith("/search") && (
             <span class="nav-current-indicator" aria-hidden="true"></span>
           )}
@@ -82,7 +82,13 @@ const links = navigation;
             {link.label}
           </a>
         ))}
-        <a href={withBasePath("/search")} aria-current={pathname.startsWith("/search") ? "page" : undefined}>搜索</a>
+        <a class="search-link mobile-search-link" href={withBasePath("/search")} aria-label="搜索文章" title="搜索文章" aria-current={pathname.startsWith("/search") ? "page" : undefined}>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="M15.4 15.4 20 20" />
+          </svg>
+          <span class="search-link-label">搜索</span>
+        </a>
         <button class="theme-control" type="button" data-theme-control aria-pressed="false" aria-label="切换至深色主题" title="切换至深色主题">
           <svg class="theme-control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <g class="theme-control-sun"><circle cx="12" cy="12" r="3.4" /><path d="M12 2.5v2.3m0 14.4v2.3M2.5 12h2.3m14.4 0h2.3M5.3 5.3 7 7m10 10 1.7 1.7m0-13.4L17 7M7 17l-1.7 1.7" /></g>

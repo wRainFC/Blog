@@ -1,12 +1,13 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
-import type { Course, CourseOutlineGroup, Note } from "../lib/content/queries";
+import type { Article, Course, CourseOutlineGroup, Note } from "../lib/content/queries";
 import { courseHref, topicHref } from "../lib/content/urls";
 import { withBasePath } from "../lib/site-path";
 import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 import CourseNavigator from "../components/article/CourseNavigator.astro";
 import CourseArticleNav from "../components/article/CourseArticleNav.astro";
+import RelatedArticles from "../components/article/RelatedArticles.astro";
 
 interface Heading { depth: number; slug: string; text: string }
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
   nextNote?: Note;
   previousChapter?: string;
   nextChapter?: string;
+  relatedArticles?: Article[];
   headings?: Heading[];
   readingTime?: string;
   motionId?: string;
@@ -34,9 +36,16 @@ const {
   title, summary, pubDate, updated, tags, type, course, chapter, chapterId,
   courseOutline = [], currentNoteId, previousNote, nextNote, previousChapter, nextChapter,
   headings = [], readingTime = "约 4 分钟阅读",
+  relatedArticles = [],
   motionId,
 } = Astro.props;
 const hasCourseNavigation = type === "note" && Boolean(course) && Boolean(currentNoteId) && courseOutline.length > 0;
+const effectiveDate = updated ?? pubDate;
+const now = new Date();
+const age = now.getTime() - effectiveDate.getTime();
+const timeFilter = age <= 30 * 24 * 60 * 60 * 1000
+  ? "近 30 天"
+  : age <= 365 * 24 * 60 * 60 * 1000 ? "近 1 年" : "更早";
 ---
 
 <BaseLayout title={`${title}｜楚地之雨`} description={summary} pageKind="article">
@@ -80,6 +89,12 @@ const hasCourseNavigation = type === "note" && Boolean(course) && Boolean(curren
         />
       )}
       <div class="article-body prose">
+        <div class="article-index-meta" aria-hidden="true">
+          <span data-pagefind-filter="类型">{type === "note" ? "笔记" : "随笔"}</span>
+          {course && <span data-pagefind-filter="课程">{course.data.title}</span>}
+          {tags.map((tag) => <span data-pagefind-filter="标签">{tag}</span>)}
+          <span data-pagefind-filter="时间">{timeFilter}</span>
+        </div>
         <slot />
         <div class="article-tags">
           {tags.map((tag) => <a href={topicHref(tag)}>#{tag}</a>)}
@@ -92,6 +107,7 @@ const hasCourseNavigation = type === "note" && Boolean(course) && Boolean(curren
             nextChapter={nextChapter !== chapter ? nextChapter : undefined}
           />
         )}
+        <RelatedArticles articles={relatedArticles} />
       </div>
 
       <ArticleToc headings={headings} variant="desktop" />

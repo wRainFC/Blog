@@ -76,7 +76,7 @@ class FocusField {
 
   draw(time: number): void {
     const dark = document.documentElement.dataset.theme === "dark";
-    const accent = dark ? "121, 185, 158" : "31, 90, 69";
+    const accent = dark ? "101, 216, 207" : "91, 92, 226";
     const seconds = time / 1000;
     const focus = this.getFocusPoint();
     this.context.clearRect(0, 0, this.width, this.height);

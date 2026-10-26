@@ -1,7 +1,7 @@
 ---
 import { render } from "astro:content";
 import ArticleLayout from "../../../layouts/ArticleLayout.astro";
-import { getCourseById, getCourseNavigation, getCourseOutline, getPublishedNotes, resolveCourseChapter } from "../../../lib/content/queries";
+import { getCourseById, getCourseNavigation, getCourseOutline, getPublishedNotes, getRelatedArticles, resolveCourseChapter } from "../../../lib/content/queries";
 import { readingTime } from "../../../lib/content/format";
 import { articleMotionId } from "../../../lib/content/urls";
 
@@ -21,6 +21,7 @@ if (!course) throw new Error(`Course not found: ${entry.data.course.id}`);
 const chapter = resolveCourseChapter(course, entry);
 const courseOutline = await getCourseOutline(course.id);
 const { previous, next } = getCourseNavigation(courseOutline, entry.id);
+const relatedArticles = await getRelatedArticles(entry);
 const { Content, headings } = await render(entry);
 ---
 
@@ -40,6 +41,7 @@ const { Content, headings } = await render(entry);
   nextNote={next?.note}
   previousChapter={previous?.chapterTitle}
   nextChapter={next?.chapterTitle}
+  relatedArticles={relatedArticles}
   headings={headings}
   readingTime={readingTime(entry.body)}
   motionId={articleMotionId(entry)}

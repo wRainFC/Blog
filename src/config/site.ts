@@ -9,5 +9,6 @@ export const siteConfig = {
 export const navigation = [
   { href: "/learn", label: "学习" },
   { href: "/writing", label: "写作" },
+  { href: "/topics", label: "主题" },
   { href: "/about", label: "关于" },
 ] as const;

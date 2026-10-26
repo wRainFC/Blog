@@ -28,6 +28,7 @@ const isMobile = variant === "mobile";
           <summary>
             <span>{chapter.title}</span>
             <small>{chapter.notes.length} 篇</small>
+            <i class="course-navigator__chevron" aria-hidden="true"></i>
           </summary>
           <div class="course-navigator__notes">
             {chapter.notes.map((note) => (
@@ -50,6 +51,7 @@ const isMobile = variant === "mobile";
           <summary>
             <span>{chapter.title}</span>
             <small>{chapter.notes.length}</small>
+            <i class="course-navigator__chevron" aria-hidden="true"></i>
           </summary>
           <div class="course-navigator__notes">
             {chapter.notes.map((note) => (
