@@ -264,7 +264,7 @@ Studio 自动检查、构建、提交并推送
 GitHub Actions 构建并发布到 GitHub Pages
 ~~~
 
-站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制，部署子目录由 PUBLIC_BASE_PATH 控制。GitHub Actions 已配置 `https://wrain.art` 与根路径 `/`；域名绑定和首次发布步骤见 [GitHub Pages 发布](github-pages.md)。其他静态托管平台应设置真实域名，例如：
+站点的 canonical、RSS 和 sitemap 地址由 PUBLIC_SITE_URL 控制，部署子目录由 PUBLIC_BASE_PATH 控制。GitHub Actions 已配置 `https://wrainfc.github.io` 与子目录 `/Blog`；首次发布步骤见 [GitHub Pages 发布](github-pages.md)。其他静态托管平台应设置真实域名，例如：
 
 ~~~text
 PUBLIC_SITE_URL=https://example.com
