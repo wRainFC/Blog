@@ -2,7 +2,7 @@
 title: "现代密码学课程笔记 04：流密码"
 summary: "梳理流密码、密钥流复用风险、LFSR 重建攻击，以及 RC4/WEP 的设计与失效。"
 pubDate: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-28
 course: modern-cryptography
 chapter: chapter-04
 order: 0
@@ -15,7 +15,7 @@ draft: false
 > 主讲：Sheng Zhong、Yuan Zhang
 > 来源：2025 秋季《现代密码学》课程讲义。
 > 对应内容：Stream Cipher（流密码）
-> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Chapter 3、6
+> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapters 3.6、7
 > 整理原则：保留流密码形式化定义、LFSR 分析、RC4/WEP 例子和使用建议
 
 ## 目录
@@ -72,6 +72,59 @@ $$
 
 这里的 IV 通常不是秘密，它的作用是让同一个长期密钥在不同消息上产生不同的初始状态；安全要求是同一密钥下 IV/nonce 不重复，且接收方能够获得它。
 
+安全性可以用两种方式精确定义：没有 IV 时，固定密钥生成任意多（但为多项式长度）的输出，整体应构成 PRG；带 IV 时，把
+
+$$
+F_s(\mathrm{IV})=\mathrm{GetBits}_1(\mathrm{Init}(s,\mathrm{IV}),\ell)
+$$
+
+看作以 IV 为输入、密钥 $s$ 为隐藏密钥的函数，要求它满足 PRF 式的不可区分性。也就是说，不同 IV 对应的密钥流应像独立均匀串，而不是只要求每一条流单独看起来随机。
+
+一种概念性构造是用 PRF $F$ 产生连续输出：状态保存 $(s,\mathrm{IV},i)$，第 $i$ 次输出
+
+$$
+y_i=F_s(\mathrm{IV}\Vert\langle i\rangle).
+$$
+
+只要不同 IV 与计数器编码形成的输入不重复，PRF 的安全性就能转化为密钥流的伪随机性。实际流密码通常使用专门设计的状态更新结构以获得更好的性能。
+
+### 同步与非同步模式的形式化
+
+在同步模式中，双方先运行 $st_0:=\mathrm{Init}(k)$。发送方维护状态
+$st_S$，对消息 $m$ 生成
+
+$$
+(y,st'_S):=\mathrm{GetBits}(st_S,|m|),\qquad c:=m\oplus y,
+$$
+
+然后把 $c$ 发送并更新为 $st'_S$。接收方以相同的 $st_R$ 运行
+
+$$
+(y,st'_R):=\mathrm{GetBits}(st_R,|c|),\qquad m:=c\oplus y,
+$$
+
+并更新状态。只要消息按顺序到达且不丢失，双方状态相同；该模式不需要为每条消息发送 IV，也不会产生 IV 的通信开销，但它是有状态的。
+
+在非同步模式中，每条消息选择新鲜 IV，定义
+
+$$
+\mathrm{Enc}_k(m)=\left\langle \mathrm{IV},
+\mathrm{GetBits}_1(\mathrm{Init}(k,\mathrm{IV}),|m|)\oplus m\right\rangle,
+$$
+
+$$
+\mathrm{Dec}_k(\langle \mathrm{IV},c\rangle)=
+\mathrm{GetBits}_1(\mathrm{Init}(k,\mathrm{IV}),|c|)\oplus c.
+$$
+
+如果函数
+
+$$
+F_k(\mathrm{IV})=\mathrm{GetBits}_1(\mathrm{Init}(k,\mathrm{IV}),l)
+$$
+
+对不同 IV 的输出构成 PRF，那么上述方案在 IV 不重复的前提下可以达到 CPA 安全。证明把 $F_k$ 替换为随机函数；不同 IV 时密钥流独立均匀，挑战密文与明文选择位无关；IV 碰撞事件再由生日界单独估计。
+
 ## 二、用流密码加密
 
 ### 基础加密
@@ -114,6 +167,8 @@ $$
 - **非同步模式（unsynchronized mode）**：系统可从密文重新建立同步，但通常要付出额外开销。
 
 同步模式的密钥流只依赖初始状态和时钟，传输错误不会自动恢复；非同步模式让后续状态依赖部分已接收的密文，丢失少量数据后可能重新同步，但错误可能在一段窗口内传播。
+
+可区分有状态与无状态的使用方式：同步模式可以在会话开始时初始化一次，之后双方按相同状态处理连续消息，通信不需要为每条消息附加 IV；带 IV 的非同步模式则把 IV 与密文一起发送，适合独立处理任意长度的消息，但必须由上层保证同一密钥下 IV 不重复。
 
 ## 三、线性反馈移位寄存器
 
@@ -235,10 +290,23 @@ WEP 使用 RC4 保护机密性，并使用 CRC-32 做完整性校验。标准 64
 
 IV 总数只有 $2^{24}$。按高流量接入点估算，发送约 1500 字节、速率 11 Mbps 的数据时，IV 约数小时就会耗尽并重复。重复 IV 意味着同一长期密钥下重复使用相同或相关的 RC4 密钥流；结合 RC4 的偏差，WEP 可以在很短时间内被破解。WEP 的 CRC-32 也不是密码学消息认证码，攻击者可以构造可接受的修改。WPA-TKIP 虽改善了 WEP 的部分问题，RC4 的弱点仍使其不再推荐。现代 Wi-Fi 应使用 WPA2 或 WPA3，其核心加密通常基于 AES。
 
+### 6. Trivium 与 ChaCha20
+
+Trivium 是面向硬件的流密码。它由三个相互耦合的非线性反馈移位寄存器组成，长度分别为 93、84 和 111，比特状态总长为 288。初始化接受 80 位密钥和 80 位 IV，装载后运行 $4\times288$ 次时钟并丢弃输出，再开始生成密钥流。非线性反馈和寄存器耦合避免了单个 LFSR 的线性重建；目前没有已知的优于穷举搜索的实用攻击。
+
+ChaCha20 是面向软件的现代流密码。其核心是作用于 512 位状态的固定置换 $P$，主要使用 32 位模加、循环移位和 XOR（ARX）操作。可将其抽象为
+
+$$
+F_k(x)=P(\mathrm{const}\Vert k\Vert x)+\mathrm{const}\Vert k\Vert x,
+$$
+
+其中 $k$ 为 256 位密钥，$x$ 包含计数器和 IV，输出为 512 位伪随机块。流密码再按
+$F_k(\mathrm{IV}\Vert\langle i\rangle)$ 依次生成密钥流。ChaCha20 常与 Poly1305 组合成 ChaCha20-Poly1305 认证加密；单独的 ChaCha20 仍只提供机密性。
+
 ## 五、流密码的使用建议
 
 1. 停止使用已知不安全的流密码，例如 RC4。
-2. 采用经过公开分析和标准化的方案，例如 ZUC-128/256、Enocoro、Trivium、Grain128-AEAD 等。
+2. 采用经过公开分析和标准化的流密码或认证加密方案，例如 ChaCha20-Poly1305；Trivium 可作为流密码实例。
 3. 私钥加密中，若没有特殊约束，通常优先使用成熟的分组密码及其安全工作模式。
 4. 流密码只解决机密性；实际通信还要使用认证加密或独立的消息认证机制。
 5. 每次使用都要保证 nonce/IV 不重复，并避免手工设计密钥流生成器。
@@ -249,7 +317,7 @@ IV 总数只有 $2^{24}$。按高流量接入点估算，发送约 1500 字节�
 2. 密钥流复用会暴露明文之间的 XOR；密文还可能受到位翻转攻击。
 3. LFSR 具有高效和良好周期，但线性结构使其可被约 $2n$ 个输出重建。
 4. 非线性可以阻止简单重建，但具体方案仍需严格密码分析。
-5. RC4/WEP 的历史说明：高效、广泛部署和“看起来随机”都不能替代安全证明。
+5. RC4/WEP 的历史说明：高效、广泛部署和“看起来随机”都不能替代安全证明；ChaCha20-Poly1305 则把现代流密码与认证结合起来。
 
 ## 七、复习自测
 
@@ -262,6 +330,6 @@ IV 总数只有 $2^{24}$。按高流量接入点估算，发送约 1500 字节�
 
 ## 八、参考文献
 
-1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, 2nd ed., Chapters 3、6, Chapman & Hall/CRC, 2014.
+1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapters 3.6、7, CRC Press, 2025.
 2. William Stallings, *Cryptography and Network Security: Principles and Practices*, 4th ed., Prentice Hall, 2005.
 3. Sheng Zhong, Yuan Zhang, *Stream Cipher*, 2025 Fall Crypto Course, Nanjing University.

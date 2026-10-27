@@ -2,7 +2,7 @@
 title: "现代密码学课程笔记 02：完美保密性"
 summary: "从概率、条件概率和 Bayes 定理出发，形式化完美保密性，证明一次一密并说明 Shannon 定理及其限制。"
 pubDate: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-28
 course: modern-cryptography
 chapter: chapter-02
 order: 0
@@ -15,7 +15,7 @@ draft: false
 > 主讲：Sheng Zhong、Yuan Zhang
 > 来源：2025 秋季《现代密码学》课程讲义。
 > 对应内容：Perfect Secrecy（完美保密性）
-> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Chapter 2
+> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 2
 > 整理原则：合并动画叠页，保留定义、概率公式、构造、证明和限制条件
 
 ## 目录
@@ -130,6 +130,12 @@ $$
 \mathrm{Dec}_k(\mathrm{Enc}_k(m))=m.
 $$
 
+这里有两点容易被忽略的约定：第一，密钥随机变量 $K$ 与待加密的消息随机变量 $M$ 必须独立；密钥由方案的 `Gen` 决定，而消息分布由应用场景决定。第二，$\mathrm{Enc}$ 可以是概率算法，记号 $c\leftarrow\mathrm{Enc}_k(m)$ 表示每次调用都可能使用新的随机性；若算法确定，则用 $c:=\mathrm{Enc}_k(m)$。对概率加密，正确性要求加密算法可能输出的每一个密文在解密时都以概率 1 还原原消息。
+
+### 密码学随机性的来源
+
+密码学中的“均匀随机比特”通常来自两步：先收集网络事件时延、磁盘访问时延、用户输入、硬件噪声等高熵数据，再用密码学随机数生成器把它们处理为近似独立、均匀的比特。高熵不等于均匀，普通库中的 `rand()` 也不应直接用于生成密钥或 IV。随机性质量不足会让一个理论上安全的方案在实现中失效。
+
 ### 例：移位密码
 
 对单个字母，令 $\mathcal M=\mathcal C=\{0,\ldots,25\}$，密钥 $k\leftarrow\{0,\ldots,25\}$ 均匀生成：
@@ -239,6 +245,38 @@ $$
 - 若条件分布相同，代入 Bayes 公式并用全概率公式，可约去密文条件概率，得到 $\Pr[M=m\mid C=c]=\Pr[M=m]$。
 - 若完美保密，对任意不同的 $m,m'$ 构造只在这两个消息间取值的先验分布，再用 Bayes 公式比较，即可推出两个条件分布相等。
 
+更完整的证明如下。对任意消息分布，由 $K$ 与 $M$ 独立性有
+
+$$
+\Pr[C=c\mid M=m]=\Pr[\mathrm{Enc}_K(m)=c].
+$$
+
+若方案完美保密，取 $M$ 在 $\mathcal M$ 上均匀分布。对任意满足
+$\Pr[C=c]>0$ 的 $c$，Bayes 公式给出
+
+$$
+\Pr[C=c\mid M=m]
+=\frac{\Pr[M=m\mid C=c]\Pr[C=c]}{\Pr[M=m]}
+=\Pr[C=c].
+$$
+
+右端与 $m$ 无关，所以任意 $m,m'$ 的密文条件分布相同。反过来，假设存在
+$p_c$ 使对所有 $m$ 都有 $\Pr[C=c\mid M=m]=p_c$。则对任意消息先验：
+
+$$
+\Pr[C=c]=\sum_{m'}\Pr[C=c\mid M=m']\Pr[M=m']
+=p_c,
+$$
+
+于是
+
+$$
+\Pr[M=m\mid C=c]
+=\frac{p_c\Pr[M=m]}{p_c}=\Pr[M=m].
+$$
+
+当 $\Pr[M=m]=0$ 时结论显然成立；当 $\Pr[C=c]=0$ 时不需要进行条件化。这证明了等价刻画。
+
 ### 基于游戏的完美不可区分性
 
 定义实验 $\mathrm{PrivK}^{\mathrm{eav}}_{\mathcal A,\Pi}$：
@@ -256,6 +294,16 @@ $$
 $$
 
 完美保密与完美不可区分等价：密文分布若与明文无关，对手看不到关于 $b$ 的信息；反之，若存在密文分布差异，对手就可以选择一对消息利用该差异取得超过 $1/2$ 的成功率。
+
+等价性的形式化理由是：固定 $b=0,1$，令 $P_b$ 表示挑战密文的分布。若 $P_0=P_1$，则对任意（即使无限计算能力的）对手，其输出分布相同，故
+$\Pr[b'=1\mid b=0]=\Pr[b'=1\mid b=1]$，平均成功率恰为 $1/2$。若存在 $c$ 使
+$P_0(c)\ne P_1(c)$，对手可在观察到 $c$ 时选择较大的那个分布对应的消息；该判别器的成功率为
+
+$$
+\frac12+\frac14\sum_{c\in\mathcal C}|P_0(c)-P_1(c)|>\frac12.
+$$
+
+因此完美不可区分要求两个分布逐点相等，也就等价于完美保密的密文分布条件。
 
 一个两字符、周期从 $\{1,2\}$ 中均匀选择的 Vigenère 方案不是完美不可区分的。对手选择 $m_0=\text{aa},m_1=\text{ab}$，若看到两字符密文相等则猜 $b'=0$，否则猜 $b'=1$。当 $b=0$ 时相等概率为 $1/2+1/(2\cdot26)$；综合两种 $b$ 后成功概率为 $0.75>1/2$。
 
@@ -366,6 +414,26 @@ $$
 
 OTP 满足这两个条件：密钥均匀生成，且对每个明文—密文对有唯一密钥 $k=m\oplus c$。Shannon 定理只适用于三个空间大小相等的情形，但可以快速判断许多有限方案是否完美保密。
 
+证明分两部分。若两个条件成立，固定任意 $m,c$，由条件 2 存在唯一 $k$ 使
+$\mathrm{Enc}_k(m)=c$，由条件 1 得
+
+$$
+\Pr[\mathrm{Enc}_K(m)=c]=\Pr[K=k]=\frac1{|\mathcal K|},
+$$
+
+该值与 $m$ 无关，故由完美保密等价刻画可知方案完美保密。
+
+反过来，设方案完美保密。任取出现概率非零的 $c$。由等价刻画，若某个消息
+$m^*$ 能产生 $c$，则所有消息都能以非零概率产生 $c$；否则某个消息的条件概率为 0，而另一个不为 0。令 $K_m$ 为能把 $m$ 加密成 $c$ 的密钥集合。正确性保证不同消息的 $K_m$ 两两不交，因为同一个 $k,c$ 不可能解出两个不同明文。每个 $K_m$ 非空，而
+$|\mathcal K|=|\mathcal M|$，故每个 $K_m$ 恰含一个密钥。对任意 $m,m'$，完美保密又给出
+
+$$
+\Pr[K=k_m]=\Pr[\mathrm{Enc}_K(m)=c]
+=\Pr[\mathrm{Enc}_K(m')=c]=\Pr[K=k_{m'}].
+$$
+
+所有密钥概率相等，且总和为 1，所以每个密钥概率为 $1/|\mathcal K|$。
+
 Shannon 在 1949 年发表的 *Communication Theory of Secrecy Systems* 中系统研究了这种“不可破译”标准，并证明一次一密是满足完美保密条件的典型构造。定理的结论是信息论结论：只要满足条件，无限计算能力的攻击者也无法从密文获得关于明文的额外信息；它没有涉及实现成本、密钥分发或完整性保护。
 
 ## 七、全章总结
@@ -388,5 +456,5 @@ Shannon 在 1949 年发表的 *Communication Theory of Secrecy Systems* 中系�
 
 ## 九、参考文献
 
-1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, 2nd ed., Chapter 2, Chapman & Hall/CRC, 2014.
+1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 2, CRC Press, 2025.
 2. Sheng Zhong, Yuan Zhang, *Perfect Secrecy*, 2025 Fall Crypto Course, Nanjing University.

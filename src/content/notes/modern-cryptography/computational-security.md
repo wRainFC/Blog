@@ -2,7 +2,7 @@
 title: "现代密码学课程笔记 03：计算安全"
 summary: "介绍安全参数、PPT 对手、可忽略函数和 EAV 实验，并用伪随机生成器构造计算安全加密和归约证明。"
 pubDate: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-28
 course: modern-cryptography
 chapter: chapter-03
 order: 0
@@ -15,7 +15,7 @@ draft: false
 > 主讲：Sheng Zhong、Yuan Zhang
 > 来源：2025 秋季《现代密码学》课程讲义。
 > 对应内容：Computational Security（计算安全）
-> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Chapter 3.1–3.3
+> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 3.1–3.3
 > 整理原则：保留渐近定义、攻击实验、PRG 构造和归约证明思路
 
 ## 目录
@@ -172,6 +172,41 @@ $$
 
 安全定义必须同时写明安全目标和威胁模型。这里的目标是不能区分 $m_0$ 与 $m_1$ 的加密，威胁模型是只观察一次挑战密文的窃听者；若允许加密 oracle 或解密 oracle，就必须改用更强的 CPA 或 CCA 定义。
 
+### 语义安全与明文长度
+
+EAV 不可区分并不是一个只会阻止“恢复完整明文”的弱目标。它与窃听场景下的语义安全等价：对任意可高效采样的消息分布、外部信息 $h(m)$ 和可计算目标函数 $f(m)$，看到密文的 PPT 对手所能达到的成功率，与只知道明文长度 $|m|$ 和外部信息 $h(m)$ 的 PPT 算法相差至多一个可忽略量。换句话说，密文不会额外提供可有效利用的部分信息。
+
+这个表述也说明了为什么实验要求 $m_0,m_1$ 等长。标准私钥加密通常不承诺隐藏明文长度；若应用需要隐藏长度，应在实验模型中显式加入填充、分桶或固定长度编码。
+
+形式化地，设 $\mathrm{Samp}(1^n)$ 产生消息 $m$，$f,h$ 是多项式时间可计算函数。语义安全要求：对任意 PPT 算法 $\mathcal A$，存在 PPT 算法 $\mathcal A'$，使
+
+$$
+\left|
+\Pr[\mathcal A(1^n,\mathrm{Enc}_k(m),h(m))=f(m)]
+-
+\Pr[\mathcal A'(1^n,|m|,h(m))=f(m)]
+\right|
+\le\mathrm{negl}(n).
+$$
+
+第一项的概率还包括 $m\leftarrow\mathrm{Samp}(1^n)$、密钥生成、加密和 $\mathcal A$ 的随机性；第二项只给模拟器明文长度与外部信息。该定义把“密文没有提供额外信息”写成了可比较的成功概率。
+
+作为一个归约例子，若 PPT 算法 $\mathcal B$ 能从均匀消息 $m\in\{0,1\}^l$ 的密文中以
+$1/2+\epsilon(n)$ 的概率猜出第 $i$ 位，则构造 EAV 对手 $\mathcal B'$：随机选取
+$m_0$ 的第 $i$ 位为 0、$m_1$ 的第 $i$ 位为 1，提交 $(m_0,m_1)$；收到挑战密文后运行 $\mathcal B$，输出其猜测作为挑战位。于是
+
+$$
+\Pr[\mathrm{PrivK}^{\mathrm{eav}}_{\mathcal B',\Pi}(n)=1]
+=\Pr[\mathcal B(1^n,\mathrm{Enc}_k(m))=m_i]
+=\frac12+\epsilon(n),
+$$
+
+若 $\epsilon$ 非可忽略，就矛盾于 EAV 安全。因此 EAV 安全不仅禁止恢复完整明文，也禁止有效预测明文的任意单个位。
+
+### 具体安全参数
+
+渐近式的“可忽略”结论最终仍需落到参数选择。具体安全写法是：对运行时间不超过 $t$ 的任意对手，攻击成功概率至多为 $\varepsilon$，即 $(t,\varepsilon)$-安全。实际评估还要说明硬件、并行度、专用攻击算法和密钥使用总量；同一个渐近方案在过小的 $n$ 下可能完全不满足工程需要。
+
 ## 五、用伪随机生成器构造加密
 
 ### 从 OTP 出发
@@ -197,6 +232,14 @@ PRG 的要点：
 - 穷举全部种子可以区分，但需要约 $2^n$ 次尝试，超出 PPT 范围。
 
 PRG 的“伪随机”不是信息论意义上的真正随机。无界对手最终可以枚举全部种子并识别输出是否属于 $G(\{0,1\}^n)$，所以 PRG 只承诺计算安全。
+
+例如，定义
+
+$$
+G(s_1\cdots s_n)=s_1\cdots s_n\Vert(s_1\oplus\cdots\oplus s_n).
+$$
+
+该算法虽然扩展了 1 位，但区分器只需检查最后一位是否等于前 $n$ 位的异或：对 $G(s)$ 总是输出 1，对均匀的 $n+1$ 位串只以 $1/2$ 的概率输出 1，优势为 $1/2$，不是可忽略量。因此“输出更长”本身远不足以成为 PRG。
 
 ### 用 PRG 构造固定长度加密
 
@@ -286,5 +329,5 @@ $$
 
 ## 九、参考文献
 
-1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, 2nd ed., Chapter 3.1–3.3, Chapman & Hall/CRC, 2014.
+1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 3, CRC Press, 2025.
 2. Sheng Zhong, Yuan Zhang, *Computational Security*, 2025 Fall Crypto Course, Nanjing University.

@@ -2,7 +2,7 @@
 title: "现代密码学课程笔记 05：CPA 安全与伪随机函数"
 summary: "从多重加密和 CPA 实验出发，介绍伪随机函数，并说明 PRF 如何构造 CPA 安全加密及其与 PRP、PRG 的关系。"
 pubDate: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-28
 course: modern-cryptography
 chapter: chapter-05
 order: 0
@@ -15,7 +15,7 @@ draft: false
 > 主讲：Sheng Zhong、Yuan Zhang
 > 来源：2025 秋季《现代密码学》课程讲义。
 > 对应内容：CPA Security and Pseudorandom Functions（CPA 安全与伪随机函数）
-> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Chapter 3
+> 对应教材：Katz and Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 3
 > 整理原则：保留多重加密实验、CPA 定义、PRF 构造及其与 PRP/分组密码的关系
 
 ## 目录
@@ -75,6 +75,10 @@ CPA 实验 $\mathrm{PrivK}^{\mathrm{cpa}}_{\mathcal A,\Pi}(n)$：
 4. 挑战者随机选 $b$，返回 $c\leftarrow\mathrm{Enc}_k(m_b)$；
 5. 挑战后对手仍可访问加密 oracle，最终输出 $b'$。
 
+等价地，可定义左或右 oracle $\mathrm{LR}_{k,b}(m_0,m_1)$：当 $b=0$ 时返回
+$\mathrm{Enc}_k(m_0)$，当 $b=1$ 时返回 $\mathrm{Enc}_k(m_1)$，并要求每次查询的两条消息等长。实验先均匀选择固定的 $b$，再把该 oracle 交给对手；对手最后输出对 $b$ 的猜测。对手可通过查询
+$\mathrm{LR}_{k,b}(m,m)$ 模拟普通加密 oracle，因此左或右实验至少和普通 CPA 实验一样强。
+
 ### CPA 安全
 
 > [!tip] **定义**
@@ -86,11 +90,36 @@ CPA 实验 $\mathrm{PrivK}^{\mathrm{cpa}}_{\mathcal A,\Pi}(n)$：
 > \le \frac12+\mathrm{negl}(n).
 > $$
 
+记
+
+$$
+\mathrm{Adv}^{\mathrm{cpa}}_\Pi(\mathcal A,n)
+:=\Pr[\mathrm{PrivK}^{\mathrm{cpa}}_{\mathcal A,\Pi}(n)=1]-\frac12.
+$$
+
+CPA 安全就是对所有 PPT $\mathcal A$，上述优势为可忽略函数。若使用固定挑战位的左或右实验，也可把优势写成两个输出分布的差：
+
+$$
+\left|\Pr[\mathcal A(\mathrm{LR}_{k,0})=1]
+-\Pr[\mathcal A(\mathrm{LR}_{k,1})=1]\right|.
+$$
+
 CPA 安全必须依赖概率性加密。确定性加密中，相同明文总产生相同密文，对手可以先查询某些候选明文，再直接比较挑战密文。
 
 CPA 安全还隐含了消息长度处理问题：挑战消息通常要求等长，否则密文长度本身就可能泄漏 $b$。若系统需要隐藏长度，还要额外使用填充或长度隐藏机制。
 
 一个重要结果是：**CPA 安全的单次加密自动推出 CPA 安全的多重加密**。证明依赖混合实验：把所有密文先选为 $\vec M_0$ 的加密，再依次把第 1、2、……、$t$ 个位置改成 $\vec M_1$ 的加密。若首尾两个混合分布能被区分，则至少有一个相邻混合分布能被以非可忽略优势区分；该相邻位置即可嵌入单次 CPA 挑战，从而矛盾。于是只需证明单次 CPA 安全，就能得到多重安全。
+
+形式化地，令 $H_i$ 表示前 $i$ 个位置加密 $\vec M_1$ 中的消息，其余位置加密
+$\vec M_0$ 中的消息。若多重对手 $\mathcal A$ 能以优势 $\epsilon$ 区分 $H_0$ 与
+$H_t$，则三角不等式给出
+
+$$
+\epsilon\le\sum_{i=1}^{t}
+\left|\Pr[\mathcal A(H_{i-1})=1]-\Pr[\mathcal A(H_i)=1]\right|.
+$$
+
+因此至少存在一个 $i$ 使相邻优势不小于 $\epsilon/t$。构造单次 CPA 对手随机选该位置（或在非均匀时枚举每个位置），把单次挑战嵌入第 $i$ 个密文，并自行生成其余密文。若 $t$ 是多项式，则非可忽略的 $\epsilon$ 除以 $t$ 仍非可忽略，与单次 CPA 安全矛盾。这就是混合论证中“逐项替换”的形式化依据。
 
 ## 三、伪随机函数
 
@@ -137,7 +166,25 @@ $$
 
 PRF 的安全性允许区分器进行多项式次 oracle 查询，并适用于自适应选择查询输入。
 
+记区分优势为
+
+$$
+\mathrm{Adv}^{\mathrm{prf}}_F(D,n)
+:=\left|\Pr[D^{F_k(\cdot)}(1^n)=1]
+-\Pr[D^{f(\cdot)}(1^n)=1]\right|.
+$$
+
+PRF 安全要求该优势对所有 PPT 区分器都是可忽略的；区分器不知道 $k$，只能通过 oracle 观察函数行为。
+
 与 PRG 的区别是：PRG 只有一次输出，区分器直接查看一个字符串；PRF 的区分器可以不断输入 $x$，观察 $F_k(x)$，因此需要保证整个带密钥函数的行为都像一个随机查找表。对同一个输入重复查询时，PRF 和随机函数都会返回同一个输出，这种一致性是函数结构的一部分。
+
+一个重要反例是 $F_k(x)=k\oplus x$：对每个固定 $x$，输出在均匀密钥下看似均匀，但两个查询之间满足
+
+$$
+F_k(x_1)\oplus F_k(x_2)=x_1\oplus x_2,
+$$
+
+随机函数几乎不会稳定满足该关系。因此“每个单点输出均匀”远弱于 PRF，必须考虑自适应多次查询下的联合分布。
 
 ## 四、用 PRF 构造 CPA 安全加密
 
@@ -192,6 +239,16 @@ $$
 
 右侧额外项可忽略，所以构造 CPA 安全。
 
+若记 $\mathrm{Adv}^{\mathrm{cpa}}_\Pi(\mathcal A)$ 为对手成功率超过 $1/2$ 的优势，
+$\mathrm{Adv}^{\mathrm{prf}}_F(\mathcal D)$ 为区分器的 PRF 优势，则上述混合证明给出具体上界
+
+$$
+\mathrm{Adv}^{\mathrm{cpa}}_\Pi(\mathcal A)
+\le \mathrm{Adv}^{\mathrm{prf}}_F(\mathcal D)+\frac{q(n)}{2^n}.
+$$
+
+第一项来自把 $F_k$ 替换为随机函数，第二项来自挑战随机数与某次 oracle 随机数重复。该不等式同时说明了构造的安全性依赖：PRF 的具体安全性和随机数空间大小必须共同满足系统的总查询量。
+
 严格地说，随机函数游戏中的“命中”事件包括某个 oracle 查询使用挑战随机数 $r^*$；若没有命中，$f(r^*)$ 从未在其他位置出现，因而仍是独立均匀的 $n$ 位串。这个“先证明无命中时完全安全，再单独界定坏事件概率”的写法是密码学混合证明的常见模式。
 
 ## 五、PRF、PRP 与分组密码
@@ -240,13 +297,13 @@ $$
 
 ### PRG 构造 PRF
 
-若有扩展长度为 $n\cdot2^{t(n)}$ 的 PRG $G(k)=y_0y_1\ldots$，可把输入 $x\in\{0,1\}^n$ 看作索引，定义
+若有扩展长度为 $n\cdot2^{t(n)}$ 的 PRG $G(k)=y_0y_1\ldots$，把输入 $x\in\{0,1\}^{t(n)}$ 看作索引，定义
 
 $$
-F_k(x)=y_{x\cdot t(n)}\,y_{x\cdot t(n)+1}\cdots y_{x\cdot t(n)+t(n)-1}.
+F_k(x)=y_{x\cdot n}\,y_{x\cdot n+1}\cdots y_{x\cdot n+n-1}.
 $$
 
-也就是说，用 PRG 输出的不同区块作为不同输入的函数值。这说明 PRG 与 PRF 在计算安全理论中紧密相关。
+也就是说，把 PRG 输出切成 $2^{t(n)}$ 个、每个 $n$ 位的区块，用不同区块作为不同输入的函数值。这一直接构造只有在 $t(n)=O(\log n)$ 时才可高效生成完整查找表；更长输入需要树状 PRF 构造。它说明 PRG 与 PRF 在计算安全理论中紧密相关，但不意味着任意 PRG 都能直接高效支持任意长输入。
 
 该构造需要足够长的 PRG 输出，以便为所有 $2^n$ 个输入预留一个长度为 $t(n)$ 的区块；实际实现通常使用更精巧的树状扩展，避免显式生成指数长度字符串。这一关系主要用于说明原语之间的可转换性。
 
@@ -270,5 +327,5 @@ $$
 
 ## 九、参考文献
 
-1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, 2nd ed., Chapter 3, Chapman & Hall/CRC, 2014.
+1. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 3, CRC Press, 2025.
 2. Sheng Zhong, Yuan Zhang, *CPA Security and Pseudorandom Functions*, 2025 Fall Crypto Course, Nanjing University.

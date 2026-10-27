@@ -2,6 +2,7 @@
 title: "现代密码学课程笔记 00-01：导论与古典密码"
 summary: "从密码学的目标、研究视角和 Kerckhoffs 原则出发，梳理凯撒、替换和 Vigenère 等古典密码，并引出现代密码学的定义、假设与证明。"
 pubDate: 2026-09-03
+updated: 2026-10-28
 course: modern-cryptography
 chapter: chapter-00-01
 order: 0
@@ -166,6 +167,12 @@ $$
 - 加密：将所有字母向后移动 $k \bmod 26$ 位。
 - 解密：将所有字母向前移动 $k \bmod 26$ 位。
 
+形式化地，$\mathrm{Gen}$ 均匀输出 $k\in\{0,\ldots,25\}$；对消息
+$m=m_1\cdots m_l$，$\mathrm{Enc}_k$ 逐字符计算
+$c_i=[m_i+k\bmod 26]$，$\mathrm{Dec}_k$ 逐字符计算
+$m_i=[c_i-k\bmod 26]$。因此正确性来自
+$[(m_i+k)-k\bmod26]=m_i$。
+
 有效密钥空间只有 26，因此攻击者可以穷举所有可能。
 
 #### 充分密钥空间原则
@@ -192,6 +199,10 @@ $$
 
 - 加密：将每个明文字母 $x$ 替换为 $\pi(x)$。
 - 解密：将每个密文字母 $y$ 替换为 $\pi^{-1}(y)$。
+
+形式化地，$\mathrm{Gen}$ 均匀选择 $26!$ 个置换中的一个；
+$\mathrm{Enc}_\pi(x_1\cdots x_l)=\pi(x_1)\cdots\pi(x_l)$，
+$\mathrm{Dec}_\pi(y_1\cdots y_l)=\pi^{-1}(y_1)\cdots\pi^{-1}(y_l)$。
 
 $\pi$ 必须是一一映射，这样逆置换 $\pi^{-1}$ 才存在，消息才能被正确解密。
 
@@ -287,6 +298,18 @@ $$
 
 即加密依次应用 $\pi_0,\ldots,\pi_{m-1},\pi_0,\ldots$，解密依次应用 $\pi_0^{-1},\ldots,\pi_{m-1}^{-1},\pi_0^{-1},\ldots$。
 
+固定周期 $m$ 时，$\mathrm{Gen}$ 均匀选择
+$k=(k_0,\ldots,k_{m-1})\in\mathbb Z_{26}^m$；令
+$\pi_j(x)=x+k_j\pmod{26}$，则
+
+$$
+\mathrm{Enc}_k(x_0x_1\cdots)=y_0y_1\cdots,
+\qquad y_i=x_i+k_{i\bmod m}\pmod{26}.
+$$
+
+解密在相同位置减去 $k_{i\bmod m}$。若周期也随机选择，则应把周期的分布写入
+$\mathrm{Gen}$；攻击者必须同时分析周期和每个位置的移位。
+
 以下示例使用密钥 `cafe`：
 
 ```text
@@ -324,6 +347,29 @@ $$
 $$
 
 每组都由同一个移位加密，可以独立使用频率分析破解。
+
+##### 第三步：重合指数
+
+若重复片段不足以直接确定周期，可对候选周期 $\tau$ 计算第一个子序列
+$y_0,y_\tau,y_{2\tau},\ldots$ 的字母频率 $q_0,\ldots,q_{25}$，并定义
+
+$$
+S_\tau=\sum_{i=0}^{25}q_i^2.
+$$
+
+当 $\tau$ 是真实周期的倍数时，该子序列只使用同一个移位，频率只是英语频率的重排，因此
+
+$$
+S_\tau\approx\sum_{i=0}^{25}p_i^2\approx0.065.
+$$
+
+若 $\tau$ 不是周期的倍数，多个不同移位混合后频率趋近均匀分布，于是
+
+$$
+S_\tau\approx26\left(\frac1{26}\right)^2=\frac1{26}\approx0.038.
+$$
+
+取最小的、使 $S_\tau$ 接近 $0.065$ 的 $\tau$ 作为周期候选，再对其他子序列重复检验。确定周期后，对每个子序列计算前述 $I_j$，每个位置只需测试 26 个移位；总搜索量从直接穷举的 $26^m$ 降为约 $26m$。
 
 ### 4.4 自动化的移位密码统计攻击
 
@@ -451,7 +497,28 @@ Auguste Kerckhoffs 于 1883 年提出：
 
 该原则并不是说实现细节完全不需要保护，而是说系统不能把“攻击者永远不知道算法”作为安全成立的必要条件。
 
-延伸阅读：教材第 1.2 节对“隐蔽式安全”与 Kerckhoffs 原则进行了讨论。
+### 3. 私钥加密的形式化语法
+
+私钥（共享密钥）加密方案可形式化为
+$\Pi=(\mathrm{Gen},\mathrm{Enc},\mathrm{Dec})$：
+
+- $\mathrm{Gen}$ 是概率算法，按规定的分布生成密钥 $k$；所有可能输出组成密钥空间 $\mathcal K$。
+- $\mathrm{Enc}_k(m)$ 接收密钥和明文，输出密文 $c$。现代方案通常允许加密算法使用新鲜随机性，因此同一明文在同一密钥下不一定得到同一密文。
+- $\mathrm{Dec}_k(c)$ 根据密钥恢复明文。正确性要求对每个合法 $k,m$ 以及加密可能输出的 $c$，都有
+
+  $$
+  \mathrm{Dec}_k(c)=m.
+  $$
+
+私钥设置包含两个典型场景：两方预先共享密钥后通信，以及同一用户用密钥保护未来仍需读取的磁盘数据。两方若直接在公开信道发送密钥，窃听者也会得到密钥；因此密钥分发是独立的系统问题，公钥密码章节再处理。
+
+安全定义需要分别写出**安全目标**与**威胁模型**。例如“密文不泄漏关于明文的额外信息”是目标，而唯密文、已知明文、选择明文和选择密文攻击分别描述攻击者能观察或查询什么。威胁模型越强并不意味着在所有应用中都必须使用它，但安全结论必须明确对应的模型。
+
+### 4. 明文长度泄漏
+
+常规加密通常只要求等长消息的密文不可区分，因此密文可能泄漏明文长度。工资区间、搜索结果条数、自动补全候选数量等场景中，长度本身可能暴露敏感信息；需要时应在加密前进行填充或统一分桶。不能把“内容保密”误认为“所有元数据都保密”。
+
+对应教材第 1.2 节和第 1.4 节。
 
 ---
 
@@ -491,7 +558,7 @@ Auguste Kerckhoffs 于 1883 年提出：
 ## 八、参考文献
 
 1. M. Egele, D. Brumley, Y. Fratantonio, C. Kruegel, “An Empirical Study of Cryptographic Misuse in Android Applications,” *ACM CCS*, 2013.
-2. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, 2nd ed., Chapman & Hall/CRC, 2014.
+2. Jonathan Katz, Yehuda Lindell, *Introduction to Modern Cryptography*, Revised 3rd ed., Chapter 1, CRC Press, 2025.
 3. Mihir Bellare, slides for CSE 207: *Introduction to Modern Cryptography*, UCSD.
 4. Rijndael, *The Advanced Encryption Standard (Rijndael)*, `http://www.quadibloc.com/crypto/co040401.htm`.
 5. Apple Inc., *iOS Security (iOS 10)*, March 2017.
